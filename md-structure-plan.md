@@ -16,12 +16,6 @@ outputs: [markdown_system_design, authoring_rules, migration_plan, validation_ch
 
 이 문서는 "정밀하게 구조화된 `.md`만으로 높은 확률의 한방 바이브코딩"을 가능하게 만들기 위한 문서 체계 설계안이다. 목표는 문서를 많이 만드는 것이 아니라, 문서 간 책임과 우선순위를 고정해 모델이 임의 추측 없이 구현 결정을 내리게 만드는 것이다.
 
-## Current Findings
-
-- 현재 [main.md](C:/Users/zxcva/Desktop/md/md/main.md)는 `z_docs/` 기반 레거시 워크플로우를 설명하고 있다.
-- 현재 [plan.md](C:/Users/zxcva/Desktop/md/md/plan.md)는 이름과 달리 로드맵보다는 AI 협업 규칙 문서 역할을 하고 있다.
-- 루트 디렉터리에 실제 운용 파일이 존재하지만, 문서 구조 정의와 실제 파일 배치가 일치하지 않는다.
-- 일부 문서는 비어 있고, 각 문서의 책임 경계가 아직 고정되지 않았다.
 
 ## Success Criteria
 
@@ -226,11 +220,11 @@ empty_state: show_sample_guidance
 
 ## Anti-Patterns
 
-- 제품 요구사항을 `log.md`에만 기록하는 것
-- `plan.md`와 `rules.md`에 같은 제약을 중복 작성하는 것
+- **구현 디테일이 없는 추상적 문장만 나열하는 것**
+- 제약의 중복 작성 (`plan.md`와 `rules.md`에 같은 제약을 중복 작성하는 경우 등)
 - `logic.md`에 디자인 서술을 섞는 것
 - `ui.md`에 데이터 계산식을 넣는 것
-- 구현 디테일이 없는 추상적 문장만 나열하는 것
+- . . .
 
 ## Migration Plan For Current Files
 
@@ -259,9 +253,3 @@ empty_state: show_sample_guidance
 - 필수 규칙이 수치 또는 조건식으로 표현되어 있는가
 - 데이터, 분석, UI 규칙이 문서별로 분리되어 있는가
 - 로그 문서가 비권위 문서로 분리되어 있는가
-
-## Notes About Current Documents
-
-- [main.md](C:/Users/zxcva/Desktop/md/md/main.md)는 현재 "문서 워크플로우 안내"로는 유용하지만, 실제 파일 배치와 다르게 `z_docs/`를 기준으로 서술하고 있다.
-- [plan.md](C:/Users/zxcva/Desktop/md/md/plan.md)는 현재 이름과 내용이 어긋나 있으며, 실제로는 규칙/협업 문서 역할에 가깝다.
-- 따라서 다음 정비 우선순위는 `plan.md`와 `rules.md`의 역할 분리다.
