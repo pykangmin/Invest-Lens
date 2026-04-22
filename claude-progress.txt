@@ -19,3 +19,23 @@
 - verify-structure.sh, verify-skills.sh, init.sh는 echo TODO 수준의 스켈레톤. 실제 검증 로직 미구현
 - docs/architecture/LAYERS.md와 docs/guides/SETUP.md는 상세 내용이 채워진 상태 (이번 세션 이전에 완성됨)
 - ECharts 번들이 1.3MB로 커서 빌드 경고 발생. 허수아비 단계에서는 무시, 이후 code-splitting 고려
+
+## 2026-04-22 — Invest Lens 디자인 충실 구현 (build-test)
+
+- Tailwind v4 설치(@tailwindcss/vite 플러그인). vite.config.ts에 플러그인 등록, src/shared/index.css 상단에 @import "tailwindcss" 추가
+- 허수아비 라인 차트 화면을 전면 교체. 뷰 4개(main, fundamentals, macro, technical)를 useState 문자열 state로 전환. 라우팅 라이브러리 미사용
+- 공통 Header: "💎 Invest Lens" 로고 + 검색창(placeholder "오늘은 어떤 종목을 분석 해볼까요?", 기능 없음, readOnly) + 돋보기 아이콘(SVG)
+- MainView: "Google 102.36$ +2.36$ (0.87%)" 상단 + S&P 500 카드 4개 / 좌측 2x2 지표 카드(기업 펀더멘털 60, Soft Landing, 빈 카드, Fear & Greed 게이지 23) + 우측 차트. 카드 hover 시 우측 차트 전환(fundamentals→트리맵, macro→오버레이, technical→이동평균, empty→빈 상태), 해제 시 마지막 상태 유지. MORE » 또는 카드 클릭 시 서브 뷰로 이동(빈 카드는 반응 없음). 관련 뉴스 4건
+- FundamentalsView: BACK + 제목 + 우측 상단 빨강 스코어 뱃지 "20". 지표 2x2(S&P PER, EPS Growth, PBR, 배당수익률) + AI 인사이트 4개 + 하단 섹터 트리맵
+- MacroView: 녹색 "Soft Landing" 뱃지 + 지표(Fed Rate, 10Y Yield, CPI, DXY) + 인사이트 + S&P500/FedRate/M2 상관관계 오버레이(듀얼 axis)
+- TechnicalView: 파랑 "Extreme Greed" 뱃지 + 지표(VIX, RSI, MACD, 거래량) + 인사이트 + 종가/MA20/MA50/MA200 멀티 라인
+- 모든 더미 데이터는 각 컴포넌트 내부 상수로 선언. data-loader/analysis 레이어는 import하지 않음(기존 허수아비 파일 삭제하지 않고 보존)
+- 로컬 빌드 성공, dev 서버 HTTP 200
+- 커밋 2건: chore(infra) Tailwind 설치, feat(layout) 뷰 4개 + 차트 4개 구현
+
+다음 세션에서 주목할 점:
+- 이 단계는 "디자인 구현 가능성 검증"까지. Skills 정합성/범용성/실데이터 연결은 아직 안 함
+- data-loader(mock-timeseries.ts), analysis(identity.ts), types(number.ts), visualization/line-chart.tsx는 사용되지 않는 상태로 남아있음. 본격 아이디어 확정 시 제거·교체 예정
+- skills/ 5개 파일은 여전히 TODO. feature_list.json은 []. verify-*.sh는 echo 스켈레톤
+- ECharts 번들 1.3MB 경고 여전. 동적 import/code-splitting은 아직 도입 안 함
+- Fear & Greed 게이지가 카드 안에 다소 큼직하게 들어가 있어 카드 높이 균형 확인 필요. 필요 시 dashboard-layout.skill.md에서 카드 내부 비율 규칙 정의
