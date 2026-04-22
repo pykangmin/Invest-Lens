@@ -1,1 +1,21 @@
-# 세션 진행 기록 (아직 시작되지 않음)
+# 세션 진행 기록
+
+## 2026-04-22 — 파이프라인 검증
+
+- Vite + React + TypeScript 초기화 (react-ts 템플릿, Vite 8)
+- ECharts, PapaParse, lodash, dayjs 설치 + tslib 보조 설치(echarts-for-react transitive dep 누락 이슈 해결)
+- types → data-loader → analysis → visualization → layout 레이어 흐름으로 허수아비 라인 차트 1개 구현
+- Vite 기본 App.tsx를 src/layout/App.tsx로 재작성, index.css는 src/shared/로 이동
+- 로컬 빌드 성공 (npm run build, dist/ 생성), 개발 서버 정상 (http://localhost:5173/ 200 OK)
+- Vercel 프로덕션 배포 성공
+  - Production: https://claude-jm15jk9jl-ttdd3374-1774s-projects.vercel.app
+  - Alias: https://claude-gamma-three.vercel.app
+- build-test 브랜치로 push 완료
+
+다음 세션에서 주목할 점:
+- 이 구현은 모두 허수아비다. 아이디어 확정 후 types/number.ts, data-loader/mock-timeseries.ts, analysis/identity.ts, visualization/line-chart.tsx, layout/App.tsx는 실제 로직으로 교체 예정
+- skills/ 하위 5개 파일은 여전히 제목과 TODO만 있는 상태 — 데이터 해석 규칙 엔진을 작성해야 함
+- feature_list.json은 빈 배열 []. 기능 단위 분해 후 채워야 함
+- verify-structure.sh, verify-skills.sh, init.sh는 echo TODO 수준의 스켈레톤. 실제 검증 로직 미구현
+- docs/architecture/LAYERS.md와 docs/guides/SETUP.md는 상세 내용이 채워진 상태 (이번 세션 이전에 완성됨)
+- ECharts 번들이 1.3MB로 커서 빌드 경고 발생. 허수아비 단계에서는 무시, 이후 code-splitting 고려
