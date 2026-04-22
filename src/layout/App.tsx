@@ -1,14 +1,26 @@
-import { loadMockTimeseries } from '../data-loader/mock-timeseries';
-import { analyzeTimeseries } from '../analysis/identity';
-import { LineChart } from '../visualization/line-chart';
+import { useState } from 'react';
+import { Header } from './Header';
+import { MainView, type SubView } from './MainView';
+import { FundamentalsView } from './FundamentalsView';
+import { MacroView } from './MacroView';
+import { TechnicalView } from './TechnicalView';
+
+type View = 'main' | SubView;
 
 export default function App() {
-  const raw = loadMockTimeseries();
-  const analyzed = analyzeTimeseries(raw);
+  const [view, setView] = useState<View>('main');
+
   return (
-    <div style={{ padding: 24 }}>
-      <h1>파이프라인 검증용 허수아비 대시보드</h1>
-      <LineChart data={analyzed} />
+    <div className="min-h-screen bg-slate-50">
+      <Header />
+      {view === 'main' && <MainView onNavigate={setView} />}
+      {view === 'fundamentals' && (
+        <FundamentalsView onBack={() => setView('main')} />
+      )}
+      {view === 'macro' && <MacroView onBack={() => setView('main')} />}
+      {view === 'technical' && (
+        <TechnicalView onBack={() => setView('main')} />
+      )}
     </div>
   );
 }
