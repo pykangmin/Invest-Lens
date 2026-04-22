@@ -11,7 +11,7 @@ export default function App() {
   const [view, setView] = useState<View>('main');
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="app-shell">
       <Header />
       {view === 'main' && <MainView onNavigate={setView} />}
       {view === 'fundamentals' && (
