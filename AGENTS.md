@@ -21,6 +21,8 @@
 
 ### 데이터 해석 규칙 (skills/)
 
+세션 시작 시 `skills/` 디렉토리 전체를 스캔하여 `.skill.md` 확장자를 가진 모든 파일을 읽는다. 아래 목록은 대표 파일이며, 이 외의 `.skill.md` 파일이 있으면 그것도 함께 읽는다. 각 파일의 책임 영역은 파일 상단의 개요 섹션을 참조한다.
+
 - [`skills/data-profile.skill.md`](skills/data-profile.skill.md) — 들어온 데이터의 카테고리 판정 규칙
 - [`skills/data-analysis.skill.md`](skills/data-analysis.skill.md) — 카테고리별 지표 계산 규칙
 - [`skills/visualization.skill.md`](skills/visualization.skill.md) — 차트 타입 선택 규칙
