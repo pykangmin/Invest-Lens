@@ -5,6 +5,7 @@ import {
   getQueryInt,
   getQueryString,
   normalizeTicker,
+  ApiError,
   sendData,
   sendError,
 } from "./_lib/http";
@@ -40,7 +41,7 @@ export default async function handler(
     );
 
     if (!company) {
-      throw new Error(`Company ${ticker} not found.`);
+      throw new ApiError(`Company ${ticker} not found.`, 404);
     }
 
     const [

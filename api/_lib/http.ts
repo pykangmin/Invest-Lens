@@ -9,6 +9,16 @@ export interface ApiResponse {
   setHeader?(name: string, value: string): void;
 }
 
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly statusCode: number,
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 export function assertGet(req: ApiRequest, res: ApiResponse): boolean {
   if (req.method && req.method !== "GET") {
     res.status(405).json({ error: "Method not allowed." });
@@ -27,8 +37,11 @@ export function sendError(
   error: unknown,
   fallbackStatus = 500,
 ): void {
-  const message = error instanceof Error ? error.message : "Unexpected error.";
-  const status = message.includes("not found") ? 404 : fallbackStatus;
+  const status = error instanceof ApiError ? error.statusCode : fallbackStatus;
+  const message =
+    error instanceof Error && (error instanceof ApiError || status < 500)
+      ? error.message
+      : "Internal server error.";
 
   res.status(status).json({ error: message });
 }
@@ -68,7 +81,7 @@ export function normalizeTicker(value: string): string {
   const ticker = value.trim().toUpperCase();
 
   if (!/^[A-Z][A-Z.\-]{0,9}$/.test(ticker)) {
-    throw new Error("Invalid ticker.");
+    throw new ApiError("Invalid ticker.", 400);
   }
 
   return ticker;
