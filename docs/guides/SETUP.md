@@ -31,6 +31,18 @@ npm install
 
 ---
 
+## 환경 변수
+
+DB 연결 문자열은 서버 전용 비밀값이므로 브라우저 코드나 `VITE_` 환경변수에 넣지 않는다. 로컬 개발에서는 `.env.example`을 참고해 `.env.local`을 만들고, 아래 키만 설정한다.
+
+```bash
+DATABASE_URL=postgresql://...
+```
+
+현재 웹앱은 `invest_lens_readonly` DB role을 사용한다. 이 role은 `public` 스키마의 투자 데이터 테이블에 대한 `SELECT`만 허용하며, 쓰기 권한은 없다.
+
+---
+
 ## 개발 서버 실행
 
 ```bash
@@ -70,6 +82,18 @@ npm run build
 ```bash
 npm run preview
 ```
+
+---
+
+## DB 연결 확인
+
+서버 API에 연결하기 전, 로컬에서 DB 읽기 권한과 주요 테이블 데이터를 확인한다.
+
+```bash
+npm run db:smoke
+```
+
+이 명령은 비밀값을 출력하지 않고, 기업 수·샘플 기업·AAPL 최신 기술 지표·최신 거시 국면만 JSON으로 출력한다.
 
 ---
 
