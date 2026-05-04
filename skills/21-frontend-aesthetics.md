@@ -1,4 +1,4 @@
-# frontend-aesthetics.skill.md
+# 21-frontend-aesthetics.md
 
 ## 개요
 
@@ -21,10 +21,10 @@
 
 ### 다른 Skills와의 관계
 
-이 스킬은 `visualization.skill.md`가 "어떤 차트를 고를지"를 결정한 이후에 적용된다. 
-그 차트의 폰트·색·간격·모션을 어떻게 렌더링할지가 이 스킬의 영역이다. 
-`dashboard-layout.skill.md`가 "어떤 컴포넌트를 어디에 배치할지"를 결정한 이후에도 
-마찬가지로 적용된다.
+이 스킬은 `13-render.md`가 "어떤 차트를 고를지"와 "어느 슬롯에 무엇을 
+바인딩할지"를 결정한 이후에 적용된다. 그 차트의 폰트·색·간격·모션을 어떻게 
+렌더링할지가 이 스킬의 영역이다. 레이아웃 자체는 Figma 시안이 고정하므로 
+배치 결정은 별도 스킬이 아닌 13-render의 슬롯 바인딩이 담당한다.
 
 차트 선택 규칙과 독립적으로 동작하므로, 차트 종류나 레이아웃이 바뀌어도 
 시각 규범은 유지된다. 이 독립성이 이 스킬을 "미적 감각"이 아닌 "규칙 엔진"으로 
@@ -473,10 +473,11 @@ font-variant-numeric: tabular-nums;
 이 스킬은 투자 대시보드의 시각 규범을 담당한다. 다른 Skills 파일들과 
 함께 작동하며, 각자의 책임 경계가 명확히 설정되어야 한다.
 
-현재 다른 Skills (`data-profile`, `data-analysis`, `visualization`, 
-`insight`, `dashboard-layout`) 는 내용이 확정되지 않은 상태다. 책임 
-경계와 충돌 시 우선순위는 해당 스킬들이 작성된 이후에 이 섹션에서 
-정리한다.
+현재 다른 Skills 구성: 기획팀 4개(`00-assumptions`, `01-data-profile`, 
+`02-data-analysis`, `03-insight`)와 개발팀 3개(`11-ingest`, `12-analyze`, 
+`13-render`). 이 스킬은 13-render 가 산출한 차트 spec 위에 시각 속성을 
+적용하는 단계이며, 우선순위 충돌이 발생하면 본 스킬의 §금지 목록이 
+다른 모든 결정을 이긴다.
 
 **현재 확정된 원칙 두 가지:**
 

@@ -21,15 +21,23 @@
 
 ### 데이터 해석 규칙 (skills/)
 
-세션 시작 시 `skills/` 디렉토리 전체를 스캔하여 `.skill.md` 확장자를 가진 모든 파일을 읽는다. 아래 목록은 대표 파일이며, 이 외의 `.skill.md` 파일이 있으면 그것도 함께 읽는다. 각 파일의 책임 영역은 파일 상단의 개요 섹션을 참조한다.
+세션 시작 시 `skills/` 디렉토리 전체를 스캔하여 `.md` 확장자를 가진 모든 파일을 읽는다. 파일은 두 그룹으로 나뉜다 — 도메인 결정을 정의하는 **기획팀 파일**과 파이프라인 단계별 처리 규칙을 정의하는 **개발팀 파일**. 번호 prefix로 구분된다.
 
-- [`skills/data-profile.skill.md`](skills/data-profile.skill.md) — 들어온 데이터의 카테고리 판정 규칙
-- [`skills/data-analysis.skill.md`](skills/data-analysis.skill.md) — 카테고리별 지표 계산 규칙
-- [`skills/visualization.skill.md`](skills/visualization.skill.md) — 차트 타입 선택 규칙
-- [`skills/insight.skill.md`](skills/insight.skill.md) — 인사이트 생성 기준
-- [`skills/dashboard-layout.skill.md`](skills/dashboard-layout.skill.md) — UI 배치 규칙
+**개발팀 — 파이프라인 단계 (11–13)**
 
-이 파일들은 **반드시 따라야 하는 규칙**이다. 선택적 가이드가 아니며, `verify-skills.sh`가 준수 여부를 검증한다.
+- [`skills/11-ingest.md`](skills/11-ingest.md) — DB raw → canonical 변환
+- [`skills/12-analyze.md`](skills/12-analyze.md) — canonical → metrics + insights
+- [`skills/13-render.md`](skills/13-render.md) — analysis result + slot spec → 차트 spec
+
+**기획팀 — 도메인 결정 (00–03 데이터 영역, 21 렌더 영역)**
+
+- [`skills/00-assumptions.md`](skills/00-assumptions.md) — 금융 가정 (수익률·기준일·결측·이상치·단위). 모든 스킬 위에 군림하는 cross-cutting 전제
+- [`skills/01-data-profile.md`](skills/01-data-profile.md) — 엔티티 스키마와 무결성 규칙
+- [`skills/02-data-analysis.md`](skills/02-data-analysis.md) — 지표 계산식 (펀더멘털·기술적·거시·원자재)
+- [`skills/03-insight.md`](skills/03-insight.md) — 인사이트 If-then 로직과 심각도 등급
+- [`skills/21-frontend-aesthetics.md`](skills/21-frontend-aesthetics.md) — 색·타이포·모션·배경의 시각 속성
+
+개발팀 파일은 기획팀 파일을 reference 로만 가리키고 도메인 정의를 중복하지 않는다. 이 파일들은 **반드시 따라야 하는 규칙**이며, 선택적 가이드가 아니다. `verify-skills.sh`가 준수 여부를 검증한다.
 
 ### 코드 구조
 
@@ -38,7 +46,7 @@
 ### 기술 스택
 
 - [`docs/tech-stack.md`](docs/tech-stack.md) — 사용 라이브러리(React, Vite, TypeScript, ECharts, PapaParse, lodash, dayjs, Vercel)와 선정 이유
-- [`docs/guides/SETUP.md`](docs/guides/SETUP.md) — 개발 환경 세팅 절차
+- [`docs/guides/INIT.md`](docs/guides/INIT.md) — 작업 환경 준비 (의존성, DB 접속, 개발 서버, 검증 스크립트)
 
 ### 라이브러리 참고 문서
 
@@ -75,3 +83,4 @@
 - 한 세션에 여러 기능을 동시에 구현하지 않는다 — 하나를 완성하고 다음으로 넘어간다
 - Skills 파일의 규칙을 "합리적 판단"으로 우회하지 않는다 — 규칙에 문제가 있다면 Skills 파일 자체를 수정하고 그 변경을 별도로 커밋
 - `src/shared/`에 비즈니스 로직을 넣지 않는다 — 지표 계산, 차트 선택, 데이터 파싱은 각 레이어에 귀속된다
+- `temp/` 디렉토리는 사용자 개인 영역. 자발적으로 읽거나 수정하지 않음

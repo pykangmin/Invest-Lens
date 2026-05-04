@@ -22,19 +22,19 @@
 
 ### 3. data-loader/
 
-외부 데이터를 수집하고 파싱하는 코드를 담는다. CSV 파일 읽기, JSON 파싱, API 호출, 데이터 정규화 등이 여기에 속한다. `data-profile.skill.md`의 스키마 감지 규칙을 실제로 적용하는 레이어가 여기다. `types/`와 `schema/`를 import할 수 있다.
+외부 데이터를 수집하고 파싱하는 코드를 담는다. CSV 파일 읽기, JSON 파싱, API 호출, 데이터 정규화 등이 여기에 속한다. `11-ingest.md`의 변환 파이프라인이 이 레이어로 구현되며, `01-data-profile.md`의 엔티티 스키마와 `00-assumptions.md`의 결측·이상치 규칙을 따른다. `types/`와 `schema/`를 import할 수 있다.
 
 ### 4. analysis/
 
-지표 계산과 분석 로직을 담는다. 수익률 계산, 변동성 분석, 상관관계 계산, 롤링 통계 등이 여기에 속한다. `data-analysis.skill.md`의 계산 규칙이 이 레이어로 구현된다. `types/`, `schema/`, `data-loader/`를 import할 수 있다. 시각화나 레이아웃 레이어는 import할 수 없다.
+지표 계산과 분석 로직을 담는다. 수익률 계산, 변동성 분석, 상관관계 계산, 롤링 통계 등이 여기에 속한다. `12-analyze.md`의 처리 파이프라인이 이 레이어로 구현되며, 계산식은 `02-data-analysis.md`, 인사이트 If-then 은 `03-insight.md` 정의를 따른다. `types/`, `schema/`, `data-loader/`를 import할 수 있다. 시각화나 레이아웃 레이어는 import할 수 없다.
 
 ### 5. visualization/
 
-차트와 그래프를 렌더링하는 코드를 담는다. `analysis/`의 계산 결과를 시각적 요소로 변환한다. `visualization.skill.md`의 매핑 테이블에 따라 데이터 특성과 차트 타입을 짝짓는 로직이 이 레이어에 있다. 앞선 네 레이어를 모두 import할 수 있다. `layout/`은 import할 수 없다.
+차트와 그래프를 렌더링하는 코드를 담는다. `analysis/`의 계산 결과를 시각적 요소로 변환한다. `13-render.md`의 차트 매핑 표(데이터 종류 → 차트 종류)와 심각도 색 매핑이 이 레이어로 구현된다. 색·타이포·간격 같은 시각 속성은 `21-frontend-aesthetics.md` 정의를 따른다. 앞선 네 레이어를 모두 import할 수 있다. `layout/`은 import할 수 없다.
 
 ### 6. layout/
 
-대시보드의 최종 UI를 구성한다. `visualization/`의 차트 컴포넌트들을 배치하고, 사용자 인터랙션을 처리하고, 페이지 단위의 상태를 관리한다. `dashboard-layout.skill.md`의 배치 규칙이 여기로 구현된다. 모든 앞선 레이어를 import할 수 있다.
+대시보드의 최종 UI를 구성한다. `visualization/`의 차트 컴포넌트들을 배치하고, 사용자 인터랙션을 처리하고, 페이지 단위의 상태를 관리한다. 레이아웃 자체는 Figma 시안이 고정하며, 슬롯 ↔ 차트 바인딩 규칙은 `13-render.md`가 정의한다. 모든 앞선 레이어를 import할 수 있다.
 
 ### shared/ (레이어 아님)
 
@@ -156,7 +156,7 @@ ERROR: shared/ should not contain domain logic
 
   교정 방향:
   - 이 파일을 src/analysis/로 이동한다
-  - 계산 공식은 data-analysis.skill.md의 지표 정의와 일치해야 한다
+  - 계산 공식은 02-data-analysis.md의 지표 정의와 일치해야 한다
 ```
 
 ### 예시 3 — 우회 import
@@ -182,5 +182,4 @@ ERROR: Layer dependency violation
 이 문서를 수정할 때는 다음을 반드시 지킨다.
 
 1. **두 매트릭스의 일치.** 사람 판독용 표와 기계 판독용 YAML 블록이 서로 어긋나면 검증 스크립트와 실제 코드 작성이 어긋나게 된다.
-2. **레이어 추가·삭제는 큰 건.** 레이어를 새로 만들거나 없애는 변경은 전체 구조에 영향을 주므로, 에이전트가 단독으로 결정하지 않는다. 필요해 보이면 사람에게 제안한다.
-3. **shared/의 범위를 넓히지 않는다.** "이건 공용이니까 shared/에 넣자"는 판단은 거의 항상 잘못된 판단이다. 레이어에 귀속되는지 먼저 점검한다.
+2. **레이어 추가·삭제는 큰 건.** 레이
