@@ -32,24 +32,23 @@ npm install
 
 `11-ingest` 가 입력으로 받는 DB 핸들의 접속 환경. 본 문서는 환경 사실만 기술하고 도메인 규칙(스키마·결측·이상치)은 `skills/01-data-profile.md` / `skills/00-assumptions.md` 가 정의.
 
-환경 변수 (예시 — 실제 값은 팀 채널에서 공유):
+웹앱의 서버 API는 `DATABASE_URL` 하나만 읽는다. 이 값은 서버 전용 비밀값이므로 브라우저 코드나 `VITE_` 환경변수에 넣지 않는다. 로컬 개발에서는 `.env.example`을 참고해 `.env.local`을 만들고 아래 키를 설정한다.
 
-| 변수 | 설명 |
-|------|------|
-| `DB_HOST` | DB 호스트명 |
-| `DB_PORT` | 포트 |
-| `DB_NAME` | 데이터베이스 이름 |
-| `DB_USER` | 접속 계정 |
-| `DB_PASSWORD` | 접속 비밀번호 |
-| `DB_SCHEMA` | 스키마명 (현재 펀더멘털·기술적·거시·원자재 4개 엔티티가 동거) |
+```bash
+DATABASE_URL=postgresql://...
+```
 
-`.env` 파일에 두고 git에는 올리지 않음 (`.gitignore` 처리). 샘플 파일은 `.env.example` (TODO: 실제 운영 시 추가).
+현재 웹앱은 `invest_lens_readonly` DB role을 사용한다. 이 role은 `public` 스키마의 투자 데이터 테이블에 대한 `SELECT`만 허용하며, 쓰기 권한은 없다.
+
+`.env`, `.env.local`, `.env.*` 파일은 git에 올리지 않는다. 공유 가능한 샘플 값은 `.env.example`에만 둔다.
 
 접속 확인:
 
 ```bash
-# TODO: 접속 헬스체크 스크립트 (init.sh가 호출 예정)
+npm run db:smoke
 ```
+
+이 명령은 비밀값을 출력하지 않고, 기업 수·샘플 기업·AAPL 최신 기술 지표·최신 거시 국면만 JSON으로 출력한다.
 
 ---
 

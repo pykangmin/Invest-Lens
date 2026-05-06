@@ -1,1 +1,13 @@
-# 세션 진행 기록 (아직 시작되지 않음)
+# 세션 진행 기록
+
+## 2026-05-02
+
+- Supabase PostgreSQL의 public 투자 데이터 테이블 6개를 확인했다.
+- 웹앱 전용 `invest_lens_readonly` DB role을 생성하고 public 투자 데이터 테이블에 SELECT 전용 권한과 RLS SELECT policy를 부여했다.
+- `.env.local`에 read-only `DATABASE_URL`을 저장하고, `.gitignore`로 비밀값 커밋을 방지했다.
+- Vite/React/TypeScript 기본 스캐폴드와 Vercel API 기반 DB data load 계층을 추가했다.
+- 추가 API: `/api/db-health`, `/api/companies`, `/api/company`, `/api/macro-regime`, `/api/global-environment`, `/api/commodities`.
+- 추가 data-loader: `loadDbHealth`, `searchCompanies`, `loadCompanySnapshot`, `loadMacroRegime`, `loadGlobalEnvironment`, `loadCommodities`.
+- 검증: `npm run typecheck`, `npm run db:smoke`, `npm run build` 통과.
+- 다음 세션 주목점: 검색 UI를 만들기 전에 `data-analysis.skill.md`에 펀더멘털 점수 25/25/25/25 기본 가중치와 null 재가중 규칙을 명시하면 좋다.
+- 수집기 자동 실행 환경은 무료 기준으로 GitHub Actions를 우선 후보로 둔다. 기존 `postgres` 관리자 비밀번호를 rotate하기 전, ETL 스크립트가 사용하는 환경변수 위치를 확인해야 한다.
