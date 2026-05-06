@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 
@@ -72,7 +72,10 @@ function apiRoutesPlugin(): Plugin {
         };
 
         try {
-          const mod = await server.ssrLoadModule(`/api/${route}.ts`);
+          // file URL 로 넘겨야 vite/esbuild 가 query 영향 안 받음.
+          // /api/<route>.ts 형태로 넘기면 vite 가 req.url 의 query 를 transform path
+          // 에 부적절하게 합쳐 `Invalid loader value: "NYB"` 같은 esbuild 오류 발생.
+          const mod = await server.ssrLoadModule(pathToFileURL(handlerFile).href);
           const handler = mod.default as
             | ((req: typeof adaptedReq, res: typeof adaptedRes) => void | Promise<void>)
             | undefined;
