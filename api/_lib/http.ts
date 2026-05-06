@@ -38,6 +38,10 @@ export function sendError(
   fallbackStatus = 500,
 ): void {
   const status = error instanceof ApiError ? error.statusCode : fallbackStatus;
+  // Vercel Function Logs 에 항상 기록 — production 진단용
+  if (status >= 500) {
+    console.error("[api error]", error);
+  }
   const message =
     error instanceof Error && (error instanceof ApiError || status < 500)
       ? error.message
