@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
+import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 
@@ -72,10 +72,18 @@ function apiRoutesPlugin(): Plugin {
         };
 
         try {
-          // file URL 로 넘겨야 vite/esbuild 가 query 영향 안 받음.
-          // /api/<route>.ts 형태로 넘기면 vite 가 req.url 의 query 를 transform path
-          // 에 부적절하게 합쳐 `Invalid loader value: "NYB"` 같은 esbuild 오류 발생.
-          const mod = await server.ssrLoadModule(pathToFileURL(handlerFile).href);
+          // vite ssrLoadModule 호출 전 req.url 의 query 를 임시로 제거.
+          // 그렇지 않으면 vite transform pipeline 이 query 를 path 에 합쳐
+          // esbuild loader 가 ?symbol=DX-Y.NYB 의 .NYB 를 file extension 으로 오인.
+          const moduleId = `/api/${route}.ts`;
+          const savedUrl = req.url;
+          req.url = moduleId;
+          let mod;
+          try {
+            mod = await server.ssrLoadModule(moduleId);
+          } finally {
+            req.url = savedUrl;
+          }
           const handler = mod.default as
             | ((req: typeof adaptedReq, res: typeof adaptedRes) => void | Promise<void>)
             | undefined;
