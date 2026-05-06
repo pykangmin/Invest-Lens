@@ -44,13 +44,14 @@ export function commodityImpactGauge(
     n++;
   }
   if (n === 0) {
+    // 데이터 부족 — 예시 점수로 fallback (사용자 지시: "데이터가 없다면 예시").
     return {
       id: "commodity",
-      label: "DATA",
-      tagline: "원자재 데이터 없음",
-      score: null,
-      severity: "CAUTION",
-      available: false,
+      label: "NEGATIVE",
+      tagline: "예시 (데이터 부족)",
+      score: 32,
+      severity: "WARNING",
+      available: true,
     };
   }
   const score = Math.max(0, Math.min(100, 50 + weighted * 2));

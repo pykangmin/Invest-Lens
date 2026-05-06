@@ -2,6 +2,7 @@ export interface IndexStripeItem {
   label: string;
   value: string;
   delta?: { text: string; positive: boolean | null };
+  badge?: string;
 }
 
 export interface IndexStripeProps {
@@ -22,7 +23,10 @@ export function IndexStripe({ items }: IndexStripeProps) {
               : "var(--color-down)";
         return (
           <div key={it.label} style={S.cell}>
-            <div style={S.label}>{it.label}</div>
+            <div style={S.labelRow}>
+              <span style={S.label}>{it.label}</span>
+              {it.badge && <span style={S.badge}>{it.badge}</span>}
+            </div>
             <div style={S.value}>{it.value}</div>
             {it.delta && <div style={{ ...S.delta, color: deltaColor }}>{it.delta.text}</div>}
           </div>
@@ -42,9 +46,19 @@ const S: Record<string, React.CSSProperties> = {
     flexDirection: "column",
     gap: 2,
   },
+  labelRow: { display: "flex", alignItems: "center", gap: 6 },
   label: {
     fontSize: "var(--font-size-sm)",
     color: "var(--color-text-strong)",
+    fontWeight: 600,
+  },
+  badge: {
+    fontSize: "var(--font-size-xxs)",
+    color: "var(--color-text-faint)",
+    background: "var(--color-header-bg)",
+    border: "1px solid var(--color-border)",
+    padding: "1px 6px",
+    borderRadius: "var(--radius-tag)",
     fontWeight: 600,
   },
   value: {

@@ -2,6 +2,7 @@ import type { GaugeScore } from "../types/scoring";
 import { Donut } from "./Donut";
 import { ProgressBar } from "./ProgressBar";
 import { RegimeBadge } from "./RegimeBadge";
+import { Sparkline } from "./Sparkline";
 import { severityVar } from "./severityColor";
 
 export type GaugeMode = "donut" | "progress" | "regime";
@@ -10,31 +11,53 @@ export interface GaugeCardProps {
   title: string;
   gauge: GaugeScore;
   mode?: GaugeMode;
+  badge?: string;
+  sparkline?: Array<number | null>;
 }
 
 // G1~G4 모두 흡수. mode 에 따라 본문이 달라짐.
 //  - donut: G1 펀더멘털, G2 원자재 영향
 //  - regime: G3 거시 경제 (두 줄 라벨만)
 //  - progress: G4 기술적 지표 (label + progress bar value)
-export function GaugeCard({ title, gauge, mode = "donut" }: GaugeCardProps) {
+export function GaugeCard({ title, gauge, mode = "donut", badge, sparkline }: GaugeCardProps) {
+  const autoBadge = badge ?? (gauge.tagline?.startsWith("예시") ? "예시" : undefined);
+  const sparkColor = severityVar(gauge.severity);
   return (
     <div style={S.card}>
-      <div style={S.head}>{title}</div>
-      <div style={S.body}>
-        {mode !== "regime" && (
-          <div style={{ ...S.label, color: severityVar(gauge.severity) }}>
-            {gauge.label}
-          </div>
-        )}
-        <div style={mode === "regime" ? S.visualWide : S.visual}>
-          {mode === "donut" && <Donut gauge={gauge} size={86} thickness={8} />}
-          {mode === "progress" && (
-            <ProgressBar value={gauge.score} severity={gauge.severity} />
-          )}
-          {mode === "regime" && (
+      <div style={S.head}>
+        <span>{title}</span>
+        {autoBadge && <span style={S.badge}>{autoBadge}</span>}
+      </div>
+      <div style={mode === "regime" ? S.bodyRegime : S.body}>
+        {mode === "regime" ? (
+          <>
             <RegimeBadge label={gauge.tagline || gauge.label} severity={gauge.severity} />
-          )}
-        </div>
+            {sparkline && sparkline.length > 1 && (
+              <div style={S.regimeSpark}>
+                <Sparkline
+                  values={sparkline}
+                  width="100%"
+                  height={40}
+                  color={sparkColor}
+                  fillOpacity={0.14}
+                  strokeWidth={2}
+                />
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <div style={{ ...S.label, color: severityVar(gauge.severity) }}>
+              {gauge.label}
+            </div>
+            <div style={S.visual}>
+              {mode === "donut" && <Donut gauge={gauge} size={86} thickness={8} />}
+              {mode === "progress" && (
+                <ProgressBar value={gauge.score} severity={gauge.severity} />
+              )}
+            </div>
+          </>
+        )}
       </div>
       <button style={S.detail} type="button" aria-label={`${title} 세부 지표 보기`}>
         세부 지표 보기 〉
@@ -59,6 +82,18 @@ const S: Record<string, React.CSSProperties> = {
     fontSize: "var(--font-size-md)",
     fontWeight: 600,
     color: "var(--color-text)",
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+  },
+  badge: {
+    fontSize: "var(--font-size-xxs)",
+    color: "var(--color-text-faint)",
+    background: "var(--color-header-bg)",
+    border: "1px solid var(--color-border)",
+    padding: "1px 6px",
+    borderRadius: "var(--radius-tag)",
+    fontWeight: 600,
   },
   body: {
     display: "grid",
@@ -67,6 +102,14 @@ const S: Record<string, React.CSSProperties> = {
     alignItems: "center",
     flex: 1,
   },
+  bodyRegime: {
+    display: "grid",
+    gridTemplateColumns: "auto minmax(0, 1fr)",
+    gap: 10,
+    alignItems: "center",
+    flex: 1,
+  },
+  regimeSpark: { width: "100%" },
   label: {
     fontSize: "var(--font-size-xl)",
     fontWeight: 800,

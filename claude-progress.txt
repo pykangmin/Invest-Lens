@@ -144,3 +144,104 @@ MAIN:      [M0 가격 라인 차트]
 - **F-001 / F-002 / F-003 / F-006 의 passes 변경 가능성** — 시각 확인 통과 시 4개 가능.
 - **DACON Skills 제출 형식 재확인** — 5/7 마감 D-1. zip 구조·PDF·파일 개수.
 - **dev 서버**: id `bnv8r9n7m` (5174 포트). HMR 로 새 코드 자동 반영.
+
+---
+
+## 2026-05-07 — Figma 트리 자동화 + v3 정합성 완성 + 배포 준비
+
+### 한 일
+
+1. **Figma REST API 통합 — PNG 추측 종료**
+   - `.env.local` 에 `FIGMA_TOKEN` 추가 (사용자), `FIGMA_FILE_KEY=UJoPeW9SMzwDqX8B44eMrc`, `FIGMA_ROOT_NODE=251:4045`
+   - `scripts/figma-fetch.mjs` (token 검증 + file/nodes/images fetch) — 토큰 스코프 `current_user:read` 부재로 /v1/me 만 403, file API 정상
+   - `scripts/figma-extract-slots.mjs` 가 `figma-tree.json` (232KB, 269 노드) 에서 **45 slots 자동 추출**. 16 개가 의미 라벨 (`주가지수`, `headerglobal`, `search-bar`, `progress` 등)
+   - `images/figma/251_4045.png` (디자이너 export 원본, 406KB scale=2) — *이전 사용자 PNG 와 다른 화면* 임이 결정적. PNG 만 봤으면 영영 모를 뻔.
+
+2. **v3 매핑 (Recon agent) 작성 → `docs/figma/dashboard-slots-v3.md`** (370줄)
+   - PNG v2 의 잘못된 가정 모두 정정: 게이지 5→4종, G3 라벨 `통화→거시 경제`, G2 `통화→원자재 영향`, **사이드바 부재** (가로 stripe), composite-trio = **시점 비교**, 시안 배경 `#fff`
+   - hex 13개 직접 추출 (`#60c846/#c1121f/#4073ff/#003049/#7f7f7f` …)
+
+3. **v3 코드 전면 재작성 (메인)**
+   - 신규 컴포넌트: `ProgressBar`, `RegimeBadge`, `SymbolHeader`, `IndexStripe`, `FxCard`, `CompositeTrio` (의미 재정의), `GlobalSearch`, `Top3Card.pending`
+   - `GaugeCard` mode prop (`donut/progress/regime`) — G3 regime 모드는 RegimeBadge + Sparkline 동시
+   - 분석: `commodityImpactGauge` 신규 (sector × 원자재 가중), `technical` 가 RSI+VIX 결합, `macro` 가 SOFT/HARD/NO-LANDING regime 라벨
+   - styles.css 13개 hex + 폰트 3종 (Pretendard / Freesentation / Fugaz One) + 사이즈 토큰 10단계 + radius 30/15/10/4
+
+4. **Reviewer agent 감사 → `docs/figma/v3-implementation-audit.md`** — 일치도 78%
+   - Top FAIL: chart+events 같은 row 잘못 통합 (정정), 헤더 검색바 비대칭 (정정), GaugeCard regime label 중복 (정정)
+   - 그 외 패치: composite-trio minHeight, EventList severity chip, Top3Card pending 톤
+
+5. **사용자 시각 점검 라운드 — 미세 조정 다수**
+   - 6단 구조 명시: 1단 종목 / 2단 게이지 4 / 3단 차트 / 4단 이벤트+환율 / 5단 종합 / 6단 랭킹
+   - 4단 1:1 비율, 환율은 시안 mock 그대로 (USD/KRW × 4 + 예시 배지)
+   - Sparkline 가변 폭 (viewBox + width="100%") — 차트 삐져나옴 정정
+   - composite-trio sparkline 더미 history → **실 시계열 (analysis/series.ts)**
+   - Top3 4 카테고리 + 시안 배경 색 4톤 (#f6fff4/#fafdff/#fff4f5/#fffdf9)
+   - 1단 시장 컨텍스트 4 → 1슬롯 (S&P 500 시안 mock + 예시 배지)
+   - 종목 가격 색 무채 + 폰트 30px
+
+6. **5단 종합 점수 — 모두 실 데이터화**
+   - `analysis/series.ts` 신규 — `buildDailyComposite` 30~252 영업일 일별 점수 시계열 (펀더 분기 carry forward, 거시 월 carry forward)
+   - 사용자 결정: 시점 trio (오늘 7일 / 이번 달 30일 / 올해 YTD) — 점수·추이·delta 모두 실
+   - delta 라벨 카드별 분기 (`전일 대비` / `30일 전 대비` / `연초 대비`)
+   - **검수 agent (`composite-trio-audit.md`)** D1/D2 FAIL 잡아냄 → v3 §4.6 을 시점 trio 로 갱신 (사용자 결정이 단일 진실의 원천)
+
+7. **API 보강**
+   - `api/screen.ts` 신규 — 4 카테고리 (`priceUp/priceDown/volume/scoreTop`) 1 엔드포인트. SQL `primary` reserved 충돌 → `metric` alias
+   - `api/company.ts` latest non-null fallback (이전 ROUND)
+   - dev 라우팅: `vite.config.ts` 의 `apiRoutesPlugin` (이전 ROUND)
+
+8. **URL 명 결정**
+   - 세부: `/dashboard/<TICKER>` 정식 + `/stock/<TICKER>` alias (이전 링크 호환)
+   - 메인 도메인: `https://investlens-dataker.vercel.app` (사용 가능 확인, `invest-lens.vercel.app` 은 점유)
+
+9. **Branch rename + push**
+   - `front-end-test-2` → `build-test`
+   - `git push -u origin build-test` 성공 (현재 origin: `pykangmin/Invest-Lens` — 사용자 본인 repo 가 아님)
+   - 사용자가 본인 GitHub 계정에 새 repo 생성 예정. URL 받으면 dev 가 4 branch 일괄 push.
+
+10. **자율 진행 (사용자 부재 시)**
+    - `vercel.json` 작성 — Vite framework + rewrite (`/dashboard/:ticker` → SPA fallback)
+    - `.env.example` 갱신 — DATABASE_URL + FIGMA_TOKEN 옵션
+    - `submission/SUBMISSION.md` 초안 — 평가 5개 항목 매핑 + 데이터 흐름 + 화면 구성 + 배포 URL
+    - `Vercel CLI` 글로벌 설치 시도 거부됨 (system-level) — 사용자가 직접 설치 또는 콘솔 GUI
+
+### 검증 결과
+
+- `npm run typecheck` 통과 (마지막 라운드까지 모두)
+- `verify-structure.sh` 31 파일 위반 0
+- `verify-skills.sh` 8 파일 + reference 무결성 OK
+- API 5종 + screen 4 카테고리 모두 200 OK 실 데이터
+- AAPL: 가격 266.17 / RSI 56.7 / 펀더 60 점 등 실 데이터 흐름 정상
+- macro_regime 2026-03 = HardLanding/Medium (시안 mock 의 SoftLanding 과 다름 — 실 데이터가 정확)
+
+### 사용자 돌아오면 즉시 처리할 항목
+
+| # | 작업 | 의존 |
+|---|---|---|
+| 1 | 사용자 GitHub 계정에 빈 repo 생성 (예: `<user>/investlens-dataker`) → URL 공유 | 사용자 액션 |
+| 2 | dev 가 `git remote set-url origin <new>` + `git push -u origin --all` (4 branch 일괄) | 1 후 |
+| 3 | Vercel 콘솔에서 기존 `claude` 프로젝트의 git 연결을 disconnect → 새 repo 와 connect | 사용자 액션 |
+| 4 | Vercel 프로젝트 rename `claude` → `investlens-dataker` | 사용자 액션 |
+| 5 | Vercel Settings → Environment Variables → `DATABASE_URL` 추가 (production 영향) | 사용자 액션 |
+| 6 | Vercel Production deploy 자동 트리거 (main push) — preview 는 build-test 가 자동 | 5 후 |
+| 7 | Production URL `https://investlens-dataker.vercel.app/dashboard/AAPL` 결과 확인 | 6 후 |
+
+대안 (Vercel CLI 가 더 빠르면):
+- 사용자가 `! npm i -g vercel` + `! vercel login` (브라우저 OAuth)
+- 이후 dev 가 CLI 로 4·5·6 처리 가능 (rename / env add / deploy)
+
+### 검수 agent 미해결
+
+- A2/A3 WARN — composite-trio 의 평균 점수 vs 시작-끝 delta base 불일치 (사용자 직관 vs 데이터 정직 사이 trade-off). 추후 결정.
+- E1.b WARN — `MiniStat`, 일부 `analysis.composite` 필드 미사용 (dead code 정리 가능)
+- 13-render declarative `SlotSpec → RenderedSlot` 미반영 (본 마감 후 보강)
+
+### 다음 세션이 주목할 지점
+
+- 위 사용자 액션 1~7
+- `submission/SUBMISSION.md` 의 GitHub URL / Vercel URL 칸 채움
+- DACON Skills.md 5/7 마감 점검 (오늘) — 제출 형식 (zip / PDF / 페이지) 재확인
+- Wanted Sans 1순위 적용 (현재 Pretendard) — 21-aesthetics §타이포 충실도
+- 03-insight If-then 객체화 — `AnalysisResult.insights` 현재 빈 배열
+- 시안 vs 새 production deploy 비교 — Vercel 결과로 Reviewer agent 다시 한 라운드

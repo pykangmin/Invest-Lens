@@ -22,10 +22,20 @@ export function App() {
     }
   };
 
-  if (path.startsWith("/stock/")) {
-    const ticker = decodeURIComponent(path.slice("/stock/".length));
-    return <StockDashboard ticker={ticker} onBack={() => navigate("/")} />;
+  const goTicker = (t: string) => navigate(`/dashboard/${encodeURIComponent(t)}`);
+
+  // /dashboard/<TICKER> 가 정식. /stock/<TICKER> 는 1회용 alias 로 유지 (이전 링크 깨짐 방지).
+  if (path.startsWith("/dashboard/") || path.startsWith("/stock/")) {
+    const prefix = path.startsWith("/dashboard/") ? "/dashboard/" : "/stock/";
+    const ticker = decodeURIComponent(path.slice(prefix.length));
+    return (
+      <StockDashboard
+        ticker={ticker}
+        onBack={() => navigate("/")}
+        onSelectTicker={goTicker}
+      />
+    );
   }
 
-  return <Landing onSelectTicker={(t) => navigate(`/stock/${encodeURIComponent(t)}`)} />;
+  return <Landing onSelectTicker={goTicker} />;
 }

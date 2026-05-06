@@ -11,6 +11,7 @@ export interface Top3CardProps {
   items: Top3Item[];
   tone?: Top3Tone;
   pending?: boolean;
+  badge?: string;
 }
 
 function toneColor(tone: Top3Tone): string {
@@ -27,11 +28,34 @@ function toneColor(tone: Top3Tone): string {
   }
 }
 
-export function Top3Card({ title, items, tone = "up", pending = false }: Top3CardProps) {
+// 시안 추출 hex — Figma tree 의 4 TOP 카드 배경.
+function toneBackground(tone: Top3Tone): string {
+  switch (tone) {
+    case "up":
+      return "#f6fff4";   // 옅은 녹
+    case "info":
+      return "#fafdff";   // 옅은 청
+    case "down":
+      return "#fff4f5";   // 옅은 적
+    case "neutral":
+    default:
+      return "#fffdf9";   // 옅은 노랑
+  }
+}
+
+export function Top3Card({ title, items, tone = "up", pending = false, badge }: Top3CardProps) {
   const numColor = toneColor(tone);
+  const cardStyle: React.CSSProperties = {
+    ...S.card,
+    background: toneBackground(tone),
+    ...(pending ? S.cardPending : null),
+  };
   return (
-    <div style={{ ...S.card, ...(pending ? S.cardPending : null) }}>
-      <div style={S.title}>{title}</div>
+    <div style={cardStyle}>
+      <div style={S.head}>
+        <span style={S.title}>{title}</span>
+        {badge && <span style={S.badge}>{badge}</span>}
+      </div>
       {pending ? (
         <div style={S.pendingNote}>데이터 준비 중</div>
       ) : (
@@ -61,11 +85,26 @@ const S: Record<string, React.CSSProperties> = {
     padding: "14px 16px",
   },
   cardPending: { background: "var(--color-header-bg)", borderStyle: "dashed" },
+  head: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 10,
+    flexWrap: "wrap",
+  },
   title: {
     fontSize: "var(--font-size-sm)",
     color: "var(--color-text)",
     fontWeight: 600,
-    marginBottom: 10,
+  },
+  badge: {
+    fontSize: "var(--font-size-xxs)",
+    color: "var(--color-text-faint)",
+    background: "var(--color-header-bg)",
+    border: "1px solid var(--color-border)",
+    padding: "1px 6px",
+    borderRadius: "var(--radius-tag)",
+    fontWeight: 600,
   },
   list: { listStyle: "none", display: "grid", gap: 8, margin: 0, padding: 0 },
   row: {

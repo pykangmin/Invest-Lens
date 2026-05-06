@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "installCommand": "npm ci",
+  "rewrites": [
+    { "source": "/dashboard/:ticker", "destination": "/index.html" },
+    { "source": "/stock/:ticker", "destination": "/index.html" }
+  ]
+}

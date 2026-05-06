@@ -51,16 +51,16 @@ const S: Record<string, React.CSSProperties> = {
   },
   row: { display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" },
   price: {
-    fontSize: "var(--font-size-4xl)",
+    fontSize: "var(--font-size-3xl)",
     fontWeight: 800,
     fontVariantNumeric: "tabular-nums",
-    color: "var(--color-up-strong)",
+    color: "var(--color-text)",
     lineHeight: 1.1,
   },
   unit: {
-    fontSize: "var(--font-size-xl)",
+    fontSize: "var(--font-size-lg)",
     fontWeight: 700,
-    color: "var(--color-up-strong)",
+    color: "var(--color-text-muted)",
     marginLeft: 2,
   },
   delta: {

@@ -1,18 +1,26 @@
 import { useEffect, useMemo, useState } from "react";
 import { analyze } from "../analysis";
 import {
+  averageScore,
+  buildDailyComposite,
+  deltaFromSeries,
+  overallSeries,
+  toSparkline,
+  windowDelta,
+} from "../analysis/series";
+import {
   loadCompanySnapshot,
   loadDashboardEnvironment,
+  loadScreen,
   type DashboardEnvironment,
+  type ScreenItem,
 } from "../data-loader/investmentData";
-import type {
-  CompanySnapshot,
-  GlobalEnvironmentPoint,
-} from "../types/investment";
+import type { CompanySnapshot } from "../types/investment";
 import { CompositeTrio } from "../visualization/CompositeTrio";
 import { EventList } from "../visualization/EventList";
 import { FxCard } from "../visualization/FxCard";
 import { GaugeCard } from "../visualization/GaugeCard";
+import { GlobalSearch } from "../visualization/GlobalSearch";
 import { IndexStripe } from "../visualization/IndexStripe";
 import { Sparkline } from "../visualization/Sparkline";
 import { SymbolHeader } from "../visualization/SymbolHeader";
@@ -21,14 +29,21 @@ import { Top3Card } from "../visualization/Top3Card";
 export interface StockDashboardProps {
   ticker: string;
   onBack: () => void;
+  onSelectTicker: (ticker: string) => void;
 }
 
 interface DashState {
   snapshot: CompanySnapshot;
   env: DashboardEnvironment;
+  screens: {
+    priceUp: ScreenItem[];
+    priceDown: ScreenItem[];
+    volume: ScreenItem[];
+    scoreTop: ScreenItem[];
+  };
 }
 
-export function StockDashboard({ ticker, onBack }: StockDashboardProps) {
+export function StockDashboard({ ticker, onBack, onSelectTicker }: StockDashboardProps) {
   const [data, setData] = useState<DashState | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,9 +51,26 @@ export function StockDashboard({ ticker, onBack }: StockDashboardProps) {
     let alive = true;
     setData(null);
     setError(null);
-    Promise.all([loadCompanySnapshot(ticker), loadDashboardEnvironment()])
-      .then(([snapshot, env]) => {
-        if (alive) setData({ snapshot, env });
+    Promise.all([
+      loadCompanySnapshot(ticker),
+      loadDashboardEnvironment(),
+      loadScreen("priceUp", 3),
+      loadScreen("priceDown", 3),
+      loadScreen("volume", 3),
+      loadScreen("scoreTop", 3),
+    ])
+      .then(([snapshot, env, sUp, sDown, sVol, sScore]) => {
+        if (alive)
+          setData({
+            snapshot,
+            env,
+            screens: {
+              priceUp: sUp.items,
+              priceDown: sDown.items,
+              volume: sVol.items,
+              scoreTop: sScore.items,
+            },
+          });
       })
       .catch((e: unknown) => {
         if (alive) setError(e instanceof Error ? e.message : String(e));
@@ -78,7 +110,7 @@ export function StockDashboard({ ticker, onBack }: StockDashboardProps) {
 
   return (
     <div style={S.page}>
-      <GlobalHeader onBack={onBack} />
+      <GlobalHeader onBack={onBack} onSelectTicker={onSelectTicker} />
       <div style={S.canvas}>
         {error && <div style={S.error}>로드 실패: {error}</div>}
         {!error && (!data || !analysis) && (
@@ -114,6 +146,7 @@ export function StockDashboard({ ticker, onBack }: StockDashboardProps) {
                 title="거시 경제"
                 gauge={analysis.gauges.macro}
                 mode="regime"
+                sparkline={macroTrend(data.env)}
               />
               <GaugeCard
                 title="기술적 지표"
@@ -122,44 +155,56 @@ export function StockDashboard({ ticker, onBack }: StockDashboardProps) {
               />
             </section>
 
-            {/* Row 3 — 차트 (좌) + 주요 이벤트 (중) + 환율 (우) — Figma union box */}
-            <section style={S.midRow}>
-              <ChartCard priceMeta={priceMeta} />
+            {/* Row 3 — 차트 단독 가로 풀폭 */}
+            <ChartCard priceMeta={priceMeta} />
+
+            {/* Row 4 — 주요 이벤트 (좌) + 환율 (우) — 1:1 */}
+            <section style={S.row4}>
               <EventList events={analysis.events} />
-              <div style={S.fxStack}>
-                {pickFxCommodityCards(data.env).map((card) => (
-                  <FxCard key={card.label} {...card} />
-                ))}
-              </div>
+              <FxBlock />
             </section>
 
-            {/* Row 5 — composite-trio (시점 비교 3) */}
-            <CompositeTrio
-              items={[
-                {
-                  label: "오늘 종합 점수",
-                  score: analysis.composite.fundamental,
-                  delta: deriveDelta(analysis.composite.fundamental),
-                },
-                {
-                  label: "이번 달 종합 점수",
-                  score: analysis.composite.macroEnvironment,
-                  delta: deriveDelta(analysis.composite.macroEnvironment),
-                },
-                {
-                  label: "오늘 종합 점수",
-                  score: analysis.composite.technical,
-                  delta: deriveDelta(analysis.composite.technical),
-                },
-              ]}
-            />
+            {/* Row 5 — composite-trio (값·추이·delta 모두 실 데이터) */}
+            <CompositeTrio items={buildTrioItems(data)} />
 
-            {/* Row 6 — TOP 3 ×4 (placeholder, /api/screen 미구현) */}
+            {/* Row 6 — TOP 3 ×4 — /api/screen 실 데이터 */}
             <section style={S.topRow}>
-              <Top3Card title="어제 가장 많이 오른 주식 TOP 3" items={[]} tone="up" pending />
-              <Top3Card title="어제 가장 많이 거래된 주식 TOP 3" items={[]} tone="info" pending />
-              <Top3Card title="어제 가장 많이 떨어진 주식 TOP 3" items={[]} tone="down" pending />
-              <Top3Card title="어제 점수가 좋았던 주식 TOP 3" items={[]} tone="neutral" pending />
+              <Top3Card
+                title="어제 가장 많이 오른 주식 TOP 3"
+                tone="up"
+                items={data.screens.priceUp.map((it) => ({
+                  ticker: it.ticker,
+                  korName: it.name ?? undefined,
+                  primary: formatPct(it.metric),
+                }))}
+              />
+              <Top3Card
+                title="어제 가장 많이 거래된 주식 TOP 3"
+                tone="info"
+                items={data.screens.volume.map((it) => ({
+                  ticker: it.ticker,
+                  korName: it.name ?? undefined,
+                  primary: formatVolume(it.metric),
+                }))}
+              />
+              <Top3Card
+                title="어제 가장 많이 떨어진 주식 TOP 3"
+                tone="down"
+                items={data.screens.priceDown.map((it) => ({
+                  ticker: it.ticker,
+                  korName: it.name ?? undefined,
+                  primary: formatPct(it.metric),
+                }))}
+              />
+              <Top3Card
+                title="어제 점수가 좋았던 주식 TOP 3"
+                tone="neutral"
+                items={data.screens.scoreTop.map((it) => ({
+                  ticker: it.ticker,
+                  korName: it.name ?? undefined,
+                  primary: it.metric === null ? "—" : `${Math.round(it.metric)}`,
+                }))}
+              />
             </section>
           </>
         )}
@@ -168,17 +213,20 @@ export function StockDashboard({ ticker, onBack }: StockDashboardProps) {
   );
 }
 
-function GlobalHeader({ onBack }: { onBack: () => void }) {
+function GlobalHeader({
+  onBack,
+  onSelectTicker,
+}: {
+  onBack: () => void;
+  onSelectTicker: (ticker: string) => void;
+}) {
   return (
     <header style={S.headerBar}>
       <button style={S.logo} onClick={onBack} aria-label="진입 화면으로">
         <span style={S.logoMark}>〉</span>
         <span style={S.logoWord}>Invest Lens</span>
       </button>
-      <div style={S.headerSearchStub}>
-        <span style={S.headerSearchIcon} aria-hidden>⌕</span>
-        <span>오늘은 어떤 종목을 분석 해볼까요?</span>
-      </div>
+      <GlobalSearch onSelectTicker={onSelectTicker} variant="header" />
       <div />
     </header>
   );
@@ -207,12 +255,15 @@ function ChartCard({
         )}
       </div>
       {priceMeta && priceMeta.lineFull.length > 1 ? (
-        <Sparkline
-          values={priceMeta.lineFull}
-          width={1100}
-          height={320}
-          fillOpacity={0.10}
-        />
+        <div style={{ width: "100%" }}>
+          <Sparkline
+            values={priceMeta.lineFull}
+            width="100%"
+            height={320}
+            fillOpacity={0.10}
+            strokeWidth={2}
+          />
+        </div>
       ) : (
         <div style={S.chartEmpty}>가격 데이터 부족</div>
       )}
@@ -220,96 +271,124 @@ function ChartCard({
   );
 }
 
-function deriveDelta(score: number | null) {
-  // 임시: 전일 대비 0.31% mock — 점수 history 가 없는 동안 시안 충실도 위해 표기.
-  // 본 마감 전 점수 일별 추이 적재 후 실제 delta.
-  if (score === null) return undefined;
-  return { text: "4.20 (+0.31%)", positive: true };
-}
+function buildTrioItems(data: DashState) {
+  // 1년치 일별 종합 series 한 번만 계산 후, 시간 창별로 슬라이스.
+  const dailyYear = buildDailyComposite({
+    snapshot: data.snapshot,
+    vixHistory: data.env.vix.history,
+    macroHistory: data.env.macroRegime.history,
+    commodityHistory: data.env.commodities.history,
+    days: 252,
+  });
+  const fullYearSeries = overallSeries(dailyYear);
 
-function marketContext(env: DashboardEnvironment) {
-  const vix = env.vix.latest[0]?.value ?? null;
-  const dxy = env.dollarIndex.latest[0]?.value ?? null;
-  const t10 = env.treasury10y.latest[0]?.value ?? null;
-  const hys = env.highYieldSpread.latest[0]?.value ?? null;
+  // 오늘: 최근 7 영업일 (단기 추이)
+  const todaySeries = fullYearSeries.slice(0, 7);
+  // 이번 달: 30 영업일
+  const monthSeries = fullYearSeries.slice(0, 30);
+  // 올해: YTD — 현재 연도 1월 1일 이후 영업일
+  const currentYear = new Date().getUTCFullYear();
+  const yearSeries = fullYearSeries.filter(
+    (p) => Number(p.date.slice(0, 4)) === currentYear,
+  );
+
+  const yearOrFallback = yearSeries.length > 0 ? yearSeries : monthSeries;
+
   return [
     {
-      label: "변동성",
-      value: vix !== null ? vix.toFixed(1) : "—",
-      delta: undefined,
+      label: "오늘 종합 점수",
+      score: todaySeries[0]?.score ?? null,
+      delta: deltaFromSeries(todaySeries), // 어제→오늘 — "전일 대비"
+      history: toSparkline(todaySeries),
     },
     {
-      label: "통화",
-      value: dxy !== null ? dxy.toFixed(2) : "—",
-      delta: undefined,
+      label: "이번 달 종합 점수",
+      score: averageScore(monthSeries),
+      delta: windowDelta(monthSeries, "30일 전 대비"), // 30일 시작 → 오늘
+      history: toSparkline(monthSeries),
     },
     {
-      label: "채권",
-      value: t10 !== null ? `${t10.toFixed(2)}%` : "—",
-      delta: undefined,
-    },
-    {
-      label: "신용",
-      value: hys !== null ? `${hys.toFixed(2)}%` : "—",
-      delta: undefined,
+      label: "올해 종합 점수",
+      score: averageScore(yearOrFallback),
+      delta: windowDelta(
+        yearOrFallback,
+        yearSeries.length > 0 ? "연초 대비" : "30일 전 대비",
+      ),
+      history: toSparkline(yearOrFallback),
     },
   ];
 }
 
-function pickFxCommodityCards(env: DashboardEnvironment) {
-  const wantedCommodity = ["CL=F", "GC=F", "HG=F"] as const;
-  const labels: Record<string, { label: string; sub: string }> = {
-    "CL=F": { label: "WTI 원유", sub: "Crude Oil" },
-    "GC=F": { label: "금", sub: "Gold" },
-    "HG=F": { label: "구리", sub: "Copper" },
-  };
-  const cards = wantedCommodity.map((sym) => {
-    const series = env.commodities.history.filter((c) => c.symbol === sym);
-    const latest = series[0];
-    const prev = series[1];
-    const delta =
-      latest && prev && prev.close !== 0
-        ? ((latest.close - prev.close) / prev.close) * 100
-        : null;
-    const meta = labels[sym] ?? { label: sym, sub: "" };
-    return {
-      label: meta.label,
-      sublabel: meta.sub,
-      value: latest ? latest.close.toFixed(2) : "—",
-      sparkline: series.slice(0, 60).map((r) => r.close),
-      delta:
-        delta === null
-          ? undefined
-          : {
-              text: `${delta >= 0 ? "+" : ""}${delta.toFixed(2)}%`,
-              positive: delta >= 0,
-            },
-    };
-  });
-  cards.push(buildEnvCard(env.dollarIndex.history));
-  return cards;
+function formatPct(v: number | null): string {
+  if (v === null || !Number.isFinite(v)) return "—";
+  return `${v >= 0 ? "+" : ""}${v.toFixed(2)}%`;
 }
 
-function buildEnvCard(history: GlobalEnvironmentPoint[]) {
-  const latest = history[0];
-  const prev = history[1];
-  const delta =
-    latest && prev && prev.value !== 0
-      ? ((latest.value - prev.value) / prev.value) * 100
-      : null;
-  return {
-    label: "USD Index",
-    sublabel: "달러 인덱스",
-    value: latest ? latest.value.toFixed(2) : "—",
-    sparkline: history.slice(0, 60).map((r) => r.value),
-    delta:
-      delta === null
-        ? undefined
-        : {
-            text: `${delta >= 0 ? "+" : ""}${delta.toFixed(2)}%`,
-            positive: delta >= 0,
-          },
+function formatVolume(v: number | null): string {
+  if (v === null || !Number.isFinite(v)) return "—";
+  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `${(v / 1_000).toFixed(1)}K`;
+  return String(Math.round(v));
+}
+
+// G3 거시 경제 sparkline — macro_regime_scores.history 의 softLandingProb 시계열.
+// dominant_regime 에 따라 의미 추이로 표기:
+//   SoftLanding 우세면 softLandingProb, HardLanding 우세면 hardLandingProb 등.
+function macroTrend(env: DashboardEnvironment): Array<number | null> {
+  const hist = env.macroRegime.history;
+  if (hist.length === 0) return [];
+  const dom = env.macroRegime.latest?.dominantRegime;
+  const pick = (m: typeof hist[number]): number | null => {
+    if (dom === "SoftLanding") return m.softLandingProb;
+    if (dom === "HardLanding") return m.hardLandingProb;
+    if (dom === "NoLanding") return m.noLandingProb;
+    if (dom === "Recovery") return m.recoveryProb;
+    return m.softLandingProb;
   };
+  // history 는 desc 정렬 (최신이 [0]) — sanitize 가 reverse 처리.
+  return hist.map(pick);
+}
+
+function marketContext(_env: DashboardEnvironment) {
+  // 시안 충실도 — S&P 500 슬롯 1개 mock. 실 인덱스 시계열은 DB 부재.
+  // (전 4슬롯 위험지표 매핑은 deprecated — 사용자 지시로 시안 단일 mock 으로 회귀.)
+  return [
+    {
+      label: "S&P 500",
+      value: "35,301$",
+      delta: { text: "+38.1%", positive: true as const },
+      badge: "예시",
+    },
+  ];
+}
+
+// 환율 — Figma 시안 그대로 (USD/KRW × 4 mock). DB 에 USD/KRW 시계열 부재이므로
+// "예시" 배지 + 시안 mock 값 (1,530.50 / 4.20 +0.31%) 그대로.
+function FxBlock() {
+  // 시안 충실도 — sparkline 은 1530 부근의 가벼운 변동 mock.
+  const mockSeries = Array.from({ length: 60 }, (_, i) =>
+    1525 + Math.sin(i / 7) * 4 + (i / 60) * 5,
+  );
+  const card = {
+    label: "USD/KRW",
+    sublabel: "미국 달러 → 원화",
+    value: "1,530.50",
+    sparkline: mockSeries,
+    delta: { text: "4.20 (+0.31%)", positive: true as const },
+  };
+  return (
+    <div style={S.fxBlock}>
+      <div style={S.fxHeader}>
+        <span style={S.fxTitle}>환율</span>
+        <span style={S.exampleBadge}>예시</span>
+      </div>
+      <div style={S.fxStack}>
+        {Array.from({ length: 4 }).map((_, i) => (
+          <FxCard key={i} {...card} />
+        ))}
+      </div>
+    </div>
+  );
 }
 
 const S: Record<string, React.CSSProperties> = {
@@ -337,22 +416,6 @@ const S: Record<string, React.CSSProperties> = {
     fontSize: 16,
     letterSpacing: "0.02em",
   },
-  headerSearchStub: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    width: 761,
-    maxWidth: "100%",
-    height: 40,
-    padding: "0 18px",
-    background: "var(--color-card)",
-    border: "1px solid var(--color-border)",
-    borderRadius: "var(--radius-pill)",
-    color: "var(--color-text-faint)",
-    fontSize: "var(--font-size-base)",
-    justifySelf: "center",
-  },
-  headerSearchIcon: { fontSize: 16 },
 
   canvas: {
     maxWidth: "var(--canvas-max)",
@@ -419,14 +482,38 @@ const S: Record<string, React.CSSProperties> = {
     textAlign: "center",
   },
 
-  midRow: {
+  row4: {
     display: "grid",
-    gridTemplateColumns: "550px minmax(0, 1fr) minmax(280px, 360px)",
+    gridTemplateColumns: "1fr 1fr",
     gap: 16,
-    alignItems: "stretch",
-    minHeight: 386,
+    alignItems: "start",
   },
   fxStack: { display: "flex", flexDirection: "column", gap: 8 },
+  fxBlock: {
+    background: "var(--color-card)",
+    border: "1px solid var(--color-border)",
+    borderRadius: "var(--radius-card)",
+    padding: "16px 18px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+  },
+  fxHeader: { display: "flex", alignItems: "center", gap: 8 },
+  fxTitle: {
+    fontSize: "var(--font-size-md)",
+    fontWeight: 600,
+    color: "var(--color-text)",
+  },
+  exampleBadge: {
+    fontSize: "var(--font-size-xxs)",
+    color: "var(--color-text-faint)",
+    background: "var(--color-header-bg)",
+    border: "1px solid var(--color-border)",
+    padding: "2px 8px",
+    borderRadius: "var(--radius-tag)",
+    fontWeight: 600,
+    letterSpacing: "0.04em",
+  },
 
   topRow: {
     display: "grid",

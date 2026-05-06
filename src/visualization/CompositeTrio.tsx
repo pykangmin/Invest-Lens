@@ -3,8 +3,9 @@ import { Sparkline } from "./Sparkline";
 export interface CompositeTrioItem {
   label: string;          // 시점 라벨 (예: "오늘 종합 점수", "이번 달 종합 점수")
   score: number | null;
-  delta?: { text: string; positive: boolean | null };
+  delta?: { text: string; positive: boolean | null; comparison?: string };
   history?: Array<number | null>;
+  badge?: string;         // 카드 우상단 배지 (예: "추이 예시" — score 는 실, history/delta 가 예시일 때)
 }
 
 export interface CompositeTrioProps {
@@ -33,7 +34,10 @@ export function CompositeTrio({ items }: CompositeTrioProps) {
               : "var(--color-down)";
         return (
           <div key={`${it.label}-${i}`} style={S.card}>
-            <div style={S.label}>{it.label}</div>
+            <div style={S.head}>
+              <span style={S.label}>{it.label}</span>
+              {it.badge && <span style={S.badge}>{it.badge}</span>}
+            </div>
             <div style={S.body}>
               <div style={{ ...S.score, color }}>
                 {it.score === null ? "—" : it.score.toFixed(1)}
@@ -41,15 +45,16 @@ export function CompositeTrio({ items }: CompositeTrioProps) {
               <div style={S.spark}>
                 <Sparkline
                   values={it.history ?? [it.score, it.score]}
-                  width={180}
-                  height={48}
+                  width="100%"
+                  height={64}
                   color={color}
+                  strokeWidth={2}
                 />
               </div>
             </div>
             {it.delta && (
               <div style={{ ...S.delta, color: deltaColor }}>
-                전일 대비 {it.delta.text}
+                {it.delta.comparison ?? "전일 대비"} {it.delta.text}
               </div>
             )}
           </div>
@@ -73,15 +78,30 @@ const S: Record<string, React.CSSProperties> = {
     padding: "16px 18px",
     minHeight: 147,
   },
+  head: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 6,
+    flexWrap: "wrap",
+  },
   label: {
     fontSize: "var(--font-size-md)",
     fontWeight: 600,
     color: "var(--color-text)",
-    marginBottom: 6,
+  },
+  badge: {
+    fontSize: "var(--font-size-xxs)",
+    color: "var(--color-text-faint)",
+    background: "var(--color-header-bg)",
+    border: "1px solid var(--color-border)",
+    padding: "1px 6px",
+    borderRadius: "var(--radius-tag)",
+    fontWeight: 600,
   },
   body: {
     display: "grid",
-    gridTemplateColumns: "auto 1fr",
+    gridTemplateColumns: "auto minmax(0, 1fr)",
     alignItems: "center",
     gap: 16,
   },
