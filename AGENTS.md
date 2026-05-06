@@ -52,6 +52,10 @@
 
 - [`docs/references/`](docs/references/) — ECharts, PapaParse, lodash, dayjs 공식 문서 캐시. 라이브러리 API를 기억으로 추론하지 말고 여기를 참조
 
+### 디자인 시안 추출본
+
+- [`docs/figma/`](docs/figma/) — `images/` 의 PNG 시안에서 읽어낸 슬롯·카피·시각 토큰. `13-render` 의 입력 spec 이 되는 슬롯 정의가 여기에 있음. 시각 속성 결정값은 여전히 `21-frontend-aesthetics` 가 단일 진실의 원천
+
 ---
 
 ## 세션 종료

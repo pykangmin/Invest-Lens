@@ -1,1 +1,130 @@
-[]
+[
+  {
+    "id": "F-001",
+    "name": "진입 화면",
+    "description": "다크 hero 레이아웃의 검색 진입점. 종목 검색 입력, 인기 검색어 칩, 종목 선택 시 /stock/{ticker} 라우팅까지.",
+    "skills_ref": ["21-frontend-aesthetics"],
+    "design_ref": "docs/figma/landing.md",
+    "layer": ["layout", "data-loader"],
+    "depends_on": [],
+    "steps": [
+      "수직 순서가 시안과 일치한다 (로고 → 헤드라인 → 부제 → 검색바 → 인기 검색어).",
+      "헤드라인 본문은 '투자의 시각, / 데이터로 투명하게' 두 줄이고 '투명' 만 강조 색이다.",
+      "검색바 placeholder 가 '주식 종목을 입력하세요' 다.",
+      "검색 입력 시 GET /api/companies?q= 가 호출되고 결과가 자동완성 드롭다운으로 표시된다.",
+      "드롭다운 항목 또는 인기 검색어 칩 클릭 시 /stock/{ticker} 로 라우팅된다.",
+      "인기 검색어 4종은 동적 산출(거래량 또는 시총 TOP) 또는 시안의 고정 4종 중 하나를 명시적으로 선택해 구현한다."
+    ],
+    "passes": false
+  },
+  {
+    "id": "F-002",
+    "name": "대시보드 셸",
+    "description": "개별 주식 화면의 12-col 그리드 마스터 레이아웃과 헤더(종목명·가격·변동·시장 지수 4슬롯).",
+    "skills_ref": ["21-frontend-aesthetics", "13-render"],
+    "design_ref": "docs/figma/dashboard-slots.md",
+    "layer": ["layout", "visualization", "data-loader"],
+    "depends_on": [],
+    "steps": [
+      "라이트 테마 베이스 위에 카드 컴포넌트가 일관된 라운드·그림자로 배치된다.",
+      "헤더에 종목명·가격·변동률이 GET /api/company?ticker= 응답에서 채워진다.",
+      "변동률 부호에 따라 21-aesthetics 의 의미 색(상승/하락) 으로 색이 바뀐다.",
+      "헤더 우측 시장 지수 카드 4슬롯이 docs/figma/dashboard-slots.md 의 결정된 4종으로 채워진다."
+    ],
+    "passes": false
+  },
+  {
+    "id": "F-003",
+    "name": "게이지 5종 사이드바",
+    "description": "좌측 사이드바의 G1 펀더멘탈 / G2 거시 / G3 통화 / G4 기술 / G5 공포·탐욕 도넛 게이지 5종.",
+    "skills_ref": ["13-render", "21-frontend-aesthetics", "03-insight"],
+    "design_ref": "docs/figma/dashboard-slots.md",
+    "layer": ["visualization", "analysis", "data-loader"],
+    "depends_on": ["F-006"],
+    "steps": [
+      "5개 게이지가 시안 순서대로 세로 stack 으로 표시된다.",
+      "각 게이지는 도넛 + 라벨 + 한줄 평/점수 + chevron 으로 구성된다.",
+      "도넛 진행률이 점수에 비례하고 색은 03-insight 의 심각도(WARNING/CAUTION/INFO) 매핑에 따른다.",
+      "각 게이지의 점수는 F-006 분석 레이어에서 산출된 값을 그대로 받아 표시한다 (게이지 컴포넌트는 점수 산출 로직을 갖지 않는다)."
+    ],
+    "passes": false
+  },
+  {
+    "id": "F-004",
+    "name": "메인 상단 (이벤트 + 환율·원자재 카드)",
+    "description": "M1 주요 이벤트 리스트(DB 신호 변화로 합성)와 M2 환율·원자재 미니카드 4종.",
+    "skills_ref": ["13-render", "12-analyze"],
+    "design_ref": "docs/figma/dashboard-slots.md",
+    "layer": ["visualization", "analysis", "data-loader"],
+    "depends_on": ["F-006"],
+    "steps": [
+      "주요 이벤트 리스트는 DB 신호 변화(supertrend_signal 전환, macd 교차, dominant_regime 변경, 분기 보고일 등) 를 합성한다.",
+      "각 이벤트 행이 날짜 박스(일/월) + 제목 + 부제 + 심각도 태그로 구성된다.",
+      "환율·원자재 카드 4종이 docs/figma/dashboard-slots.md 의 결정된 종목(USD/KRW · WTI · Gold · Copper 권장)으로 채워진다.",
+      "각 카드는 라벨 + 최신 값 + 변동률 + sparkline 을 포함한다."
+    ],
+    "passes": false
+  },
+  {
+    "id": "F-005",
+    "name": "종합 게이지 + TOP 3 ×4",
+    "description": "M3 3중 종합 게이지(펀더/기술/거시 종합 점수)와 하단 M4-M7 카테고리별 TOP 3 박스 4개.",
+    "skills_ref": ["13-render", "12-analyze"],
+    "design_ref": "docs/figma/dashboard-slots.md",
+    "layer": ["visualization", "analysis", "data-loader"],
+    "depends_on": ["F-006"],
+    "steps": [
+      "3중 종합 게이지가 가로 정렬되고 각 게이지가 큰 점수 + sparkline 추이를 보인다.",
+      "TOP 3 ×4 카드가 4개 카테고리(펀더/기술/거시/통화 권장)로 분기되고 각 카드에 1/2/3 순위 종목 + 보조 수치가 표시된다.",
+      "정렬은 12-analyze 가 산출한 metric 기준이고 정렬 방향(오름/내림) 이 카테고리 의미와 일치한다."
+    ],
+    "passes": false
+  },
+  {
+    "id": "F-006",
+    "name": "분석 레이어 (12-analyze 구현)",
+    "description": "src/analysis/ 의 핵심. 펀더 9지표 → 점수, 게이지 5종 점수, 종합 3종, TOP 3 정렬, 이벤트 합성까지. 시안의 모든 슬롯이 의존하는 단일 진실의 산출 지점.",
+    "skills_ref": ["12-analyze", "02-data-analysis", "03-insight", "00-assumptions"],
+    "design_ref": "docs/figma/dashboard-slots.md",
+    "layer": ["analysis"],
+    "depends_on": [],
+    "steps": [
+      "src/analysis/ 모듈이 canonical 입력을 받아 { metrics, insights } 를 반환한다.",
+      "metrics 에 게이지 5종 점수와 종합 3종 점수, TOP 3 ×4 정렬 결과가 모두 포함된다.",
+      "insights 의 심각도가 03-insight 의 WARNING/CAUTION/INFO 등급을 따른다.",
+      "계산식이 02-data-analysis 정의와 일치하고 결측·이상치 처리는 00-assumptions 를 따른다.",
+      "DB 신호 변화 이벤트 합성기(supertrend_signal/macd/dominant_regime) 가 동일 모듈에서 노출된다."
+    ],
+    "passes": false
+  },
+  {
+    "id": "F-007",
+    "name": "검증 인프라",
+    "description": "init.sh / verify-structure.sh / verify-skills.sh 의 실내용 작성. 환경 부팅 fail-fast, 레이어 의존성 정적 분석, Skills 규칙 정합성 검증.",
+    "skills_ref": [],
+    "design_ref": "",
+    "layer": [],
+    "depends_on": [],
+    "steps": [
+      "init.sh 가 package.json 존재 → 의존성 → DB ping → vite 헬스 → verify-structure → verify-skills 순으로 fail-fast 한다.",
+      "verify-structure.sh 가 LAYERS.md 의 YAML 블록을 파싱해 src/ 의 import 위반을 검출한다.",
+      "verify-skills.sh 가 (a) 8개 파일 존재, (b) reference 무결성, (c) asset_class enum 일치, (d) 차트 매핑 표 파싱을 검사한다."
+    ],
+    "passes": false
+  },
+  {
+    "id": "F-008",
+    "name": "제출 패키징",
+    "description": "SUBMISSION.md 작성, Vercel 배포 동작 확인, Skills.md 제출 형식(zip 구조 등) DACON 공지 반영.",
+    "skills_ref": [],
+    "design_ref": "",
+    "layer": [],
+    "depends_on": ["F-001", "F-002", "F-003", "F-004", "F-005"],
+    "steps": [
+      "submission/SUBMISSION.md 에 평가 5개 항목 매핑(범용성·Skills 설계·자동 생성·바이브코딩·실용성) 이 본문으로 들어간다.",
+      "Vercel 프로덕션 URL 이 동작하고 main 브랜치 푸시 시 자동 배포가 확인된다.",
+      "Skills.md 8개 파일이 DACON 이 요구하는 형식(zip 구조 / 파일 개수) 으로 패키징된다."
+    ],
+    "passes": false
+  }
+]
