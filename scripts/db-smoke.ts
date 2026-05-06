@@ -57,6 +57,7 @@ const aaplTechnical = await queryOne<StockPriceTechRow>(
     SELECT *
     FROM public.stock_price_tech
     WHERE ticker = 'AAPL'
+      AND close IS NOT NULL
     ORDER BY date DESC
     LIMIT 1
   `,

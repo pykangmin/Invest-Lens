@@ -1,5 +1,23 @@
-node_modules/
+# 빌드 산출물·캐시 (재생성 가능)
 dist/
+.vite/
+node_modules/
+
+# 환경별 로컬 설정 (사용자 머신마다 다름)
+.vercel/
+.claude/
+
+# 사용자 개인 작업 영역 (에이전트 수정·참조 금지)
+temp/
+
+# OS·에디터 부산물
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# 환경 변수 (DB 접속 정보 등)
 .env
 .env.*
 !.env.example

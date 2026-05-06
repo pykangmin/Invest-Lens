@@ -75,6 +75,7 @@ export default async function handler(
           SELECT *
           FROM public.stock_price_tech
           WHERE ticker = $1
+            AND close IS NOT NULL
           ORDER BY date DESC
           LIMIT 1
         `,
@@ -85,6 +86,7 @@ export default async function handler(
           SELECT *
           FROM public.stock_price_tech
           WHERE ticker = $1
+            AND close IS NOT NULL
           ORDER BY date DESC
           LIMIT $2
         `,
