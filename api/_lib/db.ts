@@ -27,13 +27,12 @@ export function getPool(): pg.Pool {
   if (!pool) {
     pool = new Pool({
       connectionString: getPoolConnectionString(),
-      idleTimeoutMillis: 1_000,
+      idleTimeoutMillis: 10_000,
       connectionTimeoutMillis: 10_000,
-      max: 1,
+      max: 3,
       ssl: { rejectUnauthorized: false },
     });
     pool.on("error", (err) => {
-      // serverless idle 시 발생 — 다음 호출에서 새 connection 잡으면 됨
       console.error("[pg.Pool error]", err);
       pool = null;
     });
@@ -49,7 +48,7 @@ export async function query<T extends QueryResultRow>(
     const result = await getPool().query<T>(text, [...values]);
     return result.rows;
   } catch (e) {
-    console.error("[db.query]", text.slice(0, 80), "values:", values, "err:", e);
+    console.error("[db.query]", text.slice(0, 100), "values:", values, "err:", e);
     throw e;
   }
 }
