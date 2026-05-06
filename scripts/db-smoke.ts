@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { closePool, query, queryOne } from "../api/_lib/db";
+import { query, queryOne } from "../api/_lib/db";
 import {
   mapCompany,
   mapMacroRegime,
@@ -84,4 +84,4 @@ console.log(
   ),
 );
 
-await closePool();
+// db.ts 가 매 호출 client 패턴 — 별도 close 불필요
