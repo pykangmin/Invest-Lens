@@ -1,5 +1,5 @@
-import { query } from "./_lib/db";
-import type { ApiRequest, ApiResponse } from "./_lib/http";
+import { query } from "./_lib/db.js";
+import type { ApiRequest, ApiResponse } from "./_lib/http.js";
 import {
   assertGet,
   getQueryInt,
@@ -7,7 +7,7 @@ import {
   ApiError,
   sendData,
   sendError,
-} from "./_lib/http";
+} from "./_lib/http.js";
 
 interface ScreenRow {
   ticker: string;

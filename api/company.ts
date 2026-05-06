@@ -1,5 +1,5 @@
-import { query, queryOne } from "./_lib/db";
-import type { ApiRequest, ApiResponse } from "./_lib/http";
+import { query, queryOne } from "./_lib/db.js";
+import type { ApiRequest, ApiResponse } from "./_lib/http.js";
 import {
   assertGet,
   getQueryInt,
@@ -8,7 +8,7 @@ import {
   ApiError,
   sendData,
   sendError,
-} from "./_lib/http";
+} from "./_lib/http.js";
 import {
   mapCompany,
   mapFundamentals,
@@ -16,8 +16,8 @@ import {
   type CompanyMasterRow,
   type StockFundamentalsRow,
   type StockPriceTechRow,
-} from "./_lib/mappers";
-import type { CompanySnapshot } from "../src/types/investment";
+} from "./_lib/mappers.js";
+import type { CompanySnapshot } from "../src/types/investment.js";
 
 export default async function handler(
   req: ApiRequest,

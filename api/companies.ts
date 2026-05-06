@@ -1,7 +1,7 @@
-import { query } from "./_lib/db";
-import type { ApiRequest, ApiResponse } from "./_lib/http";
-import { assertGet, getQueryInt, getQueryString, sendData, sendError } from "./_lib/http";
-import { mapCompany, type CompanyMasterRow } from "./_lib/mappers";
+import { query } from "./_lib/db.js";
+import type { ApiRequest, ApiResponse } from "./_lib/http.js";
+import { assertGet, getQueryInt, getQueryString, sendData, sendError } from "./_lib/http.js";
+import { mapCompany, type CompanyMasterRow } from "./_lib/mappers.js";
 
 export default async function handler(
   req: ApiRequest,

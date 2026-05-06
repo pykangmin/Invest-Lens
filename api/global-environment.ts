@@ -1,11 +1,11 @@
-import { query } from "./_lib/db";
-import type { ApiRequest, ApiResponse } from "./_lib/http";
-import { assertGet, getQueryInt, getQueryString, sendData, sendError } from "./_lib/http";
+import { query } from "./_lib/db.js";
+import type { ApiRequest, ApiResponse } from "./_lib/http.js";
+import { assertGet, getQueryInt, getQueryString, sendData, sendError } from "./_lib/http.js";
 import {
   mapGlobalEnvironment,
   type GlobalEnvironmentPointRow,
-} from "./_lib/mappers";
-import type { GlobalEnvironmentResponse } from "../src/types/investment";
+} from "./_lib/mappers.js";
+import type { GlobalEnvironmentResponse } from "../src/types/investment.js";
 
 export default async function handler(
   req: ApiRequest,
