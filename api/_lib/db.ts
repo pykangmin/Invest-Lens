@@ -27,10 +27,10 @@ export function getPool(): pg.Pool {
   if (!pool) {
     pool = new Pool({
       connectionString: getPoolConnectionString(),
-      idleTimeoutMillis: 1_000,
+      idleTimeoutMillis: 10_000,
       connectionTimeoutMillis: 10_000,
-      max: 1,                    // Supabase Session Mode pooler pool_size=15
-      ssl: { rejectUnauthorized: false }, // → lambda 별 max=1 / dev 도 1
+      max: 3,
+      ssl: { rejectUnauthorized: false },
     });
     pool.on("error", (err) => {
       console.error("[pg.Pool error]", err);
