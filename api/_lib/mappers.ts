@@ -5,7 +5,7 @@ import type {
   MacroRegimeScore,
   StockFundamentals,
   StockPriceTech,
-} from "../../src/types/investment";
+} from "../../src/types/investment.js";
 
 export interface CompanyMasterRow {
   ticker: string;

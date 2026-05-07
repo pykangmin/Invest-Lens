@@ -1,11 +1,10 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import { App } from "./layout/App";
+import "./shared/styles.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <main>
-      <h1>Invest Lens</h1>
-      <p>DB data loading layer is ready.</p>
-    </main>
+    <App />
   </React.StrictMode>,
 );

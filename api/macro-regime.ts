@@ -1,11 +1,11 @@
-import { query, queryOne } from "./_lib/db";
-import type { ApiRequest, ApiResponse } from "./_lib/http";
-import { assertGet, getQueryInt, sendData, sendError } from "./_lib/http";
+import { query, queryOne } from "./_lib/db.js";
+import type { ApiRequest, ApiResponse } from "./_lib/http.js";
+import { assertGet, getQueryInt, sendData, sendError } from "./_lib/http.js";
 import {
   mapMacroRegime,
   type MacroRegimeScoreRow,
-} from "./_lib/mappers";
-import type { MacroRegimeResponse } from "../src/types/investment";
+} from "./_lib/mappers.js";
+import type { MacroRegimeResponse } from "../src/types/investment.js";
 
 export default async function handler(
   req: ApiRequest,

@@ -1,7 +1,7 @@
-import { query } from "./_lib/db";
-import type { ApiRequest, ApiResponse } from "./_lib/http";
-import { assertGet, sendData, sendError } from "./_lib/http";
-import type { DbHealthResponse, DbTableHealth } from "../src/types/investment";
+import { query } from "./_lib/db.js";
+import type { ApiRequest, ApiResponse } from "./_lib/http.js";
+import { assertGet, sendData, sendError } from "./_lib/http.js";
+import type { DbHealthResponse, DbTableHealth } from "../src/types/investment.js";
 
 interface HealthRow {
   table_name: string;

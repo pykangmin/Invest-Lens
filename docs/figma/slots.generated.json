@@ -1,0 +1,3038 @@
+{
+  "source": {
+    "fileKey": "251:4045",
+    "rootNodeId": "251:4045",
+    "rootName": "ver2",
+    "canvas": {
+      "width": 1440,
+      "height": 2170
+    },
+    "extractedAt": "2026-05-06T16:01:03.676Z"
+  },
+  "slots": [
+    {
+      "id": "region-165-66",
+      "nodeId": "251:4046",
+      "name": "Frame 4",
+      "type": "FRAME",
+      "parentId": "251:4045",
+      "box": {
+        "x": 165,
+        "y": 66,
+        "w": 1110,
+        "h": 112
+      },
+      "fill": null,
+      "cornerRadius": 30,
+      "texts": [
+        {
+          "text": "Apple Inc",
+          "box": {
+            "x": 165,
+            "y": 96,
+            "w": 233,
+            "h": 21
+          },
+          "fontSize": 25,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "Name"
+        },
+        {
+          "text": "102.36$ +2.36$ (0.87%)",
+          "box": {
+            "x": 165,
+            "y": 126,
+            "w": 307,
+            "h": 38
+          },
+          "fontSize": 40,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 500,
+          "fill": "#4c956c",
+          "name": "102.36$ +2.36$ (0.87%)"
+        },
+        {
+          "text": "S&P 500",
+          "box": {
+            "x": 1195,
+            "y": 99,
+            "w": 80,
+            "h": 15
+          },
+          "fontSize": 15,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "S&P 500"
+        },
+        {
+          "text": "35.301$",
+          "box": {
+            "x": 1195,
+            "y": 118,
+            "w": 80,
+            "h": 24
+          },
+          "fontSize": 20,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "35.301$"
+        },
+        {
+          "text": "+38.1%",
+          "box": {
+            "x": 1195,
+            "y": 146,
+            "w": 80,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#4c956c",
+          "name": "+38.1%"
+        },
+        {
+          "text": "S&P 500",
+          "box": {
+            "x": 921,
+            "y": 100,
+            "w": 79,
+            "h": 15
+          },
+          "fontSize": 15,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "S&P 500"
+        },
+        {
+          "text": "35.301$",
+          "box": {
+            "x": 921,
+            "y": 119,
+            "w": 79,
+            "h": 24
+          },
+          "fontSize": 20,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "35.301$"
+        },
+        {
+          "text": "+38.1%",
+          "box": {
+            "x": 921,
+            "y": 146,
+            "w": 79,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#4c956c",
+          "name": "+38.1%"
+        },
+        {
+          "text": "S&P 500",
+          "box": {
+            "x": 1014,
+            "y": 100,
+            "w": 77,
+            "h": 15
+          },
+          "fontSize": 15,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "S&P 500"
+        },
+        {
+          "text": "35.301$",
+          "box": {
+            "x": 1014,
+            "y": 119,
+            "w": 77,
+            "h": 24
+          },
+          "fontSize": 20,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "35.301$"
+        },
+        {
+          "text": "+38.1%",
+          "box": {
+            "x": 1014,
+            "y": 146,
+            "w": 77,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#4c956c",
+          "name": "+38.1%"
+        },
+        {
+          "text": "S&P 500",
+          "box": {
+            "x": 1100,
+            "y": 100,
+            "w": 86,
+            "h": 15
+          },
+          "fontSize": 15,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "S&P 500"
+        },
+        {
+          "text": "35.301$",
+          "box": {
+            "x": 1100,
+            "y": 119,
+            "w": 86,
+            "h": 24
+          },
+          "fontSize": 20,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "35.301$"
+        },
+        {
+          "text": "+38.1%",
+          "box": {
+            "x": 1100,
+            "y": 146,
+            "w": 86,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#4c956c",
+          "name": "+38.1%"
+        }
+      ]
+    },
+    {
+      "id": "주가지수",
+      "nodeId": "251:4049",
+      "name": "주가지수",
+      "type": "FRAME",
+      "parentId": "251:4046",
+      "box": {
+        "x": 1195,
+        "y": 99,
+        "w": 80,
+        "h": 59
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "S&P 500",
+          "box": {
+            "x": 1195,
+            "y": 99,
+            "w": 80,
+            "h": 15
+          },
+          "fontSize": 15,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "S&P 500"
+        },
+        {
+          "text": "35.301$",
+          "box": {
+            "x": 1195,
+            "y": 118,
+            "w": 80,
+            "h": 24
+          },
+          "fontSize": 20,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "35.301$"
+        },
+        {
+          "text": "+38.1%",
+          "box": {
+            "x": 1195,
+            "y": 146,
+            "w": 80,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#4c956c",
+          "name": "+38.1%"
+        }
+      ]
+    },
+    {
+      "id": "text",
+      "nodeId": "251:4050",
+      "name": "Text",
+      "type": "FRAME",
+      "parentId": "251:4049",
+      "box": {
+        "x": 1195,
+        "y": 99,
+        "w": 80,
+        "h": 59
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "S&P 500",
+          "box": {
+            "x": 1195,
+            "y": 99,
+            "w": 80,
+            "h": 15
+          },
+          "fontSize": 15,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "S&P 500"
+        },
+        {
+          "text": "35.301$",
+          "box": {
+            "x": 1195,
+            "y": 118,
+            "w": 80,
+            "h": 24
+          },
+          "fontSize": 20,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "35.301$"
+        },
+        {
+          "text": "+38.1%",
+          "box": {
+            "x": 1195,
+            "y": 146,
+            "w": 80,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#4c956c",
+          "name": "+38.1%"
+        }
+      ]
+    },
+    {
+      "id": "text",
+      "nodeId": "251:4054",
+      "name": "Text",
+      "type": "FRAME",
+      "parentId": "251:4046",
+      "box": {
+        "x": 921,
+        "y": 100,
+        "w": 79,
+        "h": 52
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "S&P 500",
+          "box": {
+            "x": 921,
+            "y": 100,
+            "w": 79,
+            "h": 15
+          },
+          "fontSize": 15,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "S&P 500"
+        },
+        {
+          "text": "35.301$",
+          "box": {
+            "x": 921,
+            "y": 119,
+            "w": 79,
+            "h": 24
+          },
+          "fontSize": 20,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "35.301$"
+        },
+        {
+          "text": "+38.1%",
+          "box": {
+            "x": 921,
+            "y": 146,
+            "w": 79,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#4c956c",
+          "name": "+38.1%"
+        }
+      ]
+    },
+    {
+      "id": "text",
+      "nodeId": "251:4058",
+      "name": "Text",
+      "type": "FRAME",
+      "parentId": "251:4046",
+      "box": {
+        "x": 1014,
+        "y": 100,
+        "w": 77,
+        "h": 52
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "S&P 500",
+          "box": {
+            "x": 1014,
+            "y": 100,
+            "w": 77,
+            "h": 15
+          },
+          "fontSize": 15,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "S&P 500"
+        },
+        {
+          "text": "35.301$",
+          "box": {
+            "x": 1014,
+            "y": 119,
+            "w": 77,
+            "h": 24
+          },
+          "fontSize": 20,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "35.301$"
+        },
+        {
+          "text": "+38.1%",
+          "box": {
+            "x": 1014,
+            "y": 146,
+            "w": 77,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#4c956c",
+          "name": "+38.1%"
+        }
+      ]
+    },
+    {
+      "id": "text",
+      "nodeId": "251:4062",
+      "name": "Text",
+      "type": "FRAME",
+      "parentId": "251:4046",
+      "box": {
+        "x": 1100,
+        "y": 100,
+        "w": 86,
+        "h": 52
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "S&P 500",
+          "box": {
+            "x": 1100,
+            "y": 100,
+            "w": 86,
+            "h": 15
+          },
+          "fontSize": 15,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "S&P 500"
+        },
+        {
+          "text": "35.301$",
+          "box": {
+            "x": 1100,
+            "y": 119,
+            "w": 86,
+            "h": 24
+          },
+          "fontSize": 20,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#373737",
+          "name": "35.301$"
+        },
+        {
+          "text": "+38.1%",
+          "box": {
+            "x": 1100,
+            "y": 146,
+            "w": 86,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#4c956c",
+          "name": "+38.1%"
+        }
+      ]
+    },
+    {
+      "id": "headerglobal",
+      "nodeId": "251:4075",
+      "name": "header/global",
+      "type": "FRAME",
+      "parentId": "251:4045",
+      "box": {
+        "x": 0,
+        "y": 0,
+        "w": 1440,
+        "h": 66
+      },
+      "fill": "#fafbfc",
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "Invest Lens",
+          "box": {
+            "x": 116,
+            "y": 22,
+            "w": 207,
+            "h": 27
+          },
+          "fontSize": 20,
+          "fontFamily": "Fugaz One",
+          "fontWeight": 400,
+          "fill": "#003049",
+          "name": "Invest Lens"
+        },
+        {
+          "text": "오늘은 어떤 종목을 분석 해볼까요?",
+          "box": {
+            "x": 423,
+            "y": 28,
+            "w": 416,
+            "h": 11
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 400,
+          "fill": "#a3a3a3",
+          "name": "오늘은 어떤 종목을 분석 해볼까요?"
+        }
+      ]
+    },
+    {
+      "id": "search-bar",
+      "nodeId": "251:4077",
+      "name": "search bar",
+      "type": "GROUP",
+      "parentId": "251:4075",
+      "box": {
+        "x": 372,
+        "y": 14,
+        "w": 761,
+        "h": 40
+      },
+      "fill": null,
+      "cornerRadius": 15,
+      "texts": []
+    },
+    {
+      "id": "logo",
+      "nodeId": "251:4080",
+      "name": "logo",
+      "type": "INSTANCE",
+      "parentId": "251:4075",
+      "box": {
+        "x": 84,
+        "y": 24,
+        "w": 23,
+        "h": 23
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": []
+    },
+    {
+      "id": "search-icon",
+      "nodeId": "251:4082",
+      "name": "search icon",
+      "type": "GROUP",
+      "parentId": "251:4075",
+      "box": {
+        "x": 1097,
+        "y": 24,
+        "w": 21,
+        "h": 20
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": []
+    },
+    {
+      "id": "region-165-363",
+      "nodeId": "251:4351",
+      "name": "Group 88",
+      "type": "GROUP",
+      "parentId": "251:4045",
+      "box": {
+        "x": 165,
+        "y": 363,
+        "w": 1110,
+        "h": 1496
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "주요 이벤트",
+          "box": {
+            "x": 193,
+            "y": 1080,
+            "w": 126,
+            "h": 14
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "주요 이벤트"
+        },
+        {
+          "text": "차트",
+          "box": {
+            "x": 193,
+            "y": 363,
+            "w": 126,
+            "h": 14
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "차트"
+        },
+        {
+          "text": "환율",
+          "box": {
+            "x": 758,
+            "y": 1081,
+            "w": 126,
+            "h": 14
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "환율"
+        },
+        {
+          "text": "더보기",
+          "box": {
+            "x": 630,
+            "y": 1085,
+            "w": 35,
+            "h": 10
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "더보기"
+        },
+        {
+          "text": "25",
+          "box": {
+            "x": 218,
+            "y": 1117,
+            "w": 25,
+            "h": 20
+          },
+          "fontSize": 20,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "25"
+        },
+        {
+          "text": "미국 1분기 GDP 예비치 발표",
+          "box": {
+            "x": 286,
+            "y": 1125,
+            "w": 215,
+            "h": 11
+          },
+          "fontSize": 14,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 500,
+          "fill": "#003049",
+          "name": "미국 1분기 GDP 예비치 발표"
+        },
+        {
+          "text": "거시지표",
+          "box": {
+            "x": 451,
+            "y": 1127,
+            "w": 37,
+            "h": 8
+          },
+          "fontSize": 10,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#4073ff",
+          "name": "거시지표"
+        },
+        {
+          "text": "예상: +2.1%/이전: +2.4%",
+          "box": {
+            "x": 286,
+            "y": 1144,
+            "w": 215,
+            "h": 10
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "예상: +2.1%/이전: +2.4%"
+        },
+        {
+          "text": "금 08:30 ET",
+          "box": {
+            "x": 603,
+            "y": 1125,
+            "w": 70,
+            "h": 10
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "금 08:30 ET"
+        },
+        {
+          "text": "APR",
+          "box": {
+            "x": 208,
+            "y": 1140,
+            "w": 46,
+            "h": 20
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "APR"
+        },
+        {
+          "text": "25",
+          "box": {
+            "x": 218,
+            "y": 1180,
+            "w": 25,
+            "h": 20
+          },
+          "fontSize": 20,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "25"
+        },
+        {
+          "text": "미국 1분기 GDP 예비치 발표",
+          "box": {
+            "x": 286,
+            "y": 1188,
+            "w": 215,
+            "h": 11
+          },
+          "fontSize": 14,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 500,
+          "fill": "#003049",
+          "name": "미국 1분기 GDP 예비치 발표"
+        },
+        {
+          "text": "거시지표",
+          "box": {
+            "x": 451,
+            "y": 1190,
+            "w": 37,
+            "h": 8
+          },
+          "fontSize": 10,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#4073ff",
+          "name": "거시지표"
+        },
+        {
+          "text": "예상: +2.1%/이전: +2.4%",
+          "box": {
+            "x": 286,
+            "y": 1207,
+            "w": 215,
+            "h": 10
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "예상: +2.1%/이전: +2.4%"
+        },
+        {
+          "text": "금 08:30 ET",
+          "box": {
+            "x": 603,
+            "y": 1188,
+            "w": 70,
+            "h": 10
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "금 08:30 ET"
+        },
+        {
+          "text": "APR",
+          "box": {
+            "x": 208,
+            "y": 1203,
+            "w": 46,
+            "h": 20
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "APR"
+        },
+        {
+          "text": "25",
+          "box": {
+            "x": 218,
+            "y": 1243,
+            "w": 25,
+            "h": 20
+          },
+          "fontSize": 20,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "25"
+        },
+        {
+          "text": "미국 1분기 GDP 예비치 발표",
+          "box": {
+            "x": 286,
+            "y": 1251,
+            "w": 215,
+            "h": 11
+          },
+          "fontSize": 14,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 500,
+          "fill": "#003049",
+          "name": "미국 1분기 GDP 예비치 발표"
+        },
+        {
+          "text": "거시지표",
+          "box": {
+            "x": 451,
+            "y": 1253,
+            "w": 37,
+            "h": 8
+          },
+          "fontSize": 10,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#4073ff",
+          "name": "거시지표"
+        },
+        {
+          "text": "예상: +2.1%/이전: +2.4%",
+          "box": {
+            "x": 286,
+            "y": 1270,
+            "w": 215,
+            "h": 10
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "예상: +2.1%/이전: +2.4%"
+        }
+      ]
+    },
+    {
+      "id": "chevronright-regular",
+      "nodeId": "251:4109",
+      "name": "chevron/right regular",
+      "type": "INSTANCE",
+      "parentId": "251:4351",
+      "box": {
+        "x": 660,
+        "y": 1080,
+        "w": 24,
+        "h": 20
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": []
+    },
+    {
+      "id": "region-165-1451",
+      "nodeId": "251:4193",
+      "name": "Frame 17",
+      "type": "FRAME",
+      "parentId": "251:4351",
+      "box": {
+        "x": 165,
+        "y": 1451,
+        "w": 1110,
+        "h": 147
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "오늘 종합 점수",
+          "box": {
+            "x": 195,
+            "y": 1474,
+            "w": 126,
+            "h": 14
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "오늘 종합 점수"
+        },
+        {
+          "text": "74.2",
+          "box": {
+            "x": 195,
+            "y": 1521,
+            "w": 147,
+            "h": 29
+          },
+          "fontSize": 40,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "74.2"
+        },
+        {
+          "text": "전일 대비",
+          "box": {
+            "x": 195,
+            "y": 1560,
+            "w": 81,
+            "h": 11
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "전일 대비"
+        },
+        {
+          "text": "4.20 (+0.31%)",
+          "box": {
+            "x": 272,
+            "y": 1561,
+            "w": 87,
+            "h": 9
+          },
+          "fontSize": 13,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "4.20 (+0.31%)"
+        },
+        {
+          "text": "전일 대비",
+          "box": {
+            "x": 573,
+            "y": 1560,
+            "w": 81,
+            "h": 11
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "전일 대비"
+        },
+        {
+          "text": "4.20 (+0.31%)",
+          "box": {
+            "x": 650,
+            "y": 1561,
+            "w": 87,
+            "h": 9
+          },
+          "fontSize": 13,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "4.20 (+0.31%)"
+        },
+        {
+          "text": "전일 대비",
+          "box": {
+            "x": 947,
+            "y": 1558,
+            "w": 81,
+            "h": 11
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#c1121f",
+          "name": "전일 대비"
+        },
+        {
+          "text": "4.20 (+0.31%)",
+          "box": {
+            "x": 1024,
+            "y": 1559,
+            "w": 87,
+            "h": 9
+          },
+          "fontSize": 13,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#c1121f",
+          "name": "4.20 (+0.31%)"
+        },
+        {
+          "text": "이번 달 종합 점수",
+          "box": {
+            "x": 573,
+            "y": 1474,
+            "w": 126,
+            "h": 14
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "이번 달 종합 점수"
+        },
+        {
+          "text": "74.2",
+          "box": {
+            "x": 573,
+            "y": 1521,
+            "w": 140,
+            "h": 29
+          },
+          "fontSize": 40,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "74.2"
+        },
+        {
+          "text": "오늘 종합 점수",
+          "box": {
+            "x": 947,
+            "y": 1474,
+            "w": 126,
+            "h": 14
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "오늘 종합 점수"
+        },
+        {
+          "text": "65.2",
+          "box": {
+            "x": 947,
+            "y": 1521,
+            "w": 117,
+            "h": 29
+          },
+          "fontSize": 40,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#c1121f",
+          "name": "65.2"
+        }
+      ]
+    },
+    {
+      "id": "region-195-1560",
+      "nodeId": "251:4199",
+      "name": "Group 59",
+      "type": "GROUP",
+      "parentId": "251:4193",
+      "box": {
+        "x": 195,
+        "y": 1560,
+        "w": 164,
+        "h": 15
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "전일 대비",
+          "box": {
+            "x": 195,
+            "y": 1560,
+            "w": 81,
+            "h": 11
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "전일 대비"
+        },
+        {
+          "text": "4.20 (+0.31%)",
+          "box": {
+            "x": 272,
+            "y": 1561,
+            "w": 87,
+            "h": 9
+          },
+          "fontSize": 13,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "4.20 (+0.31%)"
+        }
+      ]
+    },
+    {
+      "id": "region-573-1560",
+      "nodeId": "251:4203",
+      "name": "Group 60",
+      "type": "GROUP",
+      "parentId": "251:4193",
+      "box": {
+        "x": 573,
+        "y": 1560,
+        "w": 164,
+        "h": 15
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "전일 대비",
+          "box": {
+            "x": 573,
+            "y": 1560,
+            "w": 81,
+            "h": 11
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "전일 대비"
+        },
+        {
+          "text": "4.20 (+0.31%)",
+          "box": {
+            "x": 650,
+            "y": 1561,
+            "w": 87,
+            "h": 9
+          },
+          "fontSize": 13,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "4.20 (+0.31%)"
+        }
+      ]
+    },
+    {
+      "id": "region-947-1554",
+      "nodeId": "251:4207",
+      "name": "Group 61",
+      "type": "GROUP",
+      "parentId": "251:4193",
+      "box": {
+        "x": 947,
+        "y": 1554,
+        "w": 164,
+        "h": 15
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "전일 대비",
+          "box": {
+            "x": 947,
+            "y": 1558,
+            "w": 81,
+            "h": 11
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#c1121f",
+          "name": "전일 대비"
+        },
+        {
+          "text": "4.20 (+0.31%)",
+          "box": {
+            "x": 1024,
+            "y": 1559,
+            "w": 87,
+            "h": 9
+          },
+          "fontSize": 13,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#c1121f",
+          "name": "4.20 (+0.31%)"
+        }
+      ]
+    },
+    {
+      "id": "region-196-1685",
+      "nodeId": "251:4223",
+      "name": "Group 63",
+      "type": "GROUP",
+      "parentId": "251:4351",
+      "box": {
+        "x": 196,
+        "y": 1685,
+        "w": 199,
+        "h": 33
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "NVDA",
+          "box": {
+            "x": 233,
+            "y": 1685,
+            "w": 72,
+            "h": 19
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "NVDA"
+        },
+        {
+          "text": "1",
+          "box": {
+            "x": 196,
+            "y": 1691,
+            "w": 16,
+            "h": 21
+          },
+          "fontSize": 18,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "1"
+        },
+        {
+          "text": "엔비디아",
+          "box": {
+            "x": 233,
+            "y": 1702,
+            "w": 109,
+            "h": 16
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "엔비디아"
+        },
+        {
+          "text": "8.31%",
+          "box": {
+            "x": 338,
+            "y": 1697,
+            "w": 57,
+            "h": 9
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "8.31%"
+        }
+      ]
+    },
+    {
+      "id": "region-196-1744",
+      "nodeId": "251:4228",
+      "name": "Group 64",
+      "type": "GROUP",
+      "parentId": "251:4351",
+      "box": {
+        "x": 196,
+        "y": 1744,
+        "w": 199,
+        "h": 33
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "NVDA",
+          "box": {
+            "x": 233,
+            "y": 1744,
+            "w": 72,
+            "h": 19
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "NVDA"
+        },
+        {
+          "text": "2",
+          "box": {
+            "x": 196,
+            "y": 1750,
+            "w": 16,
+            "h": 21
+          },
+          "fontSize": 18,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "2"
+        },
+        {
+          "text": "엔비디아",
+          "box": {
+            "x": 233,
+            "y": 1761,
+            "w": 109,
+            "h": 16
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "엔비디아"
+        },
+        {
+          "text": "8.31%",
+          "box": {
+            "x": 338,
+            "y": 1756,
+            "w": 57,
+            "h": 9
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "8.31%"
+        }
+      ]
+    },
+    {
+      "id": "region-196-1803",
+      "nodeId": "251:4234",
+      "name": "Group 66",
+      "type": "GROUP",
+      "parentId": "251:4351",
+      "box": {
+        "x": 196,
+        "y": 1803,
+        "w": 199,
+        "h": 33
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "NVDA",
+          "box": {
+            "x": 233,
+            "y": 1803,
+            "w": 72,
+            "h": 19
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "NVDA"
+        },
+        {
+          "text": "3",
+          "box": {
+            "x": 196,
+            "y": 1809,
+            "w": 16,
+            "h": 21
+          },
+          "fontSize": 18,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "3"
+        },
+        {
+          "text": "엔비디아",
+          "box": {
+            "x": 233,
+            "y": 1820,
+            "w": 109,
+            "h": 16
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "엔비디아"
+        },
+        {
+          "text": "8.31%",
+          "box": {
+            "x": 338,
+            "y": 1815,
+            "w": 57,
+            "h": 9
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "8.31%"
+        }
+      ]
+    },
+    {
+      "id": "region-476-1744",
+      "nodeId": "251:4241",
+      "name": "Group 68",
+      "type": "GROUP",
+      "parentId": "251:4351",
+      "box": {
+        "x": 476,
+        "y": 1744,
+        "w": 199,
+        "h": 33
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "NVDA",
+          "box": {
+            "x": 513,
+            "y": 1744,
+            "w": 72,
+            "h": 19
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "NVDA"
+        },
+        {
+          "text": "2",
+          "box": {
+            "x": 476,
+            "y": 1750,
+            "w": 16,
+            "h": 21
+          },
+          "fontSize": 18,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "2"
+        },
+        {
+          "text": "엔비디아",
+          "box": {
+            "x": 513,
+            "y": 1761,
+            "w": 109,
+            "h": 16
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "엔비디아"
+        },
+        {
+          "text": "8.31%",
+          "box": {
+            "x": 618,
+            "y": 1756,
+            "w": 57,
+            "h": 9
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#267bea",
+          "name": "8.31%"
+        }
+      ]
+    },
+    {
+      "id": "region-469-1685",
+      "nodeId": "251:4246",
+      "name": "Group 79",
+      "type": "GROUP",
+      "parentId": "251:4351",
+      "box": {
+        "x": 469,
+        "y": 1685,
+        "w": 221,
+        "h": 151
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "NVDA",
+          "box": {
+            "x": 513,
+            "y": 1685,
+            "w": 72,
+            "h": 19
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "NVDA"
+        },
+        {
+          "text": "1",
+          "box": {
+            "x": 476,
+            "y": 1691,
+            "w": 16,
+            "h": 21
+          },
+          "fontSize": 18,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "1"
+        },
+        {
+          "text": "엔비디아",
+          "box": {
+            "x": 513,
+            "y": 1702,
+            "w": 109,
+            "h": 16
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "엔비디아"
+        },
+        {
+          "text": "8.31%",
+          "box": {
+            "x": 618,
+            "y": 1697,
+            "w": 57,
+            "h": 9
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#267bea",
+          "name": "8.31%"
+        },
+        {
+          "text": "NVDA",
+          "box": {
+            "x": 513,
+            "y": 1803,
+            "w": 72,
+            "h": 19
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "NVDA"
+        },
+        {
+          "text": "3",
+          "box": {
+            "x": 476,
+            "y": 1809,
+            "w": 16,
+            "h": 21
+          },
+          "fontSize": 18,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "3"
+        },
+        {
+          "text": "엔비디아",
+          "box": {
+            "x": 513,
+            "y": 1820,
+            "w": 109,
+            "h": 16
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "엔비디아"
+        },
+        {
+          "text": "8.31%",
+          "box": {
+            "x": 618,
+            "y": 1815,
+            "w": 57,
+            "h": 9
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#267bea",
+          "name": "8.31%"
+        }
+      ]
+    },
+    {
+      "id": "region-476-1685",
+      "nodeId": "251:4247",
+      "name": "Group 67",
+      "type": "GROUP",
+      "parentId": "251:4246",
+      "box": {
+        "x": 476,
+        "y": 1685,
+        "w": 199,
+        "h": 33
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "NVDA",
+          "box": {
+            "x": 513,
+            "y": 1685,
+            "w": 72,
+            "h": 19
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "NVDA"
+        },
+        {
+          "text": "1",
+          "box": {
+            "x": 476,
+            "y": 1691,
+            "w": 16,
+            "h": 21
+          },
+          "fontSize": 18,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "1"
+        },
+        {
+          "text": "엔비디아",
+          "box": {
+            "x": 513,
+            "y": 1702,
+            "w": 109,
+            "h": 16
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "엔비디아"
+        },
+        {
+          "text": "8.31%",
+          "box": {
+            "x": 618,
+            "y": 1697,
+            "w": 57,
+            "h": 9
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#267bea",
+          "name": "8.31%"
+        }
+      ]
+    },
+    {
+      "id": "region-476-1803",
+      "nodeId": "251:4253",
+      "name": "Group 70",
+      "type": "GROUP",
+      "parentId": "251:4246",
+      "box": {
+        "x": 476,
+        "y": 1803,
+        "w": 199,
+        "h": 33
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "NVDA",
+          "box": {
+            "x": 513,
+            "y": 1803,
+            "w": 72,
+            "h": 19
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "NVDA"
+        },
+        {
+          "text": "3",
+          "box": {
+            "x": 476,
+            "y": 1809,
+            "w": 16,
+            "h": 21
+          },
+          "fontSize": 18,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "3"
+        },
+        {
+          "text": "엔비디아",
+          "box": {
+            "x": 513,
+            "y": 1820,
+            "w": 109,
+            "h": 16
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "엔비디아"
+        },
+        {
+          "text": "8.31%",
+          "box": {
+            "x": 618,
+            "y": 1815,
+            "w": 57,
+            "h": 9
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#267bea",
+          "name": "8.31%"
+        }
+      ]
+    },
+    {
+      "id": "region-756-1685",
+      "nodeId": "251:4260",
+      "name": "Group 71",
+      "type": "GROUP",
+      "parentId": "251:4351",
+      "box": {
+        "x": 756,
+        "y": 1685,
+        "w": 199,
+        "h": 33
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "NVDA",
+          "box": {
+            "x": 793,
+            "y": 1685,
+            "w": 72,
+            "h": 19
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "NVDA"
+        },
+        {
+          "text": "1",
+          "box": {
+            "x": 756,
+            "y": 1691,
+            "w": 16,
+            "h": 21
+          },
+          "fontSize": 18,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "1"
+        },
+        {
+          "text": "엔비디아",
+          "box": {
+            "x": 793,
+            "y": 1702,
+            "w": 109,
+            "h": 16
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "엔비디아"
+        },
+        {
+          "text": "8.31%",
+          "box": {
+            "x": 898,
+            "y": 1697,
+            "w": 57,
+            "h": 9
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#c1121f",
+          "name": "8.31%"
+        }
+      ]
+    },
+    {
+      "id": "region-756-1744",
+      "nodeId": "251:4265",
+      "name": "Group 72",
+      "type": "GROUP",
+      "parentId": "251:4351",
+      "box": {
+        "x": 756,
+        "y": 1744,
+        "w": 199,
+        "h": 33
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "NVDA",
+          "box": {
+            "x": 793,
+            "y": 1744,
+            "w": 72,
+            "h": 19
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "NVDA"
+        },
+        {
+          "text": "2",
+          "box": {
+            "x": 756,
+            "y": 1750,
+            "w": 16,
+            "h": 21
+          },
+          "fontSize": 18,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "2"
+        },
+        {
+          "text": "엔비디아",
+          "box": {
+            "x": 793,
+            "y": 1761,
+            "w": 109,
+            "h": 16
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "엔비디아"
+        },
+        {
+          "text": "8.31%",
+          "box": {
+            "x": 898,
+            "y": 1756,
+            "w": 57,
+            "h": 9
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#c1121f",
+          "name": "8.31%"
+        }
+      ]
+    },
+    {
+      "id": "region-756-1803",
+      "nodeId": "251:4271",
+      "name": "Group 74",
+      "type": "GROUP",
+      "parentId": "251:4351",
+      "box": {
+        "x": 756,
+        "y": 1803,
+        "w": 199,
+        "h": 33
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "NVDA",
+          "box": {
+            "x": 793,
+            "y": 1803,
+            "w": 72,
+            "h": 19
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "NVDA"
+        },
+        {
+          "text": "3",
+          "box": {
+            "x": 756,
+            "y": 1809,
+            "w": 16,
+            "h": 21
+          },
+          "fontSize": 18,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "3"
+        },
+        {
+          "text": "엔비디아",
+          "box": {
+            "x": 793,
+            "y": 1820,
+            "w": 109,
+            "h": 16
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "엔비디아"
+        },
+        {
+          "text": "8.31%",
+          "box": {
+            "x": 898,
+            "y": 1815,
+            "w": 57,
+            "h": 9
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#c1121f",
+          "name": "8.31%"
+        }
+      ]
+    },
+    {
+      "id": "region-1036-1744",
+      "nodeId": "251:4282",
+      "name": "Group 76",
+      "type": "GROUP",
+      "parentId": "251:4351",
+      "box": {
+        "x": 1036,
+        "y": 1744,
+        "w": 199,
+        "h": 33
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "NVDA",
+          "box": {
+            "x": 1073,
+            "y": 1744,
+            "w": 72,
+            "h": 19
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "NVDA"
+        },
+        {
+          "text": "2",
+          "box": {
+            "x": 1036,
+            "y": 1750,
+            "w": 16,
+            "h": 21
+          },
+          "fontSize": 18,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "2"
+        },
+        {
+          "text": "엔비디아",
+          "box": {
+            "x": 1073,
+            "y": 1761,
+            "w": 109,
+            "h": 16
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "엔비디아"
+        },
+        {
+          "text": "90",
+          "box": {
+            "x": 1178,
+            "y": 1756,
+            "w": 57,
+            "h": 9
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "90"
+        }
+      ]
+    },
+    {
+      "id": "region-1036-1803",
+      "nodeId": "251:4288",
+      "name": "Group 78",
+      "type": "GROUP",
+      "parentId": "251:4351",
+      "box": {
+        "x": 1036,
+        "y": 1803,
+        "w": 199,
+        "h": 33
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "NVDA",
+          "box": {
+            "x": 1073,
+            "y": 1803,
+            "w": 72,
+            "h": 19
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "NVDA"
+        },
+        {
+          "text": "3",
+          "box": {
+            "x": 1036,
+            "y": 1809,
+            "w": 16,
+            "h": 21
+          },
+          "fontSize": 18,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "3"
+        },
+        {
+          "text": "엔비디아",
+          "box": {
+            "x": 1073,
+            "y": 1820,
+            "w": 109,
+            "h": 16
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#7f7f7f",
+          "name": "엔비디아"
+        },
+        {
+          "text": "87",
+          "box": {
+            "x": 1178,
+            "y": 1815,
+            "w": 57,
+            "h": 9
+          },
+          "fontSize": 16,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "87"
+        }
+      ]
+    },
+    {
+      "id": "region-165-181",
+      "nodeId": "251:4348",
+      "name": "Frame 18",
+      "type": "FRAME",
+      "parentId": "251:4045",
+      "box": {
+        "x": 165,
+        "y": 181,
+        "w": 1110,
+        "h": 148
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "기업 펀더멘털",
+          "box": {
+            "x": 184,
+            "y": 199,
+            "w": 134,
+            "h": 14
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "기업 펀더멘털"
+        },
+        {
+          "text": "GOOD",
+          "box": {
+            "x": 184,
+            "y": 224,
+            "w": 134,
+            "h": 14
+          },
+          "fontSize": 18,
+          "fontFamily": "Freesentation",
+          "fontWeight": 700,
+          "fill": "#60c846",
+          "name": "GOOD"
+        },
+        {
+          "text": "/ 100",
+          "box": {
+            "x": 381,
+            "y": 296,
+            "w": 50,
+            "h": 14
+          },
+          "fontSize": 15,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "/ 100"
+        },
+        {
+          "text": "60",
+          "box": {
+            "x": 314,
+            "y": 249,
+            "w": 54,
+            "h": 37
+          },
+          "fontSize": 30,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "60"
+        },
+        {
+          "text": "세부 지표 보기",
+          "box": {
+            "x": 184,
+            "y": 297,
+            "w": 85,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "세부 지표 보기"
+        },
+        {
+          "text": "/ 100",
+          "box": {
+            "x": 664,
+            "y": 297,
+            "w": 50,
+            "h": 14
+          },
+          "fontSize": 15,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "/ 100"
+        },
+        {
+          "text": "NEGATIVE",
+          "box": {
+            "x": 469,
+            "y": 223,
+            "w": 140,
+            "h": 16
+          },
+          "fontSize": 18,
+          "fontFamily": "Freesentation",
+          "fontWeight": 700,
+          "fill": "#c1121f",
+          "name": "NEGATIVE"
+        },
+        {
+          "text": "32",
+          "box": {
+            "x": 608,
+            "y": 256,
+            "w": 39,
+            "h": 21
+          },
+          "fontSize": 30,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#c1121f",
+          "name": "32"
+        },
+        {
+          "text": "원자재 영향",
+          "box": {
+            "x": 469,
+            "y": 199,
+            "w": 140,
+            "h": 16
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "원자재 영향"
+        },
+        {
+          "text": "세부 지표 보기",
+          "box": {
+            "x": 469,
+            "y": 297,
+            "w": 85,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "세부 지표 보기"
+        },
+        {
+          "text": "세부 지표 보기",
+          "box": {
+            "x": 753,
+            "y": 298,
+            "w": 85,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "세부 지표 보기"
+        },
+        {
+          "text": "SOFT\nLANDING",
+          "box": {
+            "x": 753,
+            "y": 223,
+            "w": 140,
+            "h": 16
+          },
+          "fontSize": 18,
+          "fontFamily": "Freesentation",
+          "fontWeight": 700,
+          "fill": "#60c846",
+          "name": "SOFT LANDING"
+        },
+        {
+          "text": "거시 경제",
+          "box": {
+            "x": 754,
+            "y": 199,
+            "w": 140,
+            "h": 16
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "거시 경제"
+        },
+        {
+          "text": "세부 지표 보기",
+          "box": {
+            "x": 1034,
+            "y": 298,
+            "w": 85,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "세부 지표 보기"
+        },
+        {
+          "text": "EXTREME\nFEAR",
+          "box": {
+            "x": 1034,
+            "y": 223,
+            "w": 97,
+            "h": 16
+          },
+          "fontSize": 18,
+          "fontFamily": "Freesentation",
+          "fontWeight": 700,
+          "fill": "#c1121f",
+          "name": "EXTREME FEAR"
+        },
+        {
+          "text": "기술적 지표",
+          "box": {
+            "x": 1034,
+            "y": 199,
+            "w": 140,
+            "h": 16
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "기술적 지표"
+        },
+        {
+          "text": "23",
+          "box": {
+            "x": 1179,
+            "y": 263,
+            "w": 35,
+            "h": 21
+          },
+          "fontSize": 25,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#000000",
+          "name": "23"
+        }
+      ]
+    },
+    {
+      "id": "region-165-181",
+      "nodeId": "251:4306",
+      "name": "Group 80",
+      "type": "GROUP",
+      "parentId": "251:4348",
+      "box": {
+        "x": 165,
+        "y": 181,
+        "w": 268,
+        "h": 148
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "기업 펀더멘털",
+          "box": {
+            "x": 184,
+            "y": 199,
+            "w": 134,
+            "h": 14
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "기업 펀더멘털"
+        },
+        {
+          "text": "GOOD",
+          "box": {
+            "x": 184,
+            "y": 224,
+            "w": 134,
+            "h": 14
+          },
+          "fontSize": 18,
+          "fontFamily": "Freesentation",
+          "fontWeight": 700,
+          "fill": "#60c846",
+          "name": "GOOD"
+        },
+        {
+          "text": "/ 100",
+          "box": {
+            "x": 381,
+            "y": 296,
+            "w": 50,
+            "h": 14
+          },
+          "fontSize": 15,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "/ 100"
+        },
+        {
+          "text": "60",
+          "box": {
+            "x": 314,
+            "y": 249,
+            "w": 54,
+            "h": 37
+          },
+          "fontSize": 30,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "60"
+        },
+        {
+          "text": "세부 지표 보기",
+          "box": {
+            "x": 184,
+            "y": 297,
+            "w": 85,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "세부 지표 보기"
+        }
+      ]
+    },
+    {
+      "id": "region-300-224",
+      "nodeId": "251:4094",
+      "name": "Group 57",
+      "type": "GROUP",
+      "parentId": "251:4306",
+      "box": {
+        "x": 300,
+        "y": 224,
+        "w": 85,
+        "h": 86
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "60",
+          "box": {
+            "x": 314,
+            "y": 249,
+            "w": 54,
+            "h": 37
+          },
+          "fontSize": 30,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#60c846",
+          "name": "60"
+        }
+      ]
+    },
+    {
+      "id": "region-184-296",
+      "nodeId": "251:4323",
+      "name": "Group 84",
+      "type": "GROUP",
+      "parentId": "251:4306",
+      "box": {
+        "x": 184,
+        "y": 296,
+        "w": 90,
+        "h": 19
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "세부 지표 보기",
+          "box": {
+            "x": 184,
+            "y": 297,
+            "w": 85,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "세부 지표 보기"
+        }
+      ]
+    },
+    {
+      "id": "chevronright-regular",
+      "nodeId": "251:4317",
+      "name": "chevron/right regular",
+      "type": "FRAME",
+      "parentId": "251:4323",
+      "box": {
+        "x": 255,
+        "y": 296,
+        "w": 19,
+        "h": 19
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": []
+    },
+    {
+      "id": "region-445-181",
+      "nodeId": "251:4308",
+      "name": "Group 82",
+      "type": "GROUP",
+      "parentId": "251:4348",
+      "box": {
+        "x": 445,
+        "y": 181,
+        "w": 269,
+        "h": 148
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "/ 100",
+          "box": {
+            "x": 664,
+            "y": 297,
+            "w": 50,
+            "h": 14
+          },
+          "fontSize": 15,
+          "fontFamily": "Freesentation",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "/ 100"
+        },
+        {
+          "text": "NEGATIVE",
+          "box": {
+            "x": 469,
+            "y": 223,
+            "w": 140,
+            "h": 16
+          },
+          "fontSize": 18,
+          "fontFamily": "Freesentation",
+          "fontWeight": 700,
+          "fill": "#c1121f",
+          "name": "NEGATIVE"
+        },
+        {
+          "text": "32",
+          "box": {
+            "x": 608,
+            "y": 256,
+            "w": 39,
+            "h": 21
+          },
+          "fontSize": 30,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#c1121f",
+          "name": "32"
+        },
+        {
+          "text": "원자재 영향",
+          "box": {
+            "x": 469,
+            "y": 199,
+            "w": 140,
+            "h": 16
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "원자재 영향"
+        },
+        {
+          "text": "세부 지표 보기",
+          "box": {
+            "x": 469,
+            "y": 297,
+            "w": 85,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "세부 지표 보기"
+        }
+      ]
+    },
+    {
+      "id": "region-585-223",
+      "nodeId": "251:4098",
+      "name": "Group 58",
+      "type": "GROUP",
+      "parentId": "251:4308",
+      "box": {
+        "x": 585,
+        "y": 223,
+        "w": 85,
+        "h": 86
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "32",
+          "box": {
+            "x": 608,
+            "y": 256,
+            "w": 39,
+            "h": 21
+          },
+          "fontSize": 30,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#c1121f",
+          "name": "32"
+        }
+      ]
+    },
+    {
+      "id": "region-469-296",
+      "nodeId": "251:4329",
+      "name": "Group 85",
+      "type": "GROUP",
+      "parentId": "251:4308",
+      "box": {
+        "x": 469,
+        "y": 296,
+        "w": 90,
+        "h": 19
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "세부 지표 보기",
+          "box": {
+            "x": 469,
+            "y": 297,
+            "w": 85,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "세부 지표 보기"
+        }
+      ]
+    },
+    {
+      "id": "chevronright-regular",
+      "nodeId": "251:4331",
+      "name": "chevron/right regular",
+      "type": "FRAME",
+      "parentId": "251:4329",
+      "box": {
+        "x": 540,
+        "y": 296,
+        "w": 19,
+        "h": 19
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": []
+    },
+    {
+      "id": "region-726-181",
+      "nodeId": "251:4307",
+      "name": "Group 81",
+      "type": "GROUP",
+      "parentId": "251:4348",
+      "box": {
+        "x": 726,
+        "y": 181,
+        "w": 269,
+        "h": 148
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "세부 지표 보기",
+          "box": {
+            "x": 753,
+            "y": 298,
+            "w": 85,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "세부 지표 보기"
+        },
+        {
+          "text": "SOFT\nLANDING",
+          "box": {
+            "x": 753,
+            "y": 223,
+            "w": 140,
+            "h": 16
+          },
+          "fontSize": 18,
+          "fontFamily": "Freesentation",
+          "fontWeight": 700,
+          "fill": "#60c846",
+          "name": "SOFT LANDING"
+        },
+        {
+          "text": "거시 경제",
+          "box": {
+            "x": 754,
+            "y": 199,
+            "w": 140,
+            "h": 16
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "거시 경제"
+        }
+      ]
+    },
+    {
+      "id": "region-753-297",
+      "nodeId": "251:4336",
+      "name": "Group 86",
+      "type": "GROUP",
+      "parentId": "251:4307",
+      "box": {
+        "x": 753,
+        "y": 297,
+        "w": 90,
+        "h": 19
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "세부 지표 보기",
+          "box": {
+            "x": 753,
+            "y": 298,
+            "w": 85,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "세부 지표 보기"
+        }
+      ]
+    },
+    {
+      "id": "chevronright-regular",
+      "nodeId": "251:4338",
+      "name": "chevron/right regular",
+      "type": "FRAME",
+      "parentId": "251:4336",
+      "box": {
+        "x": 824,
+        "y": 297,
+        "w": 19,
+        "h": 19
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": []
+    },
+    {
+      "id": "region-1006-181",
+      "nodeId": "251:4309",
+      "name": "Group 83",
+      "type": "GROUP",
+      "parentId": "251:4348",
+      "box": {
+        "x": 1006,
+        "y": 181,
+        "w": 269,
+        "h": 148
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "세부 지표 보기",
+          "box": {
+            "x": 1034,
+            "y": 298,
+            "w": 85,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "세부 지표 보기"
+        },
+        {
+          "text": "EXTREME\nFEAR",
+          "box": {
+            "x": 1034,
+            "y": 223,
+            "w": 97,
+            "h": 16
+          },
+          "fontSize": 18,
+          "fontFamily": "Freesentation",
+          "fontWeight": 700,
+          "fill": "#c1121f",
+          "name": "EXTREME FEAR"
+        },
+        {
+          "text": "기술적 지표",
+          "box": {
+            "x": 1034,
+            "y": 199,
+            "w": 140,
+            "h": 16
+          },
+          "fontSize": 15,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "기술적 지표"
+        },
+        {
+          "text": "23",
+          "box": {
+            "x": 1179,
+            "y": 263,
+            "w": 35,
+            "h": 21
+          },
+          "fontSize": 25,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#000000",
+          "name": "23"
+        }
+      ]
+    },
+    {
+      "id": "region-1034-297",
+      "nodeId": "251:4341",
+      "name": "Group 87",
+      "type": "GROUP",
+      "parentId": "251:4309",
+      "box": {
+        "x": 1034,
+        "y": 297,
+        "w": 90,
+        "h": 19
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": [
+        {
+          "text": "세부 지표 보기",
+          "box": {
+            "x": 1034,
+            "y": 298,
+            "w": 85,
+            "h": 14
+          },
+          "fontSize": 13,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#003049",
+          "name": "세부 지표 보기"
+        }
+      ]
+    },
+    {
+      "id": "chevronright-regular",
+      "nodeId": "251:4343",
+      "name": "chevron/right regular",
+      "type": "FRAME",
+      "parentId": "251:4341",
+      "box": {
+        "x": 1106,
+        "y": 297,
+        "w": 19,
+        "h": 19
+      },
+      "fill": null,
+      "cornerRadius": null,
+      "texts": []
+    },
+    {
+      "id": "progress",
+      "nodeId": "251:4111",
+      "name": "Progress",
+      "type": "GROUP",
+      "parentId": "251:4309",
+      "box": {
+        "x": 1133,
+        "y": 233,
+        "w": 113,
+        "h": 59
+      },
+      "fill": null,
+      "cornerRadius": 15,
+      "texts": [
+        {
+          "text": "23",
+          "box": {
+            "x": 1179,
+            "y": 263,
+            "w": 35,
+            "h": 21
+          },
+          "fontSize": 25,
+          "fontFamily": "Pretendard Variable",
+          "fontWeight": 600,
+          "fill": "#000000",
+          "name": "23"
+        }
+      ]
+    },
+    {
+      "id": "progress",
+      "nodeId": "251:4112",
+      "name": "Progress",
+      "type": "FRAME",
+      "parentId": "251:4111",
+      "box": {
+        "x": 1133,
+        "y": 233,
+        "w": 113,
+        "h": 59
+      },
+      "fill": "#ffffff",
+      "cornerRadius": 15,
+      "texts": []
+    }
+  ]
+}

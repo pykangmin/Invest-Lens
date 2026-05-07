@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
+# verify-structure.sh — LAYERS.md 의 의존성 매트릭스를 src/ 코드와 대조.
+# 실제 검사 로직은 scripts/verify-structure.mjs (node ESM, 외부 라이브러리 없음).
+
 set -e
-echo "TODO: LAYERS.md에서 의존성 매트릭스 로드"
-echo "TODO: src/ 하위 TypeScript 파일의 import 구문 파싱"
-echo "TODO: 레이어 의존성 방향 위반 검사"
-echo "TODO: 위반 시 에러 메시지에 교정 지시 포함"
-echo "구조 검증 완료 (뼈대 상태)"
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+node "$ROOT/scripts/verify-structure.mjs"

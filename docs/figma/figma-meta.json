@@ -1,0 +1,40 @@
+{
+  "document": {
+    "id": "0:0",
+    "name": "Document",
+    "type": "DOCUMENT",
+    "scrollBehavior": "SCROLLS",
+    "children": [
+      {
+        "id": "0:1",
+        "name": "1. Reference & Design",
+        "type": "CANVAS",
+        "scrollBehavior": "SCROLLS",
+        "children": [],
+        "backgroundColor": {
+          "r": 0.9607843160629272,
+          "g": 0.9607843160629272,
+          "b": 0.9607843160629272,
+          "a": 1
+        },
+        "prototypeStartNodeID": null,
+        "flowStartingPoints": [],
+        "prototypeDevice": {
+          "type": "NONE",
+          "rotation": "NONE"
+        }
+      }
+    ]
+  },
+  "components": {},
+  "componentSets": {},
+  "schemaVersion": 0,
+  "styles": {},
+  "name": "[데이커] 투자 데이터 대시보드",
+  "lastModified": "2026-05-05T13:57:27Z",
+  "thumbnailUrl": "https://s3-alpha.figma.com/thumbnails/44854687-8aff-484c-84f9-42093dbdba9a?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWCY64QTLLE%2F20260503%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260503T120000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=1f7b8d3b933382bed8fed0ec686c72b86c46466c49804376d960427f32dd9110",
+  "version": "2350099538745744392",
+  "role": "viewer",
+  "editorType": "figma",
+  "linkAccess": "view"
+}

@@ -1,8 +1,8 @@
-import { query } from "./_lib/db";
-import type { ApiRequest, ApiResponse } from "./_lib/http";
-import { assertGet, getQueryInt, getQueryString, sendData, sendError } from "./_lib/http";
-import { mapCommodity, type CommodityPriceRow } from "./_lib/mappers";
-import type { CommoditiesResponse } from "../src/types/investment";
+import { query } from "./_lib/db.js";
+import type { ApiRequest, ApiResponse } from "./_lib/http.js";
+import { assertGet, getQueryInt, getQueryString, sendData, sendError } from "./_lib/http.js";
+import { mapCommodity, type CommodityPriceRow } from "./_lib/mappers.js";
+import type { CommoditiesResponse } from "../src/types/investment.js";
 
 export default async function handler(
   req: ApiRequest,

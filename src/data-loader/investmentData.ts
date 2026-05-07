@@ -70,3 +70,56 @@ export async function loadCommodities(
 
   return fetchApiData<CommoditiesResponse>(`/api/commodities?${params}`);
 }
+
+export interface DashboardEnvironment {
+  macroRegime: MacroRegimeResponse;
+  dollarIndex: GlobalEnvironmentResponse;
+  vix: GlobalEnvironmentResponse;
+  treasury10y: GlobalEnvironmentResponse;
+  highYieldSpread: GlobalEnvironmentResponse;
+  commodities: CommoditiesResponse;
+}
+
+export type ScreenCategory = "priceUp" | "priceDown" | "volume" | "scoreTop";
+
+export interface ScreenItem {
+  ticker: string;
+  name: string | null;
+  metric: number | null;
+}
+
+export interface ScreenResponse {
+  category: ScreenCategory;
+  items: ScreenItem[];
+}
+
+export async function loadScreen(
+  category: ScreenCategory,
+  limit = 3,
+): Promise<ScreenResponse> {
+  const params = new URLSearchParams({ category, limit: String(limit) });
+  return fetchApiData<ScreenResponse>(`/api/screen?${params}`);
+}
+
+// 대시보드 한 번에 필요한 환경 데이터를 묶어 받음.
+// 시장 지수(SP500/Dow/Nasdaq) 가격은 DB 부재 — docs/figma/dashboard-slots.md 의
+// H3 결정에 따라 위험·시장 지표 4종(VIX/DXY/10Y/HY Spread) 으로 대체.
+export async function loadDashboardEnvironment(): Promise<DashboardEnvironment> {
+  const [macroRegime, dollarIndex, vix, treasury10y, highYieldSpread, commodities] =
+    await Promise.all([
+      loadMacroRegime(36),
+      loadGlobalEnvironment({ symbol: "DX-Y.NYB", historyLimit: 120 }),
+      loadGlobalEnvironment({ symbol: "^VIX", historyLimit: 120 }),
+      loadGlobalEnvironment({ symbol: "DGS10", historyLimit: 120 }),
+      loadGlobalEnvironment({ symbol: "BAMLH0A0HYM2", historyLimit: 120 }),
+      loadCommodities(undefined, 120),
+    ]);
+  return {
+    macroRegime,
+    dollarIndex,
+    vix,
+    treasury10y,
+    highYieldSpread,
+    commodities,
+  };
+}

@@ -7,19 +7,21 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
+    "db:ping": "node scripts/db-ping.mjs",
     "db:smoke": "tsx scripts/db-smoke.ts"
   },
   "dependencies": {
+    "esbuild": "^0.28.0",
     "pg": "^8.16.3",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },
   "devDependencies": {
-    "@vitejs/plugin-react": "^5.1.2",
     "@types/node": "^25.0.3",
     "@types/pg": "^8.15.6",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.0"

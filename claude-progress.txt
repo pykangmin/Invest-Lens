@@ -1,13 +1,247 @@
 # 세션 진행 기록
 
-## 2026-05-02
+---
 
-- Supabase PostgreSQL의 public 투자 데이터 테이블 6개를 확인했다.
-- 웹앱 전용 `invest_lens_readonly` DB role을 생성하고 public 투자 데이터 테이블에 SELECT 전용 권한과 RLS SELECT policy를 부여했다.
-- `.env.local`에 read-only `DATABASE_URL`을 저장하고, `.gitignore`로 비밀값 커밋을 방지했다.
-- Vite/React/TypeScript 기본 스캐폴드와 Vercel API 기반 DB data load 계층을 추가했다.
-- 추가 API: `/api/db-health`, `/api/companies`, `/api/company`, `/api/macro-regime`, `/api/global-environment`, `/api/commodities`.
-- 추가 data-loader: `loadDbHealth`, `searchCompanies`, `loadCompanySnapshot`, `loadMacroRegime`, `loadGlobalEnvironment`, `loadCommodities`.
-- 검증: `npm run typecheck`, `npm run db:smoke`, `npm run build` 통과.
-- 다음 세션 주목점: 검색 UI를 만들기 전에 `data-analysis.skill.md`에 펀더멘털 점수 25/25/25/25 기본 가중치와 null 재가중 규칙을 명시하면 좋다.
-- 수집기 자동 실행 환경은 무료 기준으로 GitHub Actions를 우선 후보로 둔다. 기존 `postgres` 관리자 비밀번호를 rotate하기 전, ETL 스크립트가 사용하는 환경변수 위치를 확인해야 한다.
+## 2026-05-06 (오후) — 시안 보강 + 검증 인프라 + 진입 화면 셸
+
+이전 5/6 오전 세션이 진단한 "node_modules 전체 재설치" 가 과진단이었음. 실제로는 `@esbuild/win32-x64` 바이너리만 누락, 그것만 재설치로 해결. 이후 시안 추출 + 검증 스크립트 + 진입 화면 셸까지 진행.
+
+### 한 일
+
+1. **시안 3장 정밀 분석 → `docs/figma/`** 신설
+   - `README.md` (인덱스, 21-aesthetics 와 단일 진실의 원천 관계, 불확실성 표기 규약 ✅/⚠️/❓)
+   - `landing.md` (진입 화면 슬롯·카피·토큰, 헤드라인 "투자의 시각, / 데이터로 **투명**하게", 인기 칩 4종, "삼성 전자" 가 S&P 500 DB 에 없는 문제 명시)
+   - `dashboard-slots.md` (개별 주식 화면 13개 슬롯 명세 표, 13-render 입력 spec 의 시안 버전)
+   - `flow.md` (작도 시안 추출, "Loading 4종"·"(%) 가중치" 추정, 02-data-analysis 와 cross-check 사항)
+   - `AGENTS.md` 에 `docs/figma/` 진입점 섹션 추가
+2. **`@esbuild/win32-x64` 바이너리 복구** — `npm install esbuild --force --include=optional` 로 부분 복구. 이전에 ELF 인 `bin/esbuild` 가 postinstall 을 막고 있어서 그것부터 삭제. 이후 vite/tsx 모두 정상 동작 확인.
+3. **`feature_list.json` 초안** — 8개 항목 (F-001 진입화면 / F-002 대시보드 셸 / F-003 게이지 5종 / F-004 메인 상단 / F-005 종합+TOP / F-006 분석 레이어 / F-007 검증 인프라 / F-008 제출 패키징). AGENTS.md 의 "passes 만 변경" 규칙에 맞춰 필드 안정적으로 설계. depends_on 으로 의존성 표시.
+4. **`init.sh` 실내용** — 6단계 fail-fast (Node/매니페스트/.env/DB ping/verify-structure/verify-skills). Windows 에서 `@esbuild/win32-x64/esbuild.exe` 부재를 별도로 detect 하는 트러블슈팅 가지 포함.
+5. **`verify-structure.sh` 실내용** — `scripts/verify-structure.mjs` 로 분리. LAYERS.md 의 YAML 블록 정규식 파싱 → src/ 의 모든 .ts/.tsx 의 import 추출 → 레이어 의존성 위반 검출. 외부 라이브러리 의존 0. 가짜 위반 주입으로 detect 동작 확인 완료.
+6. **`verify-skills.sh` 강화** — `scripts/verify-skills.mjs` 로 분리. (a) 8개 필수 파일 존재 (b) frontmatter references 와 본문 inline reference 의 dangling link 검출. asset_class enum / 차트 매핑 표 / severity 정렬 검증은 다음 세션 과제.
+7. **진입 화면 셸 (F-001 부분)** — 시안 그대로:
+   - `src/shared/styles.css` — 21-aesthetics 의 의미 색 5색을 CSS 변수로 토큰화. 무채색 라이트(대시보드)·다크 hero(랜딩) 두 영역. Pretendard Variable + tabular figures + 모션 변수.
+   - `src/layout/Landing.tsx` — 다크 네이비 + 옅은 패턴 배경. 로고 → 헤드라인("투명" 골드 강조) → 부제 → 검색 pill → 인기 검색어 칩 4종. 인기 검색어 중 "삼성 전자" 는 DB 에 없으므로 disabled 처리.
+   - `src/layout/StockPage.tsx` — placeholder. CompanySnapshot 4개 필드(가격·섹터·PER·RSI) 노출. F-002~F-005 슬롯이 채울 자리.
+   - `src/layout/App.tsx` — pathname 기반 단순 라우터 (`/` / `/stock/<ticker>`). react-router 미사용.
+   - `src/main.tsx` 갱신, `index.html` 에 Pretendard CDN link 추가.
+
+### 검증 결과
+
+- `npm run typecheck` 통과 (tsc --noEmit, 에러 0)
+- `bash init.sh` 통과 (6/6 단계)
+- `bash verify-structure.sh` 통과 (8 파일 검사, 위반 0)
+- `bash verify-skills.sh` 통과 (8 파일, reference 무결성 OK)
+- `npm run dev` — Vite 7.3.2 가 127.0.0.1:5173 에서 2.9s 에 ready. (브라우저 시각 검증은 다음 세션)
+- DB ping 379ms — 멀쩡
+
+### 발견한 함정 / 정정
+
+- **이전 메모 정정**: "node_modules 가 Linux/WSL 빌드본이라 전체 재설치 필요" → 사실 부분 누락. `@esbuild/win32-x64/` 디렉토리 하나만 비어있던 상태였고, `tsx`·`vite`·`@rollup/rollup-win32-x64-msvc` 는 모두 멀쩡. 향후 비슷한 진단 시 디렉토리 단위로 점검할 것.
+- **postinstall ELF 트랩**: `node_modules/esbuild/bin/esbuild` 가 Linux ELF 로 남아있으면 npm rebuild 가 그것을 실행하려다 EBADF 로 실패. 해결: 그 파일 먼저 삭제 후 `npm install esbuild --force --include=optional`.
+- **DB·시안 매핑 결과**: 시안 13개 슬롯 중 11개는 현 DB(503 종목 + 6 테이블) 로 즉시 채울 수 있음. 미해결은 (1) 시장 지수 카드(S&P/Dow 등의 가격 — global_environment 에 직접 없음), (2) 주요 이벤트 리스트의 데이터 소스(권장: DB 신호 변화 합성 — supertrend/macd/dominant_regime 전환).
+- **API 라우트 로컬 실행**: 현재 `api/*.ts` 는 Vercel serverless 함수 형태. Vite dev 서버에서는 서빙 안 됨 → StockPage 의 `/api/company` 호출이 dev 환경에서는 404. `vercel dev` 또는 Vite 의 미들웨어 어댑터가 필요. 다음 세션 작업.
+
+### 추가 작업 — 세션 후반
+
+8. **Vite dev 가 api/*.ts 를 서빙** — `vite.config.ts` 에 `apiRoutesPlugin()` 추가. configureServer 미들웨어가 `/api/<name>` 요청을 `api/<name>.ts` 의 default export 로 라우팅. Vercel handler 시그니처(ApiRequest/ApiResponse) 와 호환되는 어댑터 작성. `.env.local` 의 DATABASE_URL 을 process.env 로 주입(`loadEnvLocal`). 프로덕션은 변경 없음 (Vercel 이 동일 파일을 직접 서빙).
+9. **F-001 자동완성 드롭다운** — Landing 의 검색 입력에 220ms 디바운스 + `/api/companies?q=&limit=8`. 드롭다운 항목: ticker · name · sector. 키보드 ↑↓Enter ESC 지원. 외부 클릭 시 닫힘. mouseDown 으로 항목 선택 (focus blur 충돌 회피).
+
+### 검증 결과 (후반)
+
+- `npm run typecheck` 통과 (aria-expanded 의 boolean 강제 cast 1회 수정)
+- `bash verify-structure.sh` / `bash verify-skills.sh` 통과
+- `npm run dev` 5174 포트 (5173 점유로 자동 시프트). dev id `bnv8r9n7m`
+- `curl /api/db-health` → 6개 테이블 메타 정상
+- `curl "/api/companies?q=appl&limit=5"` → AAPL/AMAT/APP 등 반환
+- `curl "/api/company?ticker=AAPL&historyLimit=3"` → fundamentals + technical 반환
+
+### 데이터 품질 발견
+
+- `stock_price_tech` 의 최근 일자(2026-04~05) 행이 close/rsi14/macd 모두 `null`. 시안의 가격 표시(`102.36$`)를 그대로 채우려면 더 과거 행으로 fallback 필요. 데이터 적재 측 이슈일 가능성 — 다음 세션에서 latest non-null 행을 찾는 쿼리 패턴으로 수정 검토.
+- `stock_fundamentals` 의 최신 행(2026-03-31) 도 일부 컬럼만 채워짐. 분기별 데이터라 직전 분기(2025-12-31) 부터가 완전한 행.
+
+### 추가 작업 — 대시보드 골격
+
+10. **api/company.ts latest-non-null fallback** — `WHERE close IS NOT NULL` / `WHERE per IS NOT NULL OR roe IS NOT NULL OR market_cap IS NOT NULL` 추가. 결과: AAPL 가격 266.17, PER 23.9, ROE 1.91 같이 채워진 행이 latest 로 잡힘.
+11. **분석 레이어 (F-006 첫 컷)** — `src/types/scoring.ts` (Severity / GaugeId / GaugeScore / CompositeScores / AnalysisEvent / AnalysisResult), `src/analysis/severity.ts` (점수→등급 + normalize), `fundamental.ts` (5개 지표 평균), `technical.ts` (RSI 기반 + ma200 보정), `macro.ts` (dominant_regime+confidence 매핑), `environment.ts` (DXY/VIX), `events.ts` (분기 보고일 + RSI 임계 돌파), `index.ts` (analyze() 진입). 12-analyze 입력/출력 형태 따름.
+12. **시각화 6종** — `Donut` (SVG 도넛 게이지), `Sparkline` (sanitize + area path), `GaugeCard`, `MiniStat`, `EventList`, `Top3Card`. 모두 21-aesthetics 의 의미 색을 `severityColor.ts` 통해서만 사용.
+13. **`StockDashboard.tsx`** — 시안 슬롯 통합. 좌측 게이지 5종 / 메인 가격차트 + 이벤트 + 환율 + 종합 3 + TOP 3 ×4. 단일 종목 화면이라 TOP 3 는 placeholder (전 종목 정렬은 별도 API 필요).
+14. **`data-loader/investmentData.ts`** — `loadDashboardEnvironment()` 추가. macro_regime + DXY + VIX + commodities 를 한 번에 Promise.all 로 묶음.
+15. **App.tsx** — StockPage 제거, StockDashboard 로 교체.
+
+### 검증 결과 (대시보드 골격 후)
+
+- `npm run typecheck` 통과
+- `bash verify-structure.sh` — 23 파일 검사, 위반 없음 (analysis ↛ visualization 같은 역방향 없음)
+- `bash verify-skills.sh` — 통과
+- API 5종 200 OK:
+  - `/api/company?ticker=AAPL` 15330B
+  - `/api/macro-regime` 2960B
+  - `/api/global-environment?symbol=DX-Y.NYB` 6127B
+  - `/api/global-environment?symbol=^VIX` 6209B
+  - `/api/commodities` 3098B
+- 실 데이터 sample: VIX 19.5 (정상), DXY 98.41 (정상), macro_regime 2026-03 = HardLanding/Medium → G2 가 WARNING 으로 뜸 (시안 mock 의 SoftLanding 과 다름. 실 데이터가 정확).
+
+### 골격에서 의도적으로 비운 곳
+
+- **TOP 3 ×4** — 단일 종목 화면이라 비교 기준이 없음. 전 종목 정렬용 분석 API (`/api/screen?metric=fundamental_score`) 가 별도로 필요.
+- **인사이트 (`AnalysisResult.insights`)** — 빈 배열. 03-insight 의 If-then 본문 → 인사이트 객체화 미구현.
+- **이벤트 합성**: supertrend_signal 전환 / MACD 골든크로스 / dominant_regime 변경 미구현. 현재는 분기 보고일 + RSI 임계 돌파만.
+- **헤더 시장 지수 4슬롯**: 시안은 S&P 500 등 4개 동일 mock. DB 에 인덱스 가격 직접 없음 → 거시 추세/DXY/VIX/SoftLand 확률 4종으로 대체. 시안과 의미적으로 다름.
+- **시안 차트 텍스처**: 진입 화면 배경은 단순 줄무늬. SVG 또는 이미지 패턴 교체 미진.
+
+### 추가 작업 — 시안 매핑 정정 (1차 매핑 오류 수정)
+
+사용자가 대시보드 규격이 안 맞고 컴포넌트가 잘못 들어갔다고 지적. 시안 매핑 단계 (`dashboard-slots.md` 1차) 의 오인이 코드에 그대로 박힌 것이 원인. 진단·계획·구현까지 한 번에 진행.
+
+**1차 매핑 오인 (정정 전)**:
+- 종목 헤더(이름·가격·변동) 를 헤더 영역(H1) 으로 분류했으나, 시안 실제 위치는 **사이드바 최상단**.
+- 시장 지수 4슬롯이 DB 에 부재 — 코드에서 무단으로 위험지표/거시추세로 갈아낌. 매핑 문서에는 명시 안 함.
+- 3중 게이지 (74.2/74.2/65.2) 를 카드 3개로 분리. 시안은 카드 1개 안에 게이지 3개 가로.
+- 메인 위쪽 빈 공간을 즉흥적으로 가격 차트로 채움. 매핑 문서엔 슬롯 정의 X.
+- 헤더의 글로벌 검색 pill / 로고 누락.
+- TOP 3 placeholder 종목 자리에 "—" 채움 — 비활성 카드 톤이어야 함.
+
+**16. DB 시장 지수 재조사** — `global_environment` 의 모든 symbol 을 enumerate (Top 30 만 본 1차에서 누락 가능성 점검). 결과: SP500/Dow/Nasdaq/Russell/KOSPI 어떤 형태로도 부재 확정. 위험지표 4종(VIX/DXY/10Y/HY Spread) 으로 대체 결정을 `dashboard-slots.md` H3 표에 명시.
+
+**17. `dashboard-slots.md` 2차 재작성** — 시안 픽셀 위치 우선 매핑. 슬롯 ID 체계 정정 (`header.symbol` → `sidebar.symbol`, M0 슬롯 신규 정의, M3 단일 카드 명시). "1차 매핑의 회고" 섹션 추가 — 재발 방지용.
+
+**18. 컴포넌트 추가/조정**:
+- `CompositeTrio.tsx` 신규 — 단일 카드 안의 3-게이지 (M3 시안 충실).
+- `Top3Card` 에 `pending` prop 추가 — 비활성 톤 + "데이터 준비 중" 메시지.
+- `EventList` 우측 태그를 보더형에서 옅은 배경 채움형(severity chip) 으로.
+
+**19. `loadDashboardEnvironment()` 보강** — 헤더 4슬롯용 10Y(`DGS10`) + HY Spread(`BAMLH0A0HYM2`) 추가 fetch. 6개 환경 데이터를 한 번에.
+
+**20. `StockDashboard.tsx` 전면 재작성** — 새 매핑 대로:
+```
+HEADER:    〉Invest Lens │ [글로벌 검색] │ VIX DXY 10Y HY
+SIDEBAR:   [종목+가격+변동] [G1] [G2] [G3] [G4] [G5]
+MAIN:      [M0 가격 라인 차트]
+           [M1 이벤트] [M2 환율 4]
+           [M3 3종 평균 게이지 단일 카드]
+           [M4][M5][M6][M7] TOP 3 ×4
+```
+- 사이드바 비율 `minmax(280px, 30%) 1fr` (이전 280 고정 → 30% 가변)
+- 헤더 컨텍스트 셀에 tone(neutral/warn/alert) 으로 임계 색 — VIX 30↑ alert / 10Y 4.5↑ alert / HY 5↑ alert 등
+- 헤더 글로벌 검색은 stub pill (다음 세션에서 Landing 검색바 분리·임포트)
+
+### 검증 결과 (2차 매핑 후)
+
+- `npm run typecheck` 통과
+- `verify-structure.sh` — 24 파일 (CompositeTrio 추가). 위반 없음.
+- `verify-skills.sh` — 통과
+- API 검증: 10Y `4.26` / HY Spread `2.87` / VIX `19.5` / DXY `98.41` 헤더 4슬롯에 매핑됨. AAPL `priceMeta.lineFull` 180일 데이터 확보.
+
+### 다음 세션이 주목할 지점
+
+- **시각 확인**: `http://127.0.0.1:5174/stock/AAPL` 열어서 새 레이아웃이 시안에 충분히 가까운지 확인. 어긋난 곳 지적 받아 미세 조정.
+- **글로벌 검색 stub → 실 컴포넌트**: 헤더 검색이 현재 `〉` 클릭하면 진입 화면 복귀(로고 onClick) 만. Landing 의 검색바를 `SearchPill.tsx` 같은 공용 컴포넌트로 분리해서 헤더에 임포트.
+- **TOP 3 ×4 실 데이터** — `/api/screen?category=fundamental&limit=3` 같은 신규 라우트가 필요. 전 종목의 펀더 점수 산출이 backend 부담이라 캐싱 또는 사전 계산 검토.
+- **인사이트 If-then** (03-insight → AnalysisResult.insights) — 현재 빈 배열.
+- **이벤트 합성 보강**: supertrend_signal 전환 / MACD 골든크로스 / dominant_regime 변경 추가.
+- **F-001 / F-002 / F-003 / F-006 의 passes 변경 가능성** — 시각 확인 통과 시 4개 가능.
+- **DACON Skills 제출 형식 재확인** — 5/7 마감 D-1. zip 구조·PDF·파일 개수.
+- **dev 서버**: id `bnv8r9n7m` (5174 포트). HMR 로 새 코드 자동 반영.
+
+---
+
+## 2026-05-07 — Figma 트리 자동화 + v3 정합성 완성 + 배포 준비
+
+### 한 일
+
+1. **Figma REST API 통합 — PNG 추측 종료**
+   - `.env.local` 에 `FIGMA_TOKEN` 추가 (사용자), `FIGMA_FILE_KEY=UJoPeW9SMzwDqX8B44eMrc`, `FIGMA_ROOT_NODE=251:4045`
+   - `scripts/figma-fetch.mjs` (token 검증 + file/nodes/images fetch) — 토큰 스코프 `current_user:read` 부재로 /v1/me 만 403, file API 정상
+   - `scripts/figma-extract-slots.mjs` 가 `figma-tree.json` (232KB, 269 노드) 에서 **45 slots 자동 추출**. 16 개가 의미 라벨 (`주가지수`, `headerglobal`, `search-bar`, `progress` 등)
+   - `images/figma/251_4045.png` (디자이너 export 원본, 406KB scale=2) — *이전 사용자 PNG 와 다른 화면* 임이 결정적. PNG 만 봤으면 영영 모를 뻔.
+
+2. **v3 매핑 (Recon agent) 작성 → `docs/figma/dashboard-slots-v3.md`** (370줄)
+   - PNG v2 의 잘못된 가정 모두 정정: 게이지 5→4종, G3 라벨 `통화→거시 경제`, G2 `통화→원자재 영향`, **사이드바 부재** (가로 stripe), composite-trio = **시점 비교**, 시안 배경 `#fff`
+   - hex 13개 직접 추출 (`#60c846/#c1121f/#4073ff/#003049/#7f7f7f` …)
+
+3. **v3 코드 전면 재작성 (메인)**
+   - 신규 컴포넌트: `ProgressBar`, `RegimeBadge`, `SymbolHeader`, `IndexStripe`, `FxCard`, `CompositeTrio` (의미 재정의), `GlobalSearch`, `Top3Card.pending`
+   - `GaugeCard` mode prop (`donut/progress/regime`) — G3 regime 모드는 RegimeBadge + Sparkline 동시
+   - 분석: `commodityImpactGauge` 신규 (sector × 원자재 가중), `technical` 가 RSI+VIX 결합, `macro` 가 SOFT/HARD/NO-LANDING regime 라벨
+   - styles.css 13개 hex + 폰트 3종 (Pretendard / Freesentation / Fugaz One) + 사이즈 토큰 10단계 + radius 30/15/10/4
+
+4. **Reviewer agent 감사 → `docs/figma/v3-implementation-audit.md`** — 일치도 78%
+   - Top FAIL: chart+events 같은 row 잘못 통합 (정정), 헤더 검색바 비대칭 (정정), GaugeCard regime label 중복 (정정)
+   - 그 외 패치: composite-trio minHeight, EventList severity chip, Top3Card pending 톤
+
+5. **사용자 시각 점검 라운드 — 미세 조정 다수**
+   - 6단 구조 명시: 1단 종목 / 2단 게이지 4 / 3단 차트 / 4단 이벤트+환율 / 5단 종합 / 6단 랭킹
+   - 4단 1:1 비율, 환율은 시안 mock 그대로 (USD/KRW × 4 + 예시 배지)
+   - Sparkline 가변 폭 (viewBox + width="100%") — 차트 삐져나옴 정정
+   - composite-trio sparkline 더미 history → **실 시계열 (analysis/series.ts)**
+   - Top3 4 카테고리 + 시안 배경 색 4톤 (#f6fff4/#fafdff/#fff4f5/#fffdf9)
+   - 1단 시장 컨텍스트 4 → 1슬롯 (S&P 500 시안 mock + 예시 배지)
+   - 종목 가격 색 무채 + 폰트 30px
+
+6. **5단 종합 점수 — 모두 실 데이터화**
+   - `analysis/series.ts` 신규 — `buildDailyComposite` 30~252 영업일 일별 점수 시계열 (펀더 분기 carry forward, 거시 월 carry forward)
+   - 사용자 결정: 시점 trio (오늘 7일 / 이번 달 30일 / 올해 YTD) — 점수·추이·delta 모두 실
+   - delta 라벨 카드별 분기 (`전일 대비` / `30일 전 대비` / `연초 대비`)
+   - **검수 agent (`composite-trio-audit.md`)** D1/D2 FAIL 잡아냄 → v3 §4.6 을 시점 trio 로 갱신 (사용자 결정이 단일 진실의 원천)
+
+7. **API 보강**
+   - `api/screen.ts` 신규 — 4 카테고리 (`priceUp/priceDown/volume/scoreTop`) 1 엔드포인트. SQL `primary` reserved 충돌 → `metric` alias
+   - `api/company.ts` latest non-null fallback (이전 ROUND)
+   - dev 라우팅: `vite.config.ts` 의 `apiRoutesPlugin` (이전 ROUND)
+
+8. **URL 명 결정**
+   - 세부: `/dashboard/<TICKER>` 정식 + `/stock/<TICKER>` alias (이전 링크 호환)
+   - 메인 도메인: `https://investlens-dataker.vercel.app` (사용 가능 확인, `invest-lens.vercel.app` 은 점유)
+
+9. **Branch rename + push**
+   - `front-end-test-2` → `build-test`
+   - `git push -u origin build-test` 성공 (현재 origin: `pykangmin/Invest-Lens` — 사용자 본인 repo 가 아님)
+   - 사용자가 본인 GitHub 계정에 새 repo 생성 예정. URL 받으면 dev 가 4 branch 일괄 push.
+
+10. **자율 진행 (사용자 부재 시)**
+    - `vercel.json` 작성 — Vite framework + rewrite (`/dashboard/:ticker` → SPA fallback)
+    - `.env.example` 갱신 — DATABASE_URL + FIGMA_TOKEN 옵션
+    - `submission/SUBMISSION.md` 초안 — 평가 5개 항목 매핑 + 데이터 흐름 + 화면 구성 + 배포 URL
+    - `Vercel CLI` 글로벌 설치 시도 거부됨 (system-level) — 사용자가 직접 설치 또는 콘솔 GUI
+
+### 검증 결과
+
+- `npm run typecheck` 통과 (마지막 라운드까지 모두)
+- `verify-structure.sh` 31 파일 위반 0
+- `verify-skills.sh` 8 파일 + reference 무결성 OK
+- API 5종 + screen 4 카테고리 모두 200 OK 실 데이터
+- AAPL: 가격 266.17 / RSI 56.7 / 펀더 60 점 등 실 데이터 흐름 정상
+- macro_regime 2026-03 = HardLanding/Medium (시안 mock 의 SoftLanding 과 다름 — 실 데이터가 정확)
+
+### 사용자 돌아오면 즉시 처리할 항목
+
+| # | 작업 | 의존 |
+|---|---|---|
+| 1 | 사용자 GitHub 계정에 빈 repo 생성 (예: `<user>/investlens-dataker`) → URL 공유 | 사용자 액션 |
+| 2 | dev 가 `git remote set-url origin <new>` + `git push -u origin --all` (4 branch 일괄) | 1 후 |
+| 3 | Vercel 콘솔에서 기존 `claude` 프로젝트의 git 연결을 disconnect → 새 repo 와 connect | 사용자 액션 |
+| 4 | Vercel 프로젝트 rename `claude` → `investlens-dataker` | 사용자 액션 |
+| 5 | Vercel Settings → Environment Variables → `DATABASE_URL` 추가 (production 영향) | 사용자 액션 |
+| 6 | Vercel Production deploy 자동 트리거 (main push) — preview 는 build-test 가 자동 | 5 후 |
+| 7 | Production URL `https://investlens-dataker.vercel.app/dashboard/AAPL` 결과 확인 | 6 후 |
+
+대안 (Vercel CLI 가 더 빠르면):
+- 사용자가 `! npm i -g vercel` + `! vercel login` (브라우저 OAuth)
+- 이후 dev 가 CLI 로 4·5·6 처리 가능 (rename / env add / deploy)
+
+### 검수 agent 미해결
+
+- A2/A3 WARN — composite-trio 의 평균 점수 vs 시작-끝 delta base 불일치 (사용자 직관 vs 데이터 정직 사이 trade-off). 추후 결정.
+- E1.b WARN — `MiniStat`, 일부 `analysis.composite` 필드 미사용 (dead code 정리 가능)
+- 13-render declarative `SlotSpec → RenderedSlot` 미반영 (본 마감 후 보강)
+
+### 다음 세션이 주목할 지점
+
+- 위 사용자 액션 1~7
+- `submission/SUBMISSION.md` 의 GitHub URL / Vercel URL 칸 채움
+- DACON Skills.md 5/7 마감 점검 (오늘) — 제출 형식 (zip / PDF / 페이지) 재확인
+- Wanted Sans 1순위 적용 (현재 Pretendard) — 21-aesthetics §타이포 충실도
+- 03-insight If-then 객체화 — `AnalysisResult.insights` 현재 빈 배열
+- 시안 vs 새 production deploy 비교 — Vercel 결과로 Reviewer agent 다시 한 라운드
