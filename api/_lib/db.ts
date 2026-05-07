@@ -25,11 +25,14 @@ function getPoolConnectionString(): string {
 
 export function getPool(): pg.Pool {
   if (!pool) {
+    // Vercel serverless: lambda 별 1 connection (pool_size=15 한도 안에서 안전)
+    // 로컬 dev: max=3 (단일 process 의 동시 query 처리)
+    const isVercel = !!process.env.VERCEL;
     pool = new Pool({
       connectionString: getPoolConnectionString(),
-      idleTimeoutMillis: 10_000,
+      idleTimeoutMillis: isVercel ? 1_000 : 10_000,
       connectionTimeoutMillis: 10_000,
-      max: 3,
+      max: isVercel ? 1 : 3,
       ssl: { rejectUnauthorized: false },
     });
     pool.on("error", (err) => {
