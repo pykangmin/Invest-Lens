@@ -5,6 +5,7 @@
   "outputDirectory": "dist",
   "installCommand": "npm ci",
   "rewrites": [
+    { "source": "/dashboard/:ticker/:section", "destination": "/index.html" },
     { "source": "/dashboard/:ticker", "destination": "/index.html" },
     { "source": "/stock/:ticker", "destination": "/index.html" }
   ]
