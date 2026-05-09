@@ -40,7 +40,6 @@ export function EventList({ events, title = "주요 이벤트", maxRows = 5, hea
           <span style={S.title}>{title}</span>
           {headerBadge}
         </div>
-        <button type="button" style={S.more}>더보기 〉</button>
       </header>
       {rows.length === 0 ? (
         <div style={S.empty}>표시할 이벤트가 없습니다.</div>

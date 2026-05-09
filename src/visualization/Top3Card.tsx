@@ -12,6 +12,7 @@ export interface Top3CardProps {
   tone?: Top3Tone;
   pending?: boolean;
   badge?: string;
+  onSelectTicker?: (ticker: string) => void;
 }
 
 function toneColor(tone: Top3Tone): string {
@@ -43,7 +44,7 @@ function toneBackground(tone: Top3Tone): string {
   }
 }
 
-export function Top3Card({ title, items, tone = "up", pending = false, badge }: Top3CardProps) {
+export function Top3Card({ title, items, tone = "up", pending = false, badge, onSelectTicker }: Top3CardProps) {
   const numColor = toneColor(tone);
   const cardStyle: React.CSSProperties = {
     ...S.card,
@@ -61,16 +62,32 @@ export function Top3Card({ title, items, tone = "up", pending = false, badge }: 
       ) : (
         <ol style={S.list}>
           {items.length === 0 && <li style={S.empty}>데이터 없음</li>}
-          {items.map((it, i) => (
-            <li key={`${it.ticker}-${i}`} style={S.row}>
-              <span style={S.rank}>{i + 1}</span>
-              <span style={S.tickerCol}>
-                <span style={S.ticker}>{it.ticker}</span>
-                {it.korName && <span style={S.korName}>{it.korName}</span>}
-              </span>
-              <span style={{ ...S.primary, color: numColor }}>{it.primary}</span>
-            </li>
-          ))}
+          {items.map((it, i) => {
+            const clickable = !!onSelectTicker;
+            const handle = () => onSelectTicker?.(it.ticker);
+            return (
+              <li key={`${it.ticker}-${i}`} style={S.row}>
+                <span style={S.rank}>{i + 1}</span>
+                {clickable ? (
+                  <button
+                    type="button"
+                    onClick={handle}
+                    style={{ ...S.tickerCol, ...S.tickerButton }}
+                    title={`${it.ticker} 분석 보기`}
+                  >
+                    <span style={S.ticker}>{it.ticker}</span>
+                    {it.korName && <span style={S.korName}>{it.korName}</span>}
+                  </button>
+                ) : (
+                  <span style={S.tickerCol}>
+                    <span style={S.ticker}>{it.ticker}</span>
+                    {it.korName && <span style={S.korName}>{it.korName}</span>}
+                  </span>
+                )}
+                <span style={{ ...S.primary, color: numColor }}>{it.primary}</span>
+              </li>
+            );
+          })}
         </ol>
       )}
     </div>
@@ -123,6 +140,15 @@ const S: Record<string, React.CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     minWidth: 0,
+  },
+  tickerButton: {
+    background: "transparent",
+    border: 0,
+    padding: 0,
+    cursor: "pointer",
+    textAlign: "left",
+    color: "inherit",
+    transition: "opacity var(--duration-fast) var(--ease-out)",
   },
   ticker: {
     fontWeight: 700,

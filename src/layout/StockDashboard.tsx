@@ -178,11 +178,12 @@ export function StockDashboard({ ticker, onBack, onSelectTicker }: StockDashboar
             {/* 4) 종합 점수 3중 */}
             <CompositeTrio items={buildTrioItems(data)} />
 
-            {/* 5) TOP 3 ×4 */}
+            {/* 5) TOP 3 ×4 — 종목 클릭 시 해당 종목 화면으로 이동 */}
             <section style={S.topRow}>
               <Top3Card
                 title="어제 가장 많이 오른 주식 TOP 3"
                 tone="up"
+                onSelectTicker={onSelectTicker}
                 items={data.screens.priceUp.map((it) => ({
                   ticker: it.ticker,
                   korName: it.name ?? undefined,
@@ -192,6 +193,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker }: StockDashboar
               <Top3Card
                 title="어제 가장 많이 거래된 주식 TOP 3"
                 tone="info"
+                onSelectTicker={onSelectTicker}
                 items={data.screens.volume.map((it) => ({
                   ticker: it.ticker,
                   korName: it.name ?? undefined,
@@ -201,6 +203,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker }: StockDashboar
               <Top3Card
                 title="어제 가장 많이 떨어진 주식 TOP 3"
                 tone="down"
+                onSelectTicker={onSelectTicker}
                 items={data.screens.priceDown.map((it) => ({
                   ticker: it.ticker,
                   korName: it.name ?? undefined,
@@ -210,6 +213,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker }: StockDashboar
               <Top3Card
                 title="어제 점수가 좋았던 주식 TOP 3"
                 tone="neutral"
+                onSelectTicker={onSelectTicker}
                 items={data.screens.scoreTop.map((it) => ({
                   ticker: it.ticker,
                   korName: it.name ?? undefined,
