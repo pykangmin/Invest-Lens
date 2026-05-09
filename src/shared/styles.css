@@ -1,36 +1,57 @@
-/* styles.css — Figma tree (docs/figma/dashboard-slots-v3.md) 추출값을 단일 진실의 원천으로.
- * 색·폰트·사이즈·라운드는 figma-tree.json 에서 직접 추출됨. */
+/* styles.css — v4 단일 진실의 원천.
+ * 색·폰트·사이즈·라운드는 docs/figma/dashboard-slots-v4.md §1 디자인 시스템 표를 따름.
+ * 사용 빈도 분석은 figma-tree.json 직접 추출. */
 
 :root {
-  /* 의미 색 — Figma fill 직접 추출 (21-aesthetics §색상) */
-  --color-up: #60c846;        /* 긍정·상승 (시안 GOOD, +0.31% 등) */
-  --color-up-strong: #4c956c; /* 종목 헤더 가격 변동 다크 변형 */
-  --color-down: #c1121f;      /* 부정·하락 (NEGATIVE, EXTREME FEAR) */
-  --color-info: #4073ff;      /* 정보 카테고리 태그 (거시지표) */
-  --color-info-alt: #267bea;  /* TOP3 거래량 % 변형 */
-  --color-accent: #e0b556;    /* 강조·골드 (시안 미사용 — 다른 화면용 보존) */
+  /* ───── 브랜드 (v4 사용 빈도 상위) ───── */
+  --color-brand-navy: #003049;       /* 183× — PRIMARY 텍스트·강조·로고 */
+  --color-brand-navy-dark: #002031;  /* 칩 배경 다크 변형 (home 인기 검색어) */
 
-  /* 무채색 */
-  --color-bg: #ffffff;            /* root frame fill */
-  --color-card: #ffffff;          /* 카드 fill (white-on-white, 구분은 stroke/cornerRadius) */
-  --color-header-bg: #fafbfc;     /* header/global frame */
-  --color-text: #003049;          /* 주요 텍스트 / 종목명 / 카드 헤더 */
-  --color-text-strong: #373737;   /* 시장 지수 텍스트 */
-  --color-text-muted: #7f7f7f;    /* 부제·muted */
-  --color-text-faint: #a3a3a3;    /* 헤더 카피 ultra-muted */
-  --color-text-black: #000000;    /* progress bar 점수 */
-  --color-border: #e5e9ef;
-  --color-stroke: #003049;        /* Frame 4 카드 stroke */
+  /* ───── 의미 색 (UP / DOWN / NEUTRAL) ───── */
+  --color-up: #60c846;            /* 74× — 그린 솔리드 (POSITIVE / +0.31% 등) */
+  --color-up-strong: #43bb2e;     /* 6×  — 그린 다크 (강조) */
+  --color-up-bg: #e4ffdf;         /* 7×  — 그린 라이트 BG */
+  --color-down: #c1121f;          /* 19× — 레드 (NEGATIVE / EXTREME FEAR) */
+  --color-down-soft: #e06069;     /* 19× — 레드 보조 (그라디언트·sparkline) */
+  --color-down-bg: #ffe8e8;       /* 1×  — 레드 라이트 BG */
+  --color-info: #4073ff;          /* 5×  — 정보·태그 */
+  --color-warn: #ff9737;          /* 1×  — caution/orange (rare) */
+  --color-accent: #780000;        /* 5×  — 로고 액센트 딥 레드 */
 
-  /* 폰트 — Figma 출현 family */
+  /* ───── 무채색 ───── */
+  --color-bg: #fafbfc;            /* 13× — 페이지 BG */
+  --color-card: #ffffff;          /* 37× — 카드 fill */
+  --color-header-bg: #fafbfc;     /* 헤더 BG */
+  --color-text: #003049;          /* 주요 텍스트 (브랜드 네이비) */
+  --color-text-strong: #373737;   /* 9×  — 강조 텍스트 */
+  --color-text-body: #4e4e4e;     /* 18× — 본문 다크 그레이 */
+  --color-text-muted: #7f7f7f;    /* 49× — 부제 그레이 */
+  --color-text-faint: #a3a3a3;    /* 3×  — ultra-muted (placeholder, 배지) */
+  --color-text-black: #000000;    /* 7×  — progress / 점수 강조 */
+  --color-border: #e9e9e9;        /* 67× — 카드 stroke (단일 표준) */
+  --color-stroke-strong: #003049; /* 강조 stroke */
+
+  /* ───── 헤로 (home 진입화면) ───── */
+  --color-hero-bg: #003049;       /* home.bg.base — 솔리드 네이비 */
+  --color-hero-text: #ffffff;
+  --color-hero-muted: rgba(255, 255, 255, 0.78);
+  --color-hero-input-bg: #ffffff;
+  --color-hero-input-text: #003049;
+  --color-hero-input-placeholder: #a6a6a6;
+  --color-hero-submit-bg: #003049;
+  --color-hero-chip-bg: rgba(0, 32, 49, 0.20);  /* #002031 @ 20% */
+  --color-hero-chip-stroke: rgba(255, 255, 255, 1);
+
+  /* ───── 폰트 (v4 출현 family) ───── */
   --font-body: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  --font-numeric: "Freesentation", "Pretendard Variable", Pretendard,
-    -apple-system, sans-serif;
+  --font-numeric: "Freesentation", "Pretendard Variable", Pretendard, sans-serif;
   --font-brand: "Fugaz One", "Pretendard Variable", serif;
+  --font-ui: var(--font-body);
 
-  /* 사이즈 토큰 — Figma 출현 fontSize */
+  /* ───── 폰트 사이즈 (v4 출현 fontSize) ───── */
   --font-size-xxs: 10px;
+  --font-size-xs: 12px;
   --font-size-sm: 13px;
   --font-size-base: 14px;
   --font-size-md: 15px;
@@ -40,21 +61,24 @@
   --font-size-2xl: 25px;
   --font-size-3xl: 30px;
   --font-size-4xl: 40px;
+  --font-size-5xl: 45px;
+  --font-size-hero: 60px;
 
-  /* 라운드 — Figma cornerRadius */
-  --radius-card: 10px;     /* 일반 카드 (Rectangle 76) */
-  --radius-card-lg: 30px;  /* Frame 4 (종목 + 시장 지수 통합 카드) */
-  --radius-pill: 15px;     /* 검색 바, progress group */
-  --radius-tag: 4px;       /* 카테고리 태그 */
+  /* ───── 라운드 ───── */
+  --radius-card: 10px;
+  --radius-card-lg: 30px;
+  --radius-pill: 60px;       /* home 검색 pill (radius 60) */
+  --radius-chip: 50px;       /* 인기 검색어 칩 (radius 50) */
+  --radius-tag: 4px;
 
-  /* 모션 */
+  /* ───── 모션 ───── */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --duration-fast: 120ms;
   --duration-normal: 220ms;
 
-  /* 레이아웃 */
+  /* ───── 레이아웃 ───── */
   --canvas-max: 1440px;
-  --content-pad-x: 165px;  /* Figma 좌·우 외곽 여백 */
+  --content-pad-x: 165px;
 }
 
 * {
@@ -71,7 +95,7 @@ body,
 
 body {
   font-family: var(--font-body);
-  font-feature-settings: "tnum"; /* tabular figures (21-aesthetics §타이포) */
+  font-feature-settings: "tnum"; /* tabular figures */
   -webkit-font-smoothing: antialiased;
   color: var(--color-text);
   background: var(--color-bg);

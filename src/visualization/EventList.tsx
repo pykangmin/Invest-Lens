@@ -1,3 +1,4 @@
+import type { CSSProperties, ReactNode } from "react";
 import type { AnalysisEvent, Severity } from "../types/scoring";
 import { severityVar } from "./severityColor";
 
@@ -5,6 +6,8 @@ export interface EventListProps {
   events: AnalysisEvent[];
   title?: string;
   maxRows?: number;
+  headerBadge?: ReactNode;
+  style?: CSSProperties;
 }
 
 function severityChip(s: Severity): string {
@@ -28,12 +31,15 @@ function formatDay(date: string): { day: string; month: string } {
   return { day, month };
 }
 
-export function EventList({ events, title = "주요 이벤트", maxRows = 5 }: EventListProps) {
+export function EventList({ events, title = "주요 이벤트", maxRows = 5, headerBadge, style }: EventListProps) {
   const rows = events.slice(0, maxRows);
   return (
-    <div style={S.card}>
+    <div style={{ ...S.card, ...style }}>
       <header style={S.head}>
-        <div style={S.title}>{title}</div>
+        <div style={S.titleRow}>
+          <span style={S.title}>{title}</span>
+          {headerBadge}
+        </div>
         <button type="button" style={S.more}>더보기 〉</button>
       </header>
       {rows.length === 0 ? (

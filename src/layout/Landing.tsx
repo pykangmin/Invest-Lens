@@ -1,19 +1,29 @@
+// Landing — 진입화면.
+// spec: docs/figma/dashboard-slots-v4.md §2 (Figma node 219:2558)
+// 모든 슬롯 REAL — ExampleBadge 부착 없음. 검색 자동완성은 /api/companies.
+//
+// 와이어프레임 핵심:
+//   - 배경: #003049 솔리드 + landing-bg.png opacity 0.15 오버레이
+//   - 헤드라인 "투자의 시각, / 데이터로 (투명) 하게" — "투명" 은 stroke-only ghost text (워드플레이)
+//   - 부제: 사용자 지정 신규 문구
+//   - 검색 pill (radius 60) + 좌측 돋보기 + 우측 go-icon
+//   - 인기 검색어 7개 (AAPL · MSFT · GOOGL · AMZN · NVDA · TSLA · META)
+
 import {
   useEffect,
   useRef,
   useState,
+  type CSSProperties,
   type FormEvent,
   type KeyboardEvent,
 } from "react";
 import { searchCompanies } from "../data-loader/investmentData";
 import type { CompanyMaster } from "../types/investment";
 
-const POPULAR_CHIPS = [
-  { label: "삼성 전자", ticker: null },
-  { label: "GOOGLE", ticker: "GOOGL" },
-  { label: "MSFT", ticker: "MSFT" },
-  { label: "NVDA", ticker: "NVDA" },
-];
+const POPULAR_TICKERS = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META"];
+
+const SUBTITLE =
+  "기업의 펀더멘탈과 기술적 지표는 물론, 시장 국면과 원자재의 흐름까지 결합한 입체적 리스크 시그널로 투자 전략을 완성하세요.";
 
 const DEBOUNCE_MS = 220;
 const RESULT_LIMIT = 8;
@@ -106,30 +116,27 @@ export function Landing({ onSelectTicker }: LandingProps) {
 
   return (
     <div style={S.page}>
-      <div style={S.bgPattern} aria-hidden />
+      <div style={S.bgImage} aria-hidden />
       <main style={S.center}>
-        <div style={S.logo}>
-          <span style={S.logoMark}>〉</span>
+        <div style={S.logo} aria-label="Invest Lens">
+          <img src="/invest-lens-logo.svg" alt="" style={S.logoMark} aria-hidden />
           <span style={S.logoWord}>Invest Lens</span>
         </div>
 
+        {/* 헤드라인 — 두 줄. 첫 줄 "투자의 시각,", 둘째 줄 "데이터로 (투명) 하게"
+            "투명" 은 fill 투명 + stroke 1px white 로 윤곽선만 (워드플레이) */}
         <h1 style={S.headline}>
-          <span>투자의 시각,</span>
-          <br />
-          <span>
-            데이터로 <em style={S.headlineAccent}>투명</em>하게
+          <span style={S.headlineLine}>투자의 시각,</span>
+          <span style={S.headlineLine}>
+            데이터로 <span style={S.headlineGhost} aria-label="투명">투명</span> 하게
           </span>
         </h1>
 
-        <p style={S.subhead}>
-          종목명을 입력하면 펀더멘탈부터 리스크 시그널까지 한눈에 분석해드립니다.
-        </p>
+        <p style={S.subhead}>{SUBTITLE}</p>
 
         <div ref={wrapRef} style={S.searchBlock}>
-          <form style={S.searchWrap} onSubmit={handleSubmit} role="search">
-            <span style={S.searchIcon} aria-hidden>
-              ⌕
-            </span>
+          <form style={S.searchPill} onSubmit={handleSubmit} role="search">
+            <span style={S.searchIcon} aria-hidden>⌕</span>
             <input
               style={S.searchInput}
               value={query}
@@ -139,13 +146,13 @@ export function Landing({ onSelectTicker }: LandingProps) {
               }}
               onFocus={() => setOpen(true)}
               onKeyDown={handleKey}
-              placeholder="주식 종목을 입력하세요"
+              placeholder="주식 종목을 입력하세요."
               aria-label="종목 검색"
               aria-autocomplete="list"
               aria-expanded={showDropdown}
               autoFocus
             />
-            <button style={S.searchSubmit} type="submit" aria-label="검색">
+            <button style={S.searchSubmit} type="submit" aria-label="검색 실행">
               →
             </button>
           </form>
@@ -185,17 +192,17 @@ export function Landing({ onSelectTicker }: LandingProps) {
 
         <div style={S.chipsRow}>
           <span style={S.chipLabel}>
-            <span aria-hidden>👍</span> 인기 검색어
+            <span aria-hidden style={S.chipFire}>🔥</span>
+            <span>인기 검색어</span>
           </span>
-          {POPULAR_CHIPS.map((chip) => (
+          {POPULAR_TICKERS.map((t) => (
             <button
-              key={chip.label}
-              style={{ ...S.chip, opacity: chip.ticker ? 1 : 0.55 }}
-              disabled={!chip.ticker}
-              title={chip.ticker ? `${chip.label} 검색` : "데이터셋 미수록"}
-              onClick={() => chip.ticker && onSelectTicker(chip.ticker)}
+              key={t}
+              style={S.chip}
+              onClick={() => onSelectTicker(t)}
+              title={`${t} 분석 보기`}
             >
-              {chip.label}
+              {t}
             </button>
           ))}
         </div>
@@ -204,7 +211,7 @@ export function Landing({ onSelectTicker }: LandingProps) {
   );
 }
 
-const S: Record<string, React.CSSProperties> = {
+const S: Record<string, CSSProperties> = {
   page: {
     position: "relative",
     minHeight: "100%",
@@ -212,11 +219,14 @@ const S: Record<string, React.CSSProperties> = {
     color: "var(--color-hero-text)",
     overflow: "hidden",
   },
-  bgPattern: {
+  // 배경 이미지 — landing-bg.png @ opacity 0.15 (사용자 지정)
+  bgImage: {
     position: "absolute",
     inset: 0,
-    backgroundImage:
-      "radial-gradient(ellipse at center, rgba(11, 30, 63, 0) 0%, rgba(11, 30, 63, 0.55) 70%, rgba(11, 30, 63, 0.85) 100%), repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0 2px, transparent 2px 38px)",
+    backgroundImage: "url(/landing-bg.png)",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    opacity: 0.15,
     pointerEvents: "none",
   },
   center: {
@@ -230,64 +240,68 @@ const S: Record<string, React.CSSProperties> = {
     padding: "48px 24px",
     textAlign: "center",
   },
-  logo: { display: "flex", alignItems: "center", gap: 8, opacity: 0.92 },
-  logoMark: { color: "var(--color-accent)", fontSize: 18 },
+  logo: { display: "flex", alignItems: "center", gap: 8 },
+  logoMark: { width: 22, height: 22, display: "block" },
   logoWord: {
-    fontStyle: "italic",
-    fontFamily:
-      "'Cormorant Garamond', 'Playfair Display', 'Pretendard Variable', serif",
-    fontWeight: 500,
+    fontFamily: "var(--font-brand)",
+    fontWeight: 400,
+    fontSize: 16,
     letterSpacing: "0.02em",
   },
   headline: {
-    fontSize: "clamp(36px, 5vw, 60px)",
+    display: "flex",
+    flexDirection: "column",
+    fontSize: "clamp(40px, 5vw, 60px)",
     lineHeight: 1.18,
-    fontWeight: 800,
+    fontWeight: 600,
     letterSpacing: "-0.02em",
   },
-  headlineAccent: {
-    color: "var(--color-accent)",
-    fontStyle: "normal",
-    padding: "0 0.08em",
+  headlineLine: { display: "block" },
+  // 워드플레이 — "투명" 은 fill 투명 + 흰 stroke 윤곽선만
+  headlineGhost: {
+    color: "transparent",
+    WebkitTextStroke: "1px var(--color-hero-text)",
+    paddingInline: "0.05em",
   },
   subhead: {
     color: "var(--color-hero-muted)",
-    fontSize: 15,
-    fontWeight: 400,
-    maxWidth: 640,
+    fontSize: 18,
+    fontWeight: 500,
+    maxWidth: 720,
+    lineHeight: 1.55,
   },
-  searchBlock: {
-    position: "relative",
-    width: "min(560px, 92vw)",
-  },
-  searchWrap: {
+  searchBlock: { position: "relative", width: "min(714px, 92vw)" },
+  searchPill: {
     width: "100%",
     background: "var(--color-hero-input-bg)",
     color: "var(--color-hero-input-text)",
     borderRadius: "var(--radius-pill)",
-    padding: "8px 8px 8px 22px",
+    padding: "8px 8px 8px 24px",
     display: "flex",
     alignItems: "center",
-    gap: 10,
+    gap: 12,
     boxShadow: "0 12px 36px rgba(0, 0, 0, 0.18)",
   },
-  searchIcon: { color: "#6b7589", fontSize: 18 },
+  searchIcon: { color: "var(--color-brand-navy)", fontSize: 20 },
   searchInput: {
     flex: 1,
     border: 0,
     outline: 0,
     background: "transparent",
-    fontSize: 15,
+    fontSize: 18,
+    fontWeight: 500,
     padding: "10px 0",
+    color: "var(--color-hero-input-text)",
   },
   searchSubmit: {
-    width: 38,
-    height: 38,
+    width: 33,
+    height: 33,
     borderRadius: "50%",
     background: "var(--color-hero-submit-bg)",
     color: "#ffffff",
     fontSize: 18,
     transition: "transform var(--duration-fast) var(--ease-out)",
+    flexShrink: 0,
   },
   dropdown: {
     position: "absolute",
@@ -326,11 +340,7 @@ const S: Record<string, React.CSSProperties> = {
     transition: "background var(--duration-fast) var(--ease-out)",
   },
   dropdownItemActive: { background: "#eef2f8" },
-  dropdownTicker: {
-    fontWeight: 700,
-    fontSize: 14,
-    fontVariantNumeric: "tabular-nums",
-  },
+  dropdownTicker: { fontWeight: 700, fontSize: 14, fontVariantNumeric: "tabular-nums" },
   dropdownName: {
     fontSize: 14,
     color: "var(--color-text)",
@@ -338,31 +348,32 @@ const S: Record<string, React.CSSProperties> = {
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
   },
-  dropdownSector: {
-    fontSize: 12,
-    color: "var(--color-text-muted)",
-  },
+  dropdownSector: { fontSize: 12, color: "var(--color-text-muted)" },
   chipsRow: {
     display: "flex",
     alignItems: "center",
-    gap: 12,
+    gap: 13,
     flexWrap: "wrap",
     justifyContent: "center",
+    maxWidth: 920,
   },
   chipLabel: {
     color: "var(--color-hero-text)",
-    fontSize: 13,
+    fontSize: 16,
+    fontWeight: 600,
     display: "inline-flex",
     alignItems: "center",
-    gap: 6,
+    gap: 5,
   },
+  chipFire: { fontSize: 18, lineHeight: 1 },
   chip: {
     color: "var(--color-hero-text)",
-    border: "1px solid rgba(255, 255, 255, 0.28)",
-    background: "rgba(255, 255, 255, 0.04)",
-    borderRadius: "var(--radius-pill)",
-    padding: "6px 14px",
-    fontSize: 13,
+    border: "1px solid var(--color-hero-chip-stroke)",
+    background: "var(--color-hero-chip-bg)",
+    borderRadius: "var(--radius-chip)",
+    padding: "5px 18px",
+    fontSize: 16,
+    fontWeight: 600,
     transition: "background var(--duration-fast) var(--ease-out)",
   },
 };

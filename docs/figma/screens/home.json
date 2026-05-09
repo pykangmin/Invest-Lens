@@ -1,0 +1,1204 @@
+{
+  "screen": {
+    "id": "219:2558",
+    "slug": "home",
+    "label": "진입화면",
+    "w": 1440,
+    "h": 1024
+  },
+  "stats": {
+    "textCount": 10,
+    "uniqueColorCount": 7,
+    "uniqueFontStyleCount": 5,
+    "colors": [
+      "#002031",
+      "#003049",
+      "#669bbc",
+      "#780000",
+      "#a6a6a6",
+      "#fdf0d5",
+      "#ffffff"
+    ],
+    "fonts": [
+      "Fugaz One:400:16",
+      "Pretendard Variable:500:18",
+      "Pretendard Variable:600:16",
+      "Pretendard Variable:600:20",
+      "Pretendard Variable:600:60"
+    ]
+  },
+  "texts": [
+    {
+      "text": "Invest Lens",
+      "size": 16,
+      "weight": 400,
+      "family": "Fugaz One",
+      "fill": "#ffffff",
+      "box": {
+        "x": 671,
+        "y": 186,
+        "w": 118,
+        "h": 28
+      }
+    },
+    {
+      "text": "투자의 시각,\n데이터로         하게",
+      "size": 60,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#ffffff",
+      "box": {
+        "x": 500,
+        "y": 228,
+        "w": 440,
+        "h": 122
+      }
+    },
+    {
+      "text": "투명",
+      "size": 60,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#ffffff",
+      "box": {
+        "x": 729,
+        "y": 288,
+        "w": 104,
+        "h": 66
+      }
+    },
+    {
+      "text": "종목명을 입력하면 펀더멘털부터 ___까지 한눈에 분석해드립니다.",
+      "size": 20,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#ffffff",
+      "box": {
+        "x": 363,
+        "y": 376,
+        "w": 714,
+        "h": 30
+      }
+    },
+    {
+      "text": "주식 종목을 입력하세요.",
+      "size": 18,
+      "weight": 500,
+      "family": "Pretendard Variable",
+      "fill": "#a6a6a6",
+      "box": {
+        "x": 443,
+        "y": 430,
+        "w": 187,
+        "h": 30
+      }
+    },
+    {
+      "text": "인기 검색어",
+      "size": 16,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#ffffff",
+      "box": {
+        "x": 498,
+        "y": 485,
+        "w": 73,
+        "h": 26
+      }
+    },
+    {
+      "text": "삼성 전자",
+      "size": 16,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#ffffff",
+      "box": {
+        "x": 594,
+        "y": 486,
+        "w": 89,
+        "h": 24
+      }
+    },
+    {
+      "text": "GOOGLE",
+      "size": 16,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#ffffff",
+      "box": {
+        "x": 696,
+        "y": 486,
+        "w": 92,
+        "h": 24
+      }
+    },
+    {
+      "text": "MSFT",
+      "size": 16,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#ffffff",
+      "box": {
+        "x": 801,
+        "y": 486,
+        "w": 78,
+        "h": 24
+      }
+    },
+    {
+      "text": "NVDA",
+      "size": 16,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#ffffff",
+      "box": {
+        "x": 892,
+        "y": 486,
+        "w": 75,
+        "h": 24
+      }
+    }
+  ],
+  "tree": {
+    "id": "219:2558",
+    "name": "home",
+    "type": "FRAME",
+    "box": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1024
+    },
+    "children": [
+      {
+        "id": "320:1461",
+        "name": "background",
+        "type": "GROUP",
+        "box": {
+          "x": 0,
+          "y": 0,
+          "w": 1440,
+          "h": 1024
+        },
+        "children": [
+          {
+            "id": "220:2568",
+            "name": "Rectangle 108",
+            "type": "RECTANGLE",
+            "box": {
+              "x": 0,
+              "y": 0,
+              "w": 1440,
+              "h": 1024
+            },
+            "fills": [
+              {
+                "type": "SOLID",
+                "hex": "#003049",
+                "opacity": 1
+              }
+            ]
+          },
+          {
+            "id": "229:2613",
+            "name": "후보 1",
+            "type": "RECTANGLE",
+            "box": {
+              "x": 0,
+              "y": 0,
+              "w": 1440,
+              "h": 1024
+            },
+            "fills": [
+              {
+                "type": "IMAGE",
+                "scaleMode": "STRETCH"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "320:1465",
+        "name": "main",
+        "type": "FRAME",
+        "box": {
+          "x": 363,
+          "y": 228,
+          "w": 714,
+          "h": 284
+        },
+        "layout": {
+          "mode": "VERTICAL",
+          "padding": {
+            "l": 0,
+            "r": 0,
+            "t": 0,
+            "b": 0
+          },
+          "gap": 22,
+          "counterAlign": "CENTER",
+          "primaryAlign": null
+        },
+        "children": [
+          {
+            "id": "320:1460",
+            "name": "main title",
+            "type": "GROUP",
+            "box": {
+              "x": 500,
+              "y": 228,
+              "w": 440,
+              "h": 126
+            },
+            "cornerRadii": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "children": [
+              {
+                "id": "220:2573",
+                "name": "투자의 시각, 데이터로 하게",
+                "type": "TEXT",
+                "box": {
+                  "x": 500,
+                  "y": 228,
+                  "w": 440,
+                  "h": 122
+                },
+                "text": "투자의 시각,\n데이터로         하게",
+                "font": {
+                  "family": "Pretendard Variable",
+                  "weight": 600,
+                  "size": 60,
+                  "lineHeight": 70,
+                  "letterSpacing": 0,
+                  "align": "CENTER",
+                  "decoration": null
+                },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "hex": "#ffffff",
+                    "opacity": 1
+                  }
+                ]
+              },
+              {
+                "id": "220:2570",
+                "name": "투명",
+                "type": "TEXT",
+                "box": {
+                  "x": 729,
+                  "y": 288,
+                  "w": 104,
+                  "h": 66
+                },
+                "text": "투명",
+                "font": {
+                  "family": "Pretendard Variable",
+                  "weight": 600,
+                  "size": 60,
+                  "lineHeight": 90,
+                  "letterSpacing": 0,
+                  "align": "CENTER",
+                  "decoration": null
+                },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "hex": "#ffffff",
+                    "opacity": 0
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "320:1464",
+            "name": "Frame 46",
+            "type": "FRAME",
+            "box": {
+              "x": 363,
+              "y": 376,
+              "w": 714,
+              "h": 136
+            },
+            "layout": {
+              "mode": "VERTICAL",
+              "padding": {
+                "l": 0,
+                "r": 0,
+                "t": 0,
+                "b": 0
+              },
+              "gap": 14,
+              "counterAlign": "CENTER",
+              "primaryAlign": null
+            },
+            "children": [
+              {
+                "id": "220:2569",
+                "name": "text",
+                "type": "TEXT",
+                "box": {
+                  "x": 363,
+                  "y": 376,
+                  "w": 714,
+                  "h": 30
+                },
+                "text": "종목명을 입력하면 펀더멘털부터 ___까지 한눈에 분석해드립니다.",
+                "font": {
+                  "family": "Pretendard Variable",
+                  "weight": 600,
+                  "size": 20,
+                  "lineHeight": 30,
+                  "letterSpacing": 0,
+                  "align": "CENTER",
+                  "decoration": null
+                },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "hex": "#ffffff",
+                    "opacity": 1
+                  }
+                ]
+              },
+              {
+                "id": "320:1456",
+                "name": "search bar",
+                "type": "GROUP",
+                "box": {
+                  "x": 363,
+                  "y": 420,
+                  "w": 714,
+                  "h": 49
+                },
+                "cornerRadii": [
+                  0,
+                  0,
+                  0,
+                  0
+                ],
+                "children": [
+                  {
+                    "id": "220:2576",
+                    "name": "Rectangle 110",
+                    "type": "RECTANGLE",
+                    "box": {
+                      "x": 363,
+                      "y": 420,
+                      "w": 714,
+                      "h": 49
+                    },
+                    "fills": [
+                      {
+                        "type": "SOLID",
+                        "hex": "#ffffff",
+                        "opacity": 1
+                      }
+                    ],
+                    "stroke": {
+                      "hex": "#ffffff",
+                      "weight": 1
+                    },
+                    "cornerRadius": 60
+                  },
+                  {
+                    "id": "320:1455",
+                    "name": "Group 115",
+                    "type": "GROUP",
+                    "box": {
+                      "x": 383,
+                      "y": 428,
+                      "w": 677,
+                      "h": 33
+                    },
+                    "cornerRadii": [
+                      0,
+                      0,
+                      0,
+                      0
+                    ],
+                    "children": [
+                      {
+                        "id": "251:4426",
+                        "name": "주식 종목을 입력하세요.",
+                        "type": "TEXT",
+                        "box": {
+                          "x": 443,
+                          "y": 430,
+                          "w": 187,
+                          "h": 30
+                        },
+                        "text": "주식 종목을 입력하세요.",
+                        "font": {
+                          "family": "Pretendard Variable",
+                          "weight": 500,
+                          "size": 18,
+                          "lineHeight": 30,
+                          "letterSpacing": 0,
+                          "align": "LEFT",
+                          "decoration": null
+                        },
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "hex": "#a6a6a6",
+                            "opacity": 1
+                          }
+                        ]
+                      },
+                      {
+                        "id": "229:2670",
+                        "name": "zoom/search regular",
+                        "type": "INSTANCE",
+                        "box": {
+                          "x": 383,
+                          "y": 433,
+                          "w": 24,
+                          "h": 24
+                        },
+                        "componentId": "89:1035",
+                        "componentName": "zoom/search regular",
+                        "children": [
+                          {
+                            "id": "I229:2670;89:1036",
+                            "name": "Icon",
+                            "type": "VECTOR",
+                            "box": {
+                              "x": 384,
+                              "y": 434,
+                              "w": 22,
+                              "h": 22
+                            },
+                            "stroke": {
+                              "hex": "#003049",
+                              "weight": 2
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "274:894",
+                        "name": "go-icon",
+                        "type": "GROUP",
+                        "box": {
+                          "x": 1027,
+                          "y": 428,
+                          "w": 33,
+                          "h": 33
+                        },
+                        "cornerRadii": [
+                          0,
+                          0,
+                          0,
+                          0
+                        ],
+                        "children": [
+                          {
+                            "id": "220:2582",
+                            "name": "Ellipse 25",
+                            "type": "ELLIPSE",
+                            "box": {
+                              "x": 1027,
+                              "y": 428,
+                              "w": 33,
+                              "h": 33
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#003049",
+                                "opacity": 1
+                              }
+                            ]
+                          },
+                          {
+                            "id": "229:2668",
+                            "name": "Icon",
+                            "type": "VECTOR",
+                            "box": {
+                              "x": 1036,
+                              "y": 439,
+                              "w": 14,
+                              "h": 12
+                            },
+                            "stroke": {
+                              "hex": "#ffffff",
+                              "weight": 2
+                            },
+                            "cornerRadii": [
+                              0,
+                              0,
+                              0,
+                              0
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "id": "320:1459",
+                "name": "인기 검색어",
+                "type": "FRAME",
+                "box": {
+                  "x": 473,
+                  "y": 483,
+                  "w": 494,
+                  "h": 29
+                },
+                "layout": {
+                  "mode": "HORIZONTAL",
+                  "padding": {
+                    "l": 0,
+                    "r": 0,
+                    "t": 0,
+                    "b": 0
+                  },
+                  "gap": 23,
+                  "counterAlign": "CENTER",
+                  "primaryAlign": "CENTER"
+                },
+                "children": [
+                  {
+                    "id": "320:1458",
+                    "name": "Frame 45",
+                    "type": "FRAME",
+                    "box": {
+                      "x": 473,
+                      "y": 485,
+                      "w": 98,
+                      "h": 26
+                    },
+                    "layout": {
+                      "mode": "HORIZONTAL",
+                      "padding": {
+                        "l": 0,
+                        "r": 0,
+                        "t": 0,
+                        "b": 0
+                      },
+                      "gap": 5,
+                      "counterAlign": "CENTER",
+                      "primaryAlign": null
+                    },
+                    "children": [
+                      {
+                        "id": "251:4423",
+                        "name": "fire",
+                        "type": "FRAME",
+                        "box": {
+                          "x": 473,
+                          "y": 488,
+                          "w": 20,
+                          "h": 20
+                        },
+                        "fills": [],
+                        "children": [
+                          {
+                            "id": "251:4424",
+                            "name": "Vector",
+                            "type": "VECTOR",
+                            "box": {
+                              "x": 476,
+                              "y": 488,
+                              "w": 15,
+                              "h": 19
+                            },
+                            "fills": [
+                              {
+                                "type": "GRADIENT_RADIAL",
+                                "stops": [
+                                  {
+                                    "pos": 0.3140000104904175,
+                                    "hex": "#ff9800"
+                                  },
+                                  {
+                                    "pos": 0.6620000004768372,
+                                    "hex": "#ff6d00"
+                                  },
+                                  {
+                                    "pos": 0.972000002861023,
+                                    "hex": "#f44336"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "251:4425",
+                            "name": "Vector",
+                            "type": "VECTOR",
+                            "box": {
+                              "x": 479,
+                              "y": 495,
+                              "w": 7,
+                              "h": 12
+                            },
+                            "fills": [
+                              {
+                                "type": "GRADIENT_RADIAL",
+                                "stops": [
+                                  {
+                                    "pos": 0.21400000154972076,
+                                    "hex": "#fff176"
+                                  },
+                                  {
+                                    "pos": 0.328000009059906,
+                                    "hex": "#fff27d"
+                                  },
+                                  {
+                                    "pos": 0.4869999885559082,
+                                    "hex": "#fff48f"
+                                  },
+                                  {
+                                    "pos": 0.671999990940094,
+                                    "hex": "#fff7ad"
+                                  },
+                                  {
+                                    "pos": 0.7929999828338623,
+                                    "hex": "#fff9c4"
+                                  },
+                                  {
+                                    "pos": 0.8220000267028809,
+                                    "hex": "#fff8bdcd"
+                                  },
+                                  {
+                                    "pos": 0.8629999756813049,
+                                    "hex": "#fff6ab87"
+                                  },
+                                  {
+                                    "pos": 0.9100000262260437,
+                                    "hex": "#fff38d35"
+                                  },
+                                  {
+                                    "pos": 0.9409999847412109,
+                                    "hex": "#fff17600"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "220:2592",
+                        "name": "인기 검색어",
+                        "type": "TEXT",
+                        "box": {
+                          "x": 498,
+                          "y": 485,
+                          "w": 73,
+                          "h": 26
+                        },
+                        "text": "인기 검색어",
+                        "font": {
+                          "family": "Pretendard Variable",
+                          "weight": 600,
+                          "size": 16,
+                          "lineHeight": 30,
+                          "letterSpacing": 0,
+                          "align": "LEFT",
+                          "decoration": null
+                        },
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "hex": "#ffffff",
+                            "opacity": 1
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "320:1457",
+                    "name": "인기 검색어",
+                    "type": "FRAME",
+                    "box": {
+                      "x": 594,
+                      "y": 483,
+                      "w": 373,
+                      "h": 29
+                    },
+                    "layout": {
+                      "mode": "HORIZONTAL",
+                      "padding": {
+                        "l": 0,
+                        "r": 0,
+                        "t": 0,
+                        "b": 0
+                      },
+                      "gap": 13,
+                      "counterAlign": "CENTER",
+                      "primaryAlign": null
+                    },
+                    "children": [
+                      {
+                        "id": "251:4428",
+                        "name": "검색어",
+                        "type": "GROUP",
+                        "box": {
+                          "x": 594,
+                          "y": 483,
+                          "w": 89,
+                          "h": 29
+                        },
+                        "cornerRadius": 50,
+                        "children": [
+                          {
+                            "id": "220:2596",
+                            "name": "Rectangle 111",
+                            "type": "RECTANGLE",
+                            "box": {
+                              "x": 594,
+                              "y": 483,
+                              "w": 89,
+                              "h": 29
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#002031",
+                                "opacity": 0.20000000298023224
+                              }
+                            ],
+                            "stroke": {
+                              "hex": "#ffffff",
+                              "weight": 1
+                            },
+                            "effects": [
+                              {
+                                "type": "BACKGROUND_BLUR",
+                                "color": null,
+                                "offset": null,
+                                "radius": 12,
+                                "spread": null
+                              }
+                            ],
+                            "cornerRadius": 50
+                          },
+                          {
+                            "id": "220:2593",
+                            "name": "삼성 전자",
+                            "type": "TEXT",
+                            "box": {
+                              "x": 594,
+                              "y": 486,
+                              "w": 89,
+                              "h": 24
+                            },
+                            "text": "삼성 전자",
+                            "font": {
+                              "family": "Pretendard Variable",
+                              "weight": 600,
+                              "size": 16,
+                              "lineHeight": 30,
+                              "letterSpacing": 0,
+                              "align": "CENTER",
+                              "decoration": null
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#ffffff",
+                                "opacity": 1
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "251:4429",
+                        "name": "검색어",
+                        "type": "GROUP",
+                        "box": {
+                          "x": 696,
+                          "y": 483,
+                          "w": 92,
+                          "h": 29
+                        },
+                        "cornerRadius": 50,
+                        "children": [
+                          {
+                            "id": "220:2597",
+                            "name": "Rectangle 112",
+                            "type": "RECTANGLE",
+                            "box": {
+                              "x": 696,
+                              "y": 483,
+                              "w": 92,
+                              "h": 29
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#002031",
+                                "opacity": 0.20000000298023224
+                              }
+                            ],
+                            "stroke": {
+                              "hex": "#ffffff",
+                              "weight": 1
+                            },
+                            "effects": [
+                              {
+                                "type": "BACKGROUND_BLUR",
+                                "color": null,
+                                "offset": null,
+                                "radius": 12,
+                                "spread": null
+                              }
+                            ],
+                            "cornerRadius": 50
+                          },
+                          {
+                            "id": "220:2598",
+                            "name": "GOOGLE",
+                            "type": "TEXT",
+                            "box": {
+                              "x": 696,
+                              "y": 486,
+                              "w": 92,
+                              "h": 24
+                            },
+                            "text": "GOOGLE",
+                            "font": {
+                              "family": "Pretendard Variable",
+                              "weight": 600,
+                              "size": 16,
+                              "lineHeight": 30,
+                              "letterSpacing": 0,
+                              "align": "CENTER",
+                              "decoration": null
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#ffffff",
+                                "opacity": 1
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "251:4430",
+                        "name": "검색어",
+                        "type": "GROUP",
+                        "box": {
+                          "x": 801,
+                          "y": 483,
+                          "w": 78,
+                          "h": 29
+                        },
+                        "cornerRadius": 50,
+                        "children": [
+                          {
+                            "id": "220:2600",
+                            "name": "Rectangle 113",
+                            "type": "RECTANGLE",
+                            "box": {
+                              "x": 801,
+                              "y": 483,
+                              "w": 78,
+                              "h": 29
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#002031",
+                                "opacity": 0.20000000298023224
+                              }
+                            ],
+                            "stroke": {
+                              "hex": "#ffffff",
+                              "weight": 1
+                            },
+                            "effects": [
+                              {
+                                "type": "BACKGROUND_BLUR",
+                                "color": null,
+                                "offset": null,
+                                "radius": 12,
+                                "spread": null
+                              }
+                            ],
+                            "cornerRadius": 50
+                          },
+                          {
+                            "id": "220:2601",
+                            "name": "MSFT",
+                            "type": "TEXT",
+                            "box": {
+                              "x": 801,
+                              "y": 486,
+                              "w": 78,
+                              "h": 24
+                            },
+                            "text": "MSFT",
+                            "font": {
+                              "family": "Pretendard Variable",
+                              "weight": 600,
+                              "size": 16,
+                              "lineHeight": 30,
+                              "letterSpacing": 0,
+                              "align": "CENTER",
+                              "decoration": null
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#ffffff",
+                                "opacity": 1
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "251:4431",
+                        "name": "검색어",
+                        "type": "GROUP",
+                        "box": {
+                          "x": 892,
+                          "y": 483,
+                          "w": 75,
+                          "h": 29
+                        },
+                        "cornerRadius": 50,
+                        "children": [
+                          {
+                            "id": "251:4432",
+                            "name": "Group 94",
+                            "type": "GROUP",
+                            "box": {
+                              "x": 892,
+                              "y": 483,
+                              "w": 75,
+                              "h": 29
+                            },
+                            "cornerRadius": 50,
+                            "children": [
+                              {
+                                "id": "220:2604",
+                                "name": "Rectangle 114",
+                                "type": "RECTANGLE",
+                                "box": {
+                                  "x": 892,
+                                  "y": 483,
+                                  "w": 75,
+                                  "h": 29
+                                },
+                                "fills": [
+                                  {
+                                    "type": "SOLID",
+                                    "hex": "#002031",
+                                    "opacity": 0.20000000298023224
+                                  }
+                                ],
+                                "stroke": {
+                                  "hex": "#ffffff",
+                                  "weight": 1
+                                },
+                                "effects": [
+                                  {
+                                    "type": "BACKGROUND_BLUR",
+                                    "color": null,
+                                    "offset": null,
+                                    "radius": 12,
+                                    "spread": null
+                                  }
+                                ],
+                                "cornerRadius": 50
+                              },
+                              {
+                                "id": "220:2605",
+                                "name": "NVDA",
+                                "type": "TEXT",
+                                "box": {
+                                  "x": 892,
+                                  "y": 486,
+                                  "w": 75,
+                                  "h": 24
+                                },
+                                "text": "NVDA",
+                                "font": {
+                                  "family": "Pretendard Variable",
+                                  "weight": 600,
+                                  "size": 16,
+                                  "lineHeight": 30,
+                                  "letterSpacing": 0,
+                                  "align": "CENTER",
+                                  "decoration": null
+                                },
+                                "fills": [
+                                  {
+                                    "type": "SOLID",
+                                    "hex": "#ffffff",
+                                    "opacity": 1
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "320:1454",
+        "name": "logo",
+        "type": "FRAME",
+        "box": {
+          "x": 652,
+          "y": 186,
+          "w": 137,
+          "h": 28
+        },
+        "layout": {
+          "mode": "HORIZONTAL",
+          "padding": {
+            "l": 0,
+            "r": 0,
+            "t": 0,
+            "b": 0
+          },
+          "gap": null,
+          "counterAlign": "CENTER",
+          "primaryAlign": null
+        },
+        "children": [
+          {
+            "id": "251:4355",
+            "name": "logo",
+            "type": "INSTANCE",
+            "box": {
+              "x": 652,
+              "y": 191,
+              "w": 19,
+              "h": 19
+            },
+            "componentId": "93:3044",
+            "componentName": "logo",
+            "children": [
+              {
+                "id": "I251:4355;93:3035",
+                "name": "Ellipse 13",
+                "type": "VECTOR",
+                "box": {
+                  "x": 656,
+                  "y": 191,
+                  "w": 10,
+                  "h": 19
+                },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "hex": "#003049",
+                    "opacity": 1
+                  }
+                ]
+              },
+              {
+                "id": "I251:4355;93:3036",
+                "name": "Ellipse 13",
+                "type": "VECTOR",
+                "box": {
+                  "x": 652,
+                  "y": 199,
+                  "w": 12,
+                  "h": 10
+                },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "hex": "#780000",
+                    "opacity": 1
+                  }
+                ]
+              },
+              {
+                "id": "I251:4355;93:3039",
+                "name": "Ellipse 13",
+                "type": "VECTOR",
+                "box": {
+                  "x": 665,
+                  "y": 196,
+                  "w": 6,
+                  "h": 12
+                },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "hex": "#669bbc",
+                    "opacity": 1
+                  }
+                ]
+              },
+              {
+                "id": "I251:4355;93:3040",
+                "name": "Ellipse 13",
+                "type": "VECTOR",
+                "box": {
+                  "x": 665,
+                  "y": 191,
+                  "w": 5,
+                  "h": 14
+                },
+                "fills": [
+                  {
+                    "type": "SOLID",
+                    "hex": "#fdf0d5",
+                    "opacity": 1
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "232:2794",
+            "name": "Invest Lens",
+            "type": "TEXT",
+            "box": {
+              "x": 671,
+              "y": 186,
+              "w": 118,
+              "h": 28
+            },
+            "text": "Invest Lens",
+            "font": {
+              "family": "Fugaz One",
+              "weight": 400,
+              "size": 16,
+              "lineHeight": 30,
+              "letterSpacing": 0,
+              "align": "CENTER",
+              "decoration": null
+            },
+            "fills": [
+              {
+                "type": "SOLID",
+                "hex": "#ffffff",
+                "opacity": 1
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
