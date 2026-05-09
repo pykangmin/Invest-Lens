@@ -72,35 +72,38 @@ export function DetailShell({
       {/* 사이드바 (좌측 viewport 고정) + 메인 영역 (헤더 아래 풀폭, 내부 콘텐츠 1110 centered) */}
       <div style={S.bodyGrid}>
         <aside style={S.nav}>
-          {NAV_ITEMS.map((item) => {
-            const isActive = item.key === active;
-            const handle = () => {
-              if (item.key === "overview") onBackToOverview();
-              else onNavigateSection(item.key as DetailSection);
-            };
-            return (
-              <button
-                key={item.key}
-                type="button"
-                style={{
-                  ...S.navItem,
-                  ...(isActive ? S.navItemActive : null),
-                }}
-                onClick={handle}
-              >
-                {item.label}
-              </button>
-            );
-          })}
+          {/* 사이드바 최상단: 〈 이전으로 */}
+          <button type="button" style={S.crumbBack} onClick={onBackToOverview}>
+            〈 이전으로
+          </button>
+          <div style={S.navList}>
+            {NAV_ITEMS.map((item) => {
+              const isActive = item.key === active;
+              const handle = () => {
+                if (item.key === "overview") onBackToOverview();
+                else onNavigateSection(item.key as DetailSection);
+              };
+              return (
+                <button
+                  key={item.key}
+                  type="button"
+                  style={{
+                    ...S.navItem,
+                    ...(isActive ? S.navItemActive : null),
+                  }}
+                  onClick={handle}
+                >
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
         </aside>
 
         <main style={S.mainArea}>
-          {/* breadcrumb — 콘텐츠 폭에 맞춤 */}
           <div style={S.contentInner}>
-            <div style={S.breadcrumb}>
-              <button type="button" style={S.crumbBack} onClick={onBackToOverview}>
-                〈 이전으로
-              </button>
+            {/* 메인 콘텐츠 좌상단: GOOGLE > 원자재 영향  /  우상단: 데이터 업데이트 */}
+            <div style={S.crumbRow}>
               <span style={S.crumbPath}>
                 {ticker} &gt; {SECTION_BREADCRUMB[active]}
               </span>
@@ -159,11 +162,16 @@ const S: Record<string, CSSProperties> = {
   nav: {
     display: "flex",
     flexDirection: "column",
-    gap: 4,
+    gap: 16,
     position: "sticky",
     top: 16,
-    padding: "24px 16px 24px 40px",
+    padding: "16px 16px 24px 40px",
     alignSelf: "start",
+  },
+  navList: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
   },
   // 메인 영역 — 풀폭. 내부 콘텐츠는 max 1110 centered (overview 메인 뷰와 너비 일치).
   mainArea: {
@@ -186,24 +194,25 @@ const S: Record<string, CSSProperties> = {
     gap: 20,
   },
 
-  breadcrumb: {
+  crumbRow: {
     display: "flex",
     alignItems: "center",
     gap: 16,
     fontSize: "var(--font-size-xs)",
     color: "var(--color-text-muted)",
-    padding: "8px 0",
+    padding: "0 0 4px 0",
   },
   crumbBack: {
-    fontSize: "var(--font-size-xs)",
+    fontSize: "var(--font-size-sm)",
     color: "var(--color-text-muted)",
     fontWeight: 500,
     padding: 0,
+    textAlign: "left",
   },
   crumbPath: {
-    fontSize: "var(--font-size-xs)",
+    fontSize: "var(--font-size-sm)",
     color: "var(--color-text-muted)",
-    fontWeight: 500,
+    fontWeight: 600,
   },
   crumbUpdate: {
     marginLeft: "auto",

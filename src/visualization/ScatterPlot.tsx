@@ -21,12 +21,12 @@ export interface ScatterPlotProps {
   height?: number;
 }
 
-const VIEW_W = 800;
-const VIEW_H = 320;
-const PAD_L = 50;
-const PAD_R = 16;
-const PAD_T = 20;
-const PAD_B = 50;
+const VIEW_W = 600;
+const VIEW_H = 380;
+const PAD_L = 64;
+const PAD_R = 20;
+const PAD_T = 28;
+const PAD_B = 64;
 
 export function ScatterPlot({
   points,
@@ -88,9 +88,9 @@ export function ScatterPlot({
             />
             <text
               x={x}
-              y={VIEW_H - PAD_B + 14}
+              y={VIEW_H - PAD_B + 18}
               textAnchor="middle"
-              fontSize={10}
+              fontSize={13}
               fill="var(--color-text-muted)"
               fontFamily="var(--font-numeric)"
             >
@@ -114,10 +114,10 @@ export function ScatterPlot({
               strokeDasharray="2 4"
             />
             <text
-              x={PAD_L - 6}
-              y={y + 4}
+              x={PAD_L - 8}
+              y={y + 5}
               textAnchor="end"
-              fontSize={10}
+              fontSize={13}
               fill="var(--color-text-muted)"
               fontFamily="var(--font-numeric)"
             >
@@ -151,16 +151,16 @@ export function ScatterPlot({
       {points.map((p, i) => {
         const cx = xToPx(p.x);
         const cy = yToPx(p.y);
-        const r = p.size ?? 6;
+        const r = p.size ?? 7;
         const color = p.color ?? (p.y >= 0 ? "var(--color-up)" : "var(--color-down)");
         return (
           <g key={i}>
             <circle cx={cx} cy={cy} r={r} fill={color} fillOpacity={0.85} />
             <text
               x={cx}
-              y={cy - r - 4}
+              y={cy - r - 6}
               textAnchor="middle"
-              fontSize={10}
+              fontSize={13}
               fontWeight={600}
               fill="var(--color-text)"
             >
@@ -172,22 +172,22 @@ export function ScatterPlot({
       {/* axis labels */}
       <text
         x={(VIEW_W - PAD_R + PAD_L) / 2}
-        y={VIEW_H - 8}
+        y={VIEW_H - 12}
         textAnchor="middle"
-        fontSize={11}
+        fontSize={14}
         fontWeight={500}
         fill="var(--color-text-muted)"
       >
         {xLabel}
       </text>
       <text
-        x={14}
+        x={20}
         y={(VIEW_H - PAD_B + PAD_T) / 2}
         textAnchor="middle"
-        fontSize={11}
+        fontSize={14}
         fontWeight={500}
         fill="var(--color-text-muted)"
-        transform={`rotate(-90 14 ${(VIEW_H - PAD_B + PAD_T) / 2})`}
+        transform={`rotate(-90 20 ${(VIEW_H - PAD_B + PAD_T) / 2})`}
       >
         {yLabel}
       </text>

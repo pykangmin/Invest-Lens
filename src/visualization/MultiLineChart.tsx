@@ -24,12 +24,12 @@ export interface MultiLineChartProps {
   viewBoxWidth?: number;
 }
 
-const DEFAULT_VIEW_W = 800;
-const VIEW_H = 280;
-const PAD_L = 50;
-const PAD_R = 16;
-const PAD_T = 20;
-const PAD_B = 36;
+const DEFAULT_VIEW_W = 600;
+const VIEW_H = 320;
+const PAD_L = 60;
+const PAD_R = 20;
+const PAD_T = 24;
+const PAD_B = 44;
 
 const DEFAULT_COLORS = [
   "#003049",
@@ -124,10 +124,10 @@ export function MultiLineChart({
                 strokeDasharray="2 4"
               />
               <text
-                x={PAD_L - 6}
-                y={y + 4}
+                x={PAD_L - 8}
+                y={y + 5}
                 textAnchor="end"
-                fontSize={10}
+                fontSize={13}
                 fill="var(--color-text-muted)"
                 fontFamily="var(--font-numeric)"
               >
@@ -142,9 +142,9 @@ export function MultiLineChart({
             <text
               key={idx}
               x={xToPx(idx)}
-              y={VIEW_H - PAD_B + 14}
+              y={VIEW_H - PAD_B + 18}
               textAnchor="middle"
-              fontSize={10}
+              fontSize={13}
               fill="var(--color-text-muted)"
             >
               {xLabels[idx]}
@@ -166,7 +166,7 @@ export function MultiLineChart({
               key={si}
               d={points.join(" ")}
               stroke={color}
-              strokeWidth={1.8}
+              strokeWidth={2.2}
               fill="none"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -185,13 +185,13 @@ const S: Record<string, CSSProperties> = {
     display: "flex",
     gap: 16,
     flexWrap: "wrap",
-    fontSize: "var(--font-size-xs)",
-    paddingLeft: PAD_L,
+    fontSize: "var(--font-size-sm)",
+    paddingLeft: 8,
   },
   legendItem: { display: "inline-flex", alignItems: "center", gap: 6 },
   legendDot: {
-    width: 8,
-    height: 8,
+    width: 10,
+    height: 10,
     borderRadius: "50%",
   },
   legendLabel: { color: "var(--color-text)", fontWeight: 600 },

@@ -20,15 +20,14 @@ export interface BarChartProps {
   showValueLabels?: boolean;
 }
 
-// viewBox 비율을 컨테이너 폭에 맞춰 보존하기 위해 ASPECT 사용.
-// 컨테이너 width 가 정해지면 height = width / ASPECT.
-const VIEW_W = 800;
-const VIEW_H = 280;
-const ASPECT = VIEW_W / VIEW_H;
-const PAD_L = 40;
-const PAD_R = 16;
-const PAD_T = 16;
-const PAD_B = 36;
+// viewBox 비율 + 텍스트 사이즈는 컨테이너 폭에 따라 동일 비율로 스케일.
+// 출력 폭 ~543px 에서도 텍스트가 읽히도록 viewBox font-size 14~18 사용.
+const VIEW_W = 600;
+const VIEW_H = 320;
+const PAD_L = 56;
+const PAD_R = 20;
+const PAD_T = 24;
+const PAD_B = 48;
 
 export function BarChart({
   data,
@@ -87,10 +86,10 @@ export function BarChart({
               strokeDasharray={t === 0 ? undefined : "2 4"}
             />
             <text
-              x={PAD_L - 4}
-              y={y + 4}
+              x={PAD_L - 8}
+              y={y + 5}
               textAnchor="end"
-              fontSize={11}
+              fontSize={14}
               fill="var(--color-text-muted)"
               fontFamily="var(--font-numeric)"
             >
@@ -110,14 +109,14 @@ export function BarChart({
           d.color ?? (d.value >= 0 ? "var(--color-up)" : "var(--color-down)");
         return (
           <g key={i}>
-            <rect x={x} y={top} width={barInnerWidth} height={h} fill={color} rx={2} />
+            <rect x={x} y={top} width={barInnerWidth} height={h} fill={color} rx={3} />
             {showValueLabels && (
               <text
                 x={cx}
-                y={d.value >= 0 ? top - 4 : bot + 12}
+                y={d.value >= 0 ? top - 6 : bot + 16}
                 textAnchor="middle"
-                fontSize={11}
-                fontWeight={600}
+                fontSize={13}
+                fontWeight={700}
                 fill={color}
                 fontFamily="var(--font-numeric)"
               >
@@ -126,9 +125,10 @@ export function BarChart({
             )}
             <text
               x={cx}
-              y={VIEW_H - 12}
+              y={VIEW_H - 14}
               textAnchor="middle"
-              fontSize={11}
+              fontSize={13}
+              fontWeight={500}
               fill="var(--color-text)"
             >
               {d.label}
