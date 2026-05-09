@@ -46,7 +46,7 @@ EXAMPLE/STUB 슬롯은 **반드시** 화면 위에 배지를 부착해 채점자
 |---|---|---|
 | 종목명 (`Apple Inc`) | 🟢 REAL | `/api/company?ticker=` (companies 테이블) |
 | 가격 (`102.36$ +2.36$ (0.87%)`) | 🟢 REAL | `stock_price_tech` latest non-null |
-| **시장 컨텍스트 4슬롯 (S&P 500 ×4)** | 🟡 **EXAMPLE** | DB 에 시장 지수 (S&P/Dow/Nasdaq/Russell) 시계열 부재. 시안 mock 그대로. **각 카드에 "예시" 배지** |
+| 시장 컨텍스트 4슬롯 (S&P / Dow / Nasdaq / Russell) | 🟢 **REAL** | `/api/market-index` (Yahoo Finance 프록시). DB 부재 → 외부 API 도입. fetch 실패한 카드만 EXAMPLE 배지 |
 
 ### 2.3 사이드바 4 게이지
 
@@ -68,7 +68,7 @@ EXAMPLE/STUB 슬롯은 **반드시** 화면 위에 배지를 부착해 채점자
 | 슬롯 | 분류 | 출처 / 사유 |
 |---|---|---|
 | 주요 이벤트 5행 | 🟢 REAL (부분) / 🔴 STUB (부족분) | `analysis/events.ts` 가 분기 보고일 + RSI 임계 돌파를 합성. supertrend 전환·MACD 골든크로스·dominant_regime 변경 합성은 미구현. 5행 채우기 부족 시 카드 푸터에 **"이벤트 합성 일부 미구현" 배지** |
-| **환율 5행 (USD/KRW)** | 🟡 **EXAMPLE** | DB 에 USD/KRW 시계열 부재. 시안 mock 그대로 (`1,530.50 / 4.20 +0.31%` ×5). **카드 헤더에 "예시" 배지** |
+| 환율 5행 (USD/KRW · USD/JPY · USD/EUR · USD/CNY · EUR/USD) | 🟢 **REAL** | `/api/fx-rates` (Yahoo Finance 프록시). DB 부재 → 외부 API 도입. 실패한 통화쌍만 fallback (값 "—") |
 
 ### 2.6 종합 점수 3중
 
@@ -117,12 +117,13 @@ EXAMPLE/STUB 슬롯은 **반드시** 화면 위에 배지를 부착해 채점자
 
 | # | 슬롯 | 배지 위치 | 이유 |
 |---|---|---|---|
-| 1 | 시장 컨텍스트 4슬롯 (S&P 500 ×4) | 각 카드 (4개) | DB 시장지수 시계열 부재 |
-| 2 | 환율 5행 카드 | 카드 헤더 1개 | DB USD/KRW 시계열 부재 |
+| 1 | 시장 컨텍스트 4슬롯 (조건부) | fetch 실패한 카드만 | Yahoo Finance rate limit / 차단 시 |
+| 2 | 환율 5행 (조건부) | 헤더 (모두 실패 시) | Yahoo Finance 전체 실패 시 |
 | 3 | G3 원자재 영향 (조건부) | 게이지 카드 우상단 | sector 누락 시 자동 |
-| 4 | 주요 이벤트 5행 (조건부) | 카드 푸터 | RSI 임계만 잡혀 행 부족 시 |
+| 4 | 주요 이벤트 5행 (조건부) | 카드 헤더 | RSI 임계만 잡혀 행 부족 시 |
 
-→ main 화면에서 **항상 보이는 배지: 5개** (시장 컨텍스트 4 + 환율 1)
+→ Yahoo Finance 정상 동작 시 **항상 보이는 배지: 0개**
+→ Yahoo 차단 시 최대 4 (시장지수) + 1 (환율 헤더) = 5개
 → **조건부 배지: 2개** (G3 / 이벤트 부족분)
 
 ---

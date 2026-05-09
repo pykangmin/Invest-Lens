@@ -23,8 +23,12 @@ import {
 import {
   loadCompanySnapshot,
   loadDashboardEnvironment,
+  loadFxRate,
+  loadMarketIndex,
   loadScreen,
   type DashboardEnvironment,
+  type FxRateResponse,
+  type MarketIndexResponse,
   type ScreenItem,
 } from "../data-loader/investmentData";
 import type { CompanySnapshot } from "../types/investment";
@@ -53,6 +57,20 @@ interface DashState {
     volume: ScreenItem[];
     scoreTop: ScreenItem[];
   };
+  marketIndices: Array<MarketIndexResponse | null>;  // 실패 시 null
+  fxRates: Array<FxRateResponse | null>;
+}
+
+const MARKET_INDEX_SYMBOLS = ["^GSPC", "^DJI", "^IXIC", "^RUT"];
+const FX_PAIRS = ["USDKRW", "USDJPY", "USDEUR", "USDCNY", "EURUSD"];
+
+// 외부 API 실패 (Yahoo rate limit 등) 시 null 반환 — 호출자가 EXAMPLE fallback 처리
+async function safeLoad<T>(loader: () => Promise<T>): Promise<T | null> {
+  try {
+    return await loader();
+  } catch {
+    return null;
+  }
 }
 
 export function StockDashboard({ ticker, onBack, onSelectTicker }: StockDashboardProps) {
@@ -70,8 +88,11 @@ export function StockDashboard({ ticker, onBack, onSelectTicker }: StockDashboar
       loadScreen("priceDown", 3),
       loadScreen("volume", 3),
       loadScreen("scoreTop", 3),
+      // Yahoo Finance — 실패 시 null 로 fallback
+      Promise.all(MARKET_INDEX_SYMBOLS.map((s) => safeLoad(() => loadMarketIndex(s)))),
+      Promise.all(FX_PAIRS.map((p) => safeLoad(() => loadFxRate(p)))),
     ])
-      .then(([snapshot, env, sUp, sDown, sVol, sScore]) => {
+      .then(([snapshot, env, sUp, sDown, sVol, sScore, marketIndices, fxRates]) => {
         if (alive)
           setData({
             snapshot,
@@ -82,6 +103,8 @@ export function StockDashboard({ ticker, onBack, onSelectTicker }: StockDashboar
               volume: sVol.items,
               scoreTop: sScore.items,
             },
+            marketIndices,
+            fxRates,
           });
       })
       .catch((e: unknown) => {
@@ -138,7 +161,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker }: StockDashboar
                 delta={priceMeta?.delta ?? null}
                 pct={priceMeta?.pct ?? null}
               />
-              <MarketContextStripe />
+              <MarketContextStripe items={data.marketIndices} />
             </section>
 
             {/* 2) 사이드바 4게이지 (좌) + 차트 (우) — sidebar/main 그리드 */}
@@ -172,7 +195,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker }: StockDashboar
             {/* 3) 주요 이벤트 (좌) + 환율 EXAMPLE (우) — 2-col */}
             <section style={S.eventsFxRow}>
               <EventBlock events={analysis.events} />
-              <FxBlock />
+              <FxBlock rates={data.fxRates} />
             </section>
 
             {/* 4) 종합 점수 3중 */}
@@ -247,39 +270,50 @@ function Header({
   );
 }
 
-// 시장 컨텍스트 — 시안 mock (S&P 500 ×4). DB 시장지수 시계열 부재.
-// 각 카드에 ExampleBadge 부착. data-coverage-v4 §2.2.
-function MarketContextStripe() {
-  const cards = [
-    { label: "S&P 500", value: "35,301$", delta: "+38.1%", positive: true },
-    { label: "S&P 500", value: "35,301$", delta: "-1.6%", positive: false },
-    { label: "S&P 500", value: "35,301$", delta: "+38.1%", positive: true },
-    { label: "S&P 500", value: "35,301$", delta: "0.0%", positive: null },
+// 시장 컨텍스트 — Yahoo Finance 실 데이터. 4 indices 중 fetch 실패한 것만 EXAMPLE.
+// data-coverage-v4 §2.2 — DB 부재 슬롯이지만 외부 API 로 REAL 전환.
+function MarketContextStripe({ items }: { items: Array<MarketIndexResponse | null> }) {
+  // fallback mock — Yahoo 실패 시
+  const fallbackByIndex: Array<{ name: string; value: string; delta: string }> = [
+    { name: "S&P 500", value: "—", delta: "—" },
+    { name: "Dow Jones", value: "—", delta: "—" },
+    { name: "Nasdaq", value: "—", delta: "—" },
+    { name: "Russell 2K", value: "—", delta: "—" },
   ];
   return (
     <div style={S.marketStripe}>
-      {cards.map((c, i) => (
-        <div key={i} style={S.marketCell}>
-          <div style={S.marketLabelRow}>
-            <span style={S.marketLabel}>{c.label}</span>
-            <ExampleBadge />
+      {fallbackByIndex.map((fb, i) => {
+        const real = items[i];
+        const isReal = real?.latest != null;
+        const name = real?.name ?? fb.name;
+        const value = isReal ? `${real!.latest!.close.toLocaleString(undefined, { maximumFractionDigits: 2 })}` : fb.value;
+        const pct = real?.pct ?? null;
+        const positive = pct == null ? null : pct > 0 ? true : pct < 0 ? false : null;
+        const deltaText =
+          pct == null ? fb.delta : `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
+        return (
+          <div key={i} style={S.marketCell}>
+            <div style={S.marketLabelRow}>
+              <span style={S.marketLabel}>{name}</span>
+              {!isReal && <ExampleBadge />}
+            </div>
+            <div style={S.marketValue}>{value}</div>
+            <div
+              style={{
+                ...S.marketDelta,
+                color:
+                  positive === null
+                    ? "var(--color-text-muted)"
+                    : positive
+                      ? "var(--color-up)"
+                      : "var(--color-down)",
+              }}
+            >
+              {deltaText}
+            </div>
           </div>
-          <div style={S.marketValue}>{c.value}</div>
-          <div
-            style={{
-              ...S.marketDelta,
-              color:
-                c.positive === null
-                  ? "var(--color-text-muted)"
-                  : c.positive
-                    ? "var(--color-up)"
-                    : "var(--color-down)",
-            }}
-          >
-            {c.delta}
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -344,28 +378,58 @@ function EventBlock({ events }: { events: import("../types/scoring").AnalysisEve
   );
 }
 
-// 환율 — DB 시계열 부재. 시안 mock (USD/KRW × 5) 그대로 + EXAMPLE 배지.
-function FxBlock() {
-  const mockSeries = Array.from({ length: 60 }, (_, i) =>
-    1525 + Math.sin(i / 7) * 4 + (i / 60) * 5,
-  );
-  const card = {
-    label: "USD/KRW",
-    sublabel: "미국 달러 → 원화",
-    value: "1,530.50",
-    sparkline: mockSeries,
-    delta: { text: "4.20 (+0.31%)", positive: true as const },
-  };
+// 환율 — Yahoo Finance 실 데이터 (USD/KRW, USD/JPY, USD/EUR, USD/CNY, EUR/USD 5종).
+// fetch 실패한 통화쌍만 EXAMPLE. 모두 실패 시 헤더에 EXAMPLE 배지.
+const FX_PAIR_LABELS: Record<string, string> = {
+  USDKRW: "USD/KRW",
+  USDJPY: "USD/JPY",
+  USDEUR: "USD/EUR",
+  USDCNY: "USD/CNY",
+  EURUSD: "EUR/USD",
+};
+
+function FxBlock({ rates }: { rates: Array<FxRateResponse | null> }) {
+  const allFailed = rates.every((r) => !r?.latest);
   return (
     <div style={{ ...S.cardWithHeader, height: "100%" }}>
       <div style={S.cardHeaderRow}>
         <span style={S.cardTitle}>환율</span>
-        <ExampleBadge title="DB USD/KRW 시계열 부재 — 시안 mock 표시" />
+        {allFailed && <ExampleBadge title="Yahoo Finance fetch 실패 — fallback 표시" />}
       </div>
       <div style={S.fxStack}>
-        {Array.from({ length: 5 }).map((_, i) => (
-          <FxCard key={i} {...card} />
-        ))}
+        {FX_PAIRS.map((pair, i) => {
+          const r = rates[i];
+          const code = FX_PAIR_LABELS[pair] ?? pair;
+          if (r?.latest && r.history.length > 1) {
+            const positive = r.pct == null ? null : r.pct > 0 ? true : r.pct < 0 ? false : null;
+            return (
+              <FxCard
+                key={pair}
+                label={code}
+                sublabel={r.label}
+                value={r.latest.close.toLocaleString(undefined, { maximumFractionDigits: 4 })}
+                sparkline={r.history.map((h) => h.close)}
+                delta={{
+                  text:
+                    r.delta != null && r.pct != null
+                      ? `${r.delta >= 0 ? "+" : ""}${r.delta.toFixed(2)} (${r.pct >= 0 ? "+" : ""}${r.pct.toFixed(2)}%)`
+                      : "—",
+                  positive: positive,
+                }}
+              />
+            );
+          }
+          // fallback (Yahoo 실패한 단일 카드)
+          return (
+            <FxCard
+              key={pair}
+              label={code}
+              sublabel="데이터 미수신"
+              value="—"
+              delta={{ text: "—", positive: null }}
+            />
+          );
+        })}
       </div>
     </div>
   );

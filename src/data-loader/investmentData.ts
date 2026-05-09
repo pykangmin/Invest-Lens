@@ -101,6 +101,44 @@ export async function loadScreen(
   return fetchApiData<ScreenResponse>(`/api/screen?${params}`);
 }
 
+// 시장 지수 / 환율 — Yahoo Finance 프록시 (api/market-index.ts, api/fx-rates.ts).
+// DB 부재 슬롯의 EXAMPLE 표기를 REAL 로 전환하기 위함.
+export interface MarketIndexPoint {
+  date: string;
+  close: number;
+}
+export interface MarketIndexResponse {
+  symbol: string;
+  name: string;
+  latest: MarketIndexPoint | null;
+  previous: MarketIndexPoint | null;
+  pct: number | null;
+  history: MarketIndexPoint[];
+}
+export async function loadMarketIndex(symbol: string, range = "1mo"): Promise<MarketIndexResponse> {
+  const params = new URLSearchParams({ symbol, range });
+  return fetchApiData<MarketIndexResponse>(`/api/market-index?${params}`);
+}
+
+export interface FxRatePoint {
+  date: string;
+  close: number;
+}
+export interface FxRateResponse {
+  pair: string;
+  yahooSymbol: string;
+  label: string;
+  latest: FxRatePoint | null;
+  previous: FxRatePoint | null;
+  delta: number | null;
+  pct: number | null;
+  history: FxRatePoint[];
+}
+export async function loadFxRate(pair: string, range = "1mo"): Promise<FxRateResponse> {
+  const params = new URLSearchParams({ pair, range });
+  return fetchApiData<FxRateResponse>(`/api/fx-rates?${params}`);
+}
+
 // 대시보드 한 번에 필요한 환경 데이터를 묶어 받음.
 // 시장 지수(SP500/Dow/Nasdaq) 가격은 DB 부재 — docs/figma/dashboard-slots.md 의
 // H3 결정에 따라 위험·시장 지표 4종(VIX/DXY/10Y/HY Spread) 으로 대체.
