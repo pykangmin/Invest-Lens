@@ -20,8 +20,11 @@ export interface BarChartProps {
   showValueLabels?: boolean;
 }
 
+// viewBox 비율을 컨테이너 폭에 맞춰 보존하기 위해 ASPECT 사용.
+// 컨테이너 width 가 정해지면 height = width / ASPECT.
 const VIEW_W = 800;
 const VIEW_H = 280;
+const ASPECT = VIEW_W / VIEW_H;
 const PAD_L = 40;
 const PAD_R = 16;
 const PAD_T = 16;
@@ -66,9 +69,8 @@ export function BarChart({
     <svg
       viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
       width={width}
-      height={height}
-      preserveAspectRatio="none"
-      style={S.svg}
+      preserveAspectRatio="xMidYMid meet"
+      style={{ ...S.svg, aspectRatio: `${VIEW_W} / ${VIEW_H}`, height: "auto" }}
     >
       {/* y 축 grid + tick label */}
       {ticks.map((t, i) => {

@@ -69,9 +69,8 @@ export function ScatterPlot({
     <svg
       viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
       width={width}
-      height={height}
-      preserveAspectRatio="none"
-      style={S.svg}
+      preserveAspectRatio="xMidYMid meet"
+      style={{ ...S.svg, aspectRatio: `${VIEW_W} / ${VIEW_H}`, height: "auto" }}
     >
       {/* x grid */}
       {xTicks.map((t, i) => {

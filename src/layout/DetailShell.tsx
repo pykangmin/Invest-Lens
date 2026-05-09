@@ -59,7 +59,7 @@ export function DetailShell({
 }: DetailShellProps) {
   return (
     <div style={S.page}>
-      {/* 헤더 — 로고 + 글로벌 검색 */}
+      {/* 헤더 — 풀폭 */}
       <header style={S.header}>
         <button style={S.headerLogo} onClick={onBackToHome} aria-label="진입 화면으로">
           <img src="/invest-lens-logo.svg" alt="" style={S.logoMark} aria-hidden />
@@ -69,53 +69,53 @@ export function DetailShell({
         <div />
       </header>
 
-      <div style={S.canvas}>
-        {/* breadcrumb */}
-        <div style={S.breadcrumb}>
-          <button type="button" style={S.crumbBack} onClick={onBackToOverview}>
-            〈 이전으로
-          </button>
-          <span style={S.crumbPath}>
-            {ticker} &gt; {SECTION_BREADCRUMB[active]}
-          </span>
-          {updatedAt && (
-            <span style={S.crumbUpdate}>데이터 업데이트: {updatedAt}</span>
-          )}
-        </div>
+      {/* 사이드바 (좌측 viewport 고정) + 메인 영역 (헤더 아래 풀폭, 내부 콘텐츠 1110 centered) */}
+      <div style={S.bodyGrid}>
+        <aside style={S.nav}>
+          {NAV_ITEMS.map((item) => {
+            const isActive = item.key === active;
+            const handle = () => {
+              if (item.key === "overview") onBackToOverview();
+              else onNavigateSection(item.key as DetailSection);
+            };
+            return (
+              <button
+                key={item.key}
+                type="button"
+                style={{
+                  ...S.navItem,
+                  ...(isActive ? S.navItemActive : null),
+                }}
+                onClick={handle}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+        </aside>
 
-        {/* 좌 nav + 콘텐츠 grid */}
-        <div style={S.body}>
-          <aside style={S.nav}>
-            {NAV_ITEMS.map((item) => {
-              const isActive = item.key === active;
-              const handle = () => {
-                if (item.key === "overview") onBackToOverview();
-                else onNavigateSection(item.key as DetailSection);
-              };
-              return (
-                <button
-                  key={item.key}
-                  type="button"
-                  style={{
-                    ...S.navItem,
-                    ...(isActive ? S.navItemActive : null),
-                  }}
-                  onClick={handle}
-                >
-                  {item.label}
-                </button>
-              );
-            })}
-          </aside>
+        <main style={S.mainArea}>
+          {/* breadcrumb — 콘텐츠 폭에 맞춤 */}
+          <div style={S.contentInner}>
+            <div style={S.breadcrumb}>
+              <button type="button" style={S.crumbBack} onClick={onBackToOverview}>
+                〈 이전으로
+              </button>
+              <span style={S.crumbPath}>
+                {ticker} &gt; {SECTION_BREADCRUMB[active]}
+              </span>
+              {updatedAt && (
+                <span style={S.crumbUpdate}>데이터 업데이트: {updatedAt}</span>
+              )}
+            </div>
 
-          <main style={S.content}>
             <div style={S.titleBlock}>
               <h1 style={S.title}>{pageTitle}</h1>
               {pageSubtitle && <p style={S.subtitle}>{pageSubtitle}</p>}
             </div>
-            {children}
-          </main>
-        </div>
+            <div style={S.contentSections}>{children}</div>
+          </div>
+        </main>
       </div>
     </div>
   );
@@ -148,15 +148,42 @@ const S: Record<string, CSSProperties> = {
     letterSpacing: "0.02em",
   },
 
-  canvas: {
-    // 사이드바 제외 콘텐츠 width = 메인 뷰 (1110px) 와 일치.
-    // 1110 + 사이드바 160 + gap 24 = 1294 → canvas-max-detail
-    maxWidth: "var(--canvas-max-detail)",
+  // 헤더 아래 — viewport 풀폭 grid: [사이드바 | 메인 영역]
+  // 사이드바는 좌측에 고정 위치로 보이고, 메인 영역은 나머지를 채움
+  bodyGrid: {
+    display: "grid",
+    gridTemplateColumns: "200px 1fr",
+    alignItems: "start",
+    minHeight: "calc(100vh - 66px)",
+  },
+  nav: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    position: "sticky",
+    top: 16,
+    padding: "24px 16px 24px 40px",
+    alignSelf: "start",
+  },
+  // 메인 영역 — 풀폭. 내부 콘텐츠는 max 1110 centered (overview 메인 뷰와 너비 일치).
+  mainArea: {
+    display: "flex",
+    flexDirection: "column",
+    minWidth: 0,
+    padding: "16px 24px 64px",
+  },
+  contentInner: {
+    width: "100%",
+    maxWidth: 1110,
     margin: "0 auto",
-    padding: "16px 0 64px",
     display: "flex",
     flexDirection: "column",
     gap: 16,
+  },
+  contentSections: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 20,
   },
 
   breadcrumb: {
@@ -184,19 +211,6 @@ const S: Record<string, CSSProperties> = {
     color: "var(--color-text-faint)",
   },
 
-  body: {
-    display: "grid",
-    gridTemplateColumns: "160px 1fr",
-    gap: 24,
-    alignItems: "start",
-  },
-  nav: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 4,
-    position: "sticky",
-    top: 16,
-  },
   navItem: {
     textAlign: "left",
     padding: "10px 12px",
@@ -210,13 +224,6 @@ const S: Record<string, CSSProperties> = {
     color: "var(--color-text)",
     background: "var(--color-header-bg)",
     fontWeight: 600,
-  },
-
-  content: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 20,
-    minWidth: 0,
   },
 
   titleBlock: { display: "flex", flexDirection: "column", gap: 6 },

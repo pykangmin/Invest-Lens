@@ -20,9 +20,11 @@ export interface MultiLineChartProps {
   height?: number;
   legendPosition?: "top" | "none";
   showXLabels?: number; // 보여줄 라벨 개수 (균등 샘플)
+  /** viewBox 너비 (기본 800) — 좁은 컨테이너에 맞게 줄이면 더 사각형 비율로 보임 */
+  viewBoxWidth?: number;
 }
 
-const VIEW_W = 800;
+const DEFAULT_VIEW_W = 800;
 const VIEW_H = 280;
 const PAD_L = 50;
 const PAD_R = 16;
@@ -42,14 +44,17 @@ export function MultiLineChart({
   xLabels,
   yAxisFormatter = (v) => `${v.toFixed(0)}`,
   width = "100%",
-  height = 280,
+  height: _height = 280,
   legendPosition = "top",
   showXLabels = 6,
+  viewBoxWidth,
 }: MultiLineChartProps) {
+  const VIEW_W = viewBoxWidth ?? DEFAULT_VIEW_W;
   const validSeries = series.filter((s) => s.values.length > 0);
   if (validSeries.length === 0) {
     return <div style={S.empty}>데이터 없음</div>;
   }
+  void _height;
 
   const innerW = VIEW_W - PAD_L - PAD_R;
   const innerH = VIEW_H - PAD_T - PAD_B;
@@ -101,9 +106,8 @@ export function MultiLineChart({
       <svg
         viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
         width={width}
-        height={height}
-        preserveAspectRatio="none"
-        style={S.svg}
+        preserveAspectRatio="xMidYMid meet"
+        style={{ ...S.svg, aspectRatio: `${VIEW_W} / ${VIEW_H}`, height: "auto" }}
       >
         {/* y grid + tick */}
         {yTicks.map((t, i) => {

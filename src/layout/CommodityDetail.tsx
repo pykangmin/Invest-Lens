@@ -327,8 +327,8 @@ export function CommodityDetail({
                       series={series}
                       xLabels={dates.length === longest.values.length ? dates.map((d) => d.slice(2, 7)) : undefined}
                       yAxisFormatter={(v) => formatPrice(v)}
-                      height={180}
                       showXLabels={4}
+                      viewBoxWidth={500}
                     />
                   </div>
                 );
