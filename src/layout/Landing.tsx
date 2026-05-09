@@ -124,11 +124,18 @@ export function Landing({ onSelectTicker }: LandingProps) {
         </div>
 
         {/* 헤드라인 — 두 줄. 첫 줄 "투자의 시각,", 둘째 줄 "데이터로 (투명) 하게"
-            "투명" 은 fill 투명 + stroke 1px white 로 윤곽선만 (워드플레이) */}
+            "투명" 은 Figma 에서 outline path 로 export 한 SVG (자모 stroke 중첩 회피).
+            CSS WebkitTextStroke 는 한글 자모 경계마다 stroke 가 중첩되므로 사용 불가 */}
         <h1 style={S.headline}>
           <span style={S.headlineLine}>투자의 시각,</span>
           <span style={S.headlineLine}>
-            데이터로 <span style={S.headlineGhost} aria-label="투명">투명</span> 하게
+            데이터로{" "}
+            <img
+              src="/headline-transparent.svg"
+              alt="투명"
+              style={S.headlineGhost}
+            />{" "}
+            하게
           </span>
         </h1>
 
@@ -257,11 +264,14 @@ const S: Record<string, CSSProperties> = {
     letterSpacing: "-0.02em",
   },
   headlineLine: { display: "block" },
-  // 워드플레이 — "투명" 은 fill 투명 + 흰 stroke 윤곽선만
+  // 워드플레이 — Figma SVG (단일 outlined path) 인라인.
+  // 자모 stroke 중첩 회피 위해 WebkitTextStroke 대신 SVG 사용.
   headlineGhost: {
-    color: "transparent",
-    WebkitTextStroke: "1px var(--color-hero-text)",
-    paddingInline: "0.05em",
+    height: "0.95em",
+    width: "auto",
+    verticalAlign: "baseline",
+    display: "inline-block",
+    transform: "translateY(0.1em)", // 베이스라인 미세 보정
   },
   subhead: {
     color: "var(--color-hero-muted)",
