@@ -293,12 +293,9 @@ function MarketContextStripe({ items }: { items: Array<MarketIndexResponse | nul
           pct == null ? fb.delta : `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
         return (
           <div key={i} style={S.marketCell}>
-            <div style={S.marketLabelRow}>
-              <span style={S.marketLabel}>{name}</span>
-              {!isReal && <ExampleBadge />}
-            </div>
-            <div style={S.marketValue}>{value}</div>
-            <div
+            <span style={S.marketLabel}>{name}</span>
+            <span style={S.marketValue}>{value}</span>
+            <span
               style={{
                 ...S.marketDelta,
                 color:
@@ -310,7 +307,8 @@ function MarketContextStripe({ items }: { items: Array<MarketIndexResponse | nul
               }}
             >
               {deltaText}
-            </div>
+            </span>
+            {!isReal && <ExampleBadge />}
           </div>
         );
       })}
@@ -550,42 +548,44 @@ const S: Record<string, CSSProperties> = {
   /* ───── 종목 + 시장 컨텍스트 ───── */
   tickerRow: {
     display: "grid",
-    gridTemplateColumns: "minmax(280px, 1fr) auto",
+    gridTemplateColumns: "minmax(280px, auto) 1fr",
     alignItems: "center",
     gap: 24,
   },
+  // 4 카드 가로 분포. 각 카드는 [라벨 · 지수 · 변동률] 단일 행.
+  // 셀이 컨테이너 폭을 균등 분할 + 셀 안 3 요소는 baseline 정렬 + 충분한 gap.
   marketStripe: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, 92px)",
-    gap: 10,
-  },
-  marketCell: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 2,
-    padding: "4px 6px",
-  },
-  marketLabelRow: {
-    display: "flex",
+    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    gap: 16,
+    justifyItems: "end",
     alignItems: "center",
-    gap: 4,
-    justifyContent: "space-between",
+  },
+  // 한 카드 = 한 줄. 우측 정렬 (헤더 우측에 자연스럽게 붙음).
+  marketCell: {
+    display: "inline-flex",
+    alignItems: "baseline",
+    gap: 10,
+    whiteSpace: "nowrap",
+    minWidth: 0,
   },
   marketLabel: {
-    fontSize: "var(--font-size-md)",
+    fontSize: "var(--font-size-sm)",
     fontWeight: 600,
     color: "var(--color-text)",
   },
   marketValue: {
-    fontSize: "var(--font-size-xl-num)",
+    fontSize: "var(--font-size-lg)",
     fontWeight: 600,
     color: "var(--color-text)",
     fontVariantNumeric: "tabular-nums",
+    fontFamily: "var(--font-numeric)",
   },
   marketDelta: {
-    fontSize: "var(--font-size-sm)",
+    fontSize: "var(--font-size-xs)",
     fontWeight: 600,
     fontVariantNumeric: "tabular-nums",
+    fontFamily: "var(--font-numeric)",
   },
 
   /* ───── 메인 그리드 (사이드바 + 차트) ───── */
