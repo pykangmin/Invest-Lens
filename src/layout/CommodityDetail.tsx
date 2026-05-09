@@ -83,10 +83,11 @@ const SYMBOL_KOR: Record<string, string> = {
   REMX: "희토류",
 };
 
-const CATEGORY_GROUPS: Array<{ label: string; categories: string[]; color: string }> = [
-  { label: "에너지 섹터", categories: ["에너지"], color: "#c1121f" },
-  { label: "산업금속·곡물", categories: ["금속", "농산물"], color: "#4073ff" },
-  { label: "귀금속 섹터", categories: ["귀금속"], color: "#fdb43a" },
+// §5 카테고리별 가격 추이 — 시안 그대로 3 sub-chart (각 2 symbol)
+const SUB_CHART_GROUPS: Array<{ label: string; symbols: string[]; colors: string[] }> = [
+  { label: "에너지 섹터 흐름 (WTI · 천연가스)", symbols: ["CL=F", "NG=F"], colors: ["#c1121f", "#4073ff"] },
+  { label: "산업금속 섹터 흐름 (구리 · 리튬)", symbols: ["HG=F", "LIT"], colors: ["#fdb43a", "#60c846"] },
+  { label: "귀금속 섹터 흐름 (금 · 은)", symbols: ["GC=F", "SI=F"], colors: ["#fdb43a", "#003049"] },
 ];
 
 export function CommodityDetail({
@@ -148,13 +149,17 @@ export function CommodityDetail({
           {/* 1) 핵심 요약 */}
           <section style={S.summarySection}>
             <div style={S.summaryLeft}>
-              <div style={S.cardTitle}>핵심 요약</div>
+              <div style={S.cardHeaderRow}>
+                <span style={S.cardTitle}>핵심 요약</span>
+                <ExampleBadge title="요약 본문 텍스트는 시안 mock — LLM 합성 또는 정적 텍스트" />
+              </div>
               <p style={S.summaryBody}>
                 {data.snapshot.company.name ?? ticker}의 주요 원자재 가격 변동에 따른
                 비용·공급·전망을 단순 요약합니다. 섹터(
                 {data.snapshot.company.sector ?? "—"}) 기반 가중치로 산출됩니다.
               </p>
               <div style={S.chipsRow}>
+                {/* 비용 영향 = gauge.score 에서 산출 (REAL) */}
                 <StatusChip
                   label="비용 영향"
                   value={analysis.gauge.score && analysis.gauge.score < 35 ? "부정적" : analysis.gauge.score && analysis.gauge.score < 60 ? "중립" : "긍정적"}
@@ -166,8 +171,15 @@ export function CommodityDetail({
                         : "caution"
                   }
                 />
-                <StatusChip label="공급 안정성" value="양호" tone="positive" />
-                <StatusChip label="향후 전망" value="중립" tone="neutral" />
+                {/* 공급 안정성·향후 전망 = 시안 mock (해당 신호 산출 미구현) */}
+                <div style={S.chipWithBadge}>
+                  <StatusChip label="공급 안정성" value="양호" tone="positive" />
+                  <ExampleBadge style={S.chipBadge} />
+                </div>
+                <div style={S.chipWithBadge}>
+                  <StatusChip label="향후 전망" value="중립" tone="neutral" />
+                  <ExampleBadge style={S.chipBadge} />
+                </div>
               </div>
             </div>
             <div style={S.summaryRight}>
@@ -284,18 +296,39 @@ export function CommodityDetail({
             </div>
           </section>
 
-          {/* 5) 카테고리별 가격 추이 3 multi-line */}
+          {/* 5) 카테고리별 가격 추이 — 3 sub-chart (각 카테고리 2 symbol) */}
           <section style={S.cardWithHeader}>
-            <div style={S.cardTitle}>카테고리별 가격 추이 (Base = 100)</div>
-            <MultiLineChart
-              series={analysis.normalized.slice(0, 4).map((n, i): LineSeries => ({
-                label: n.category,
-                values: n.values,
-                color: ["#003049", "#c1121f", "#60c846", "#fdb43a"][i],
-              }))}
-              xLabels={analysis.normalized[0]?.dates.map((d) => d.slice(2, 7)) ?? []}
-              yAxisFormatter={(v) => v.toFixed(0)}
-            />
+            <div style={S.cardTitle}>카테고리별 가격 추이</div>
+            <div style={S.subChartRow}>
+              {SUB_CHART_GROUPS.map((g) => {
+                const series: LineSeries[] = g.symbols.map((s, i) => {
+                  const stat = symbolStat(data.commodities.history, s);
+                  return {
+                    label: SYMBOL_KOR[s] ?? s,
+                    values: stat?.series ?? [],
+                    color: g.colors[i],
+                  };
+                });
+                // x labels — 가장 길이 긴 시리즈의 날짜 (asc)
+                const longest = series.reduce((acc, s) => (s.values.length > acc.values.length ? s : acc), series[0]);
+                const dates = data.commodities.history
+                  .filter((h) => h.symbol === g.symbols[0])
+                  .map((h) => h.date)
+                  .reverse();
+                return (
+                  <div key={g.label} style={S.subChartCell}>
+                    <div style={S.subChartTitle}>{g.label}</div>
+                    <MultiLineChart
+                      series={series}
+                      xLabels={dates.length === longest.values.length ? dates.map((d) => d.slice(2, 7)) : undefined}
+                      yAxisFormatter={(v) => formatPrice(v)}
+                      height={180}
+                      showXLabels={4}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </section>
 
           {/* 6) 시장 이슈 3 카드 — EXAMPLE */}
@@ -565,6 +598,27 @@ const S: Record<string, CSSProperties> = {
     gap: 16,
     alignItems: "stretch",
   },
+
+  /* 5) sub chart row */
+  subChartRow: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: 12,
+  },
+  subChartCell: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+  },
+  subChartTitle: {
+    fontSize: "var(--font-size-sm)",
+    fontWeight: 600,
+    color: "var(--color-text-muted)",
+  },
+
+  /* status chip with badge overlay */
+  chipWithBadge: { position: "relative" },
+  chipBadge: { position: "absolute", top: -2, right: -8 },
 
   /* 6) 이슈 row */
   issueRow: {

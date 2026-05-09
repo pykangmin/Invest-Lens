@@ -130,6 +130,7 @@ const S: Record<string, CSSProperties> = {
     alignItems: "center",
     background: "var(--color-header-bg)",
     borderBottom: "1px solid var(--color-border)",
+    // 헤더는 main 뷰와 동일한 패딩 (1440 viewport 기준 좌우 100px)
     padding: "0 100px",
   },
   headerLogo: {
@@ -148,9 +149,11 @@ const S: Record<string, CSSProperties> = {
   },
 
   canvas: {
-    maxWidth: "var(--canvas-max)",
+    // 사이드바 제외 콘텐츠 width = 메인 뷰 (1110px) 와 일치.
+    // 1110 + 사이드바 160 + gap 24 = 1294 → canvas-max-detail
+    maxWidth: "var(--canvas-max-detail)",
     margin: "0 auto",
-    padding: "16px var(--content-pad-x) 64px",
+    padding: "16px 0 64px",
     display: "flex",
     flexDirection: "column",
     gap: 16,
@@ -183,7 +186,7 @@ const S: Record<string, CSSProperties> = {
 
   body: {
     display: "grid",
-    gridTemplateColumns: "minmax(140px, 160px) 1fr",
+    gridTemplateColumns: "160px 1fr",
     gap: 24,
     alignItems: "start",
   },
