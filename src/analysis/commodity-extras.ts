@@ -105,6 +105,80 @@ export function categoryNormalized(
   return result;
 }
 
+// 종목 ↔ 원자재 가격 상관계수 (Pearson r).
+// 일간 log return 기준. 같은 날짜끼리 페어링 후 r 계산.
+// 결과: Map<symbol, r> — r 의 절대값이 클수록 영향 강함, 부호는 방향.
+//
+// 사용처: commodityImpactGauge 의 종목별 차별화 (sector 만으로는 IT 전체가
+// 동일 점수가 되는 문제 해결).
+export function stockCommodityCorrelations(
+  stockHistory: Array<{ date: string; close: number | null }>,
+  commodityHistory: CommodityPrice[],
+  symbols: string[],
+  minPairs = 10,
+): Map<string, number> {
+  // 1) 종목 일간 return
+  const stockClose = new Map<string, number>();
+  for (const s of stockHistory) {
+    if (s.close != null && s.close > 0) stockClose.set(s.date, s.close);
+  }
+  const stockDates = [...stockClose.keys()].sort(); // ASC
+  const stockReturns = new Map<string, number>();
+  for (let i = 1; i < stockDates.length; i++) {
+    const a = stockClose.get(stockDates[i - 1])!;
+    const b = stockClose.get(stockDates[i])!;
+    if (a > 0 && b > 0) stockReturns.set(stockDates[i], Math.log(b / a));
+  }
+
+  const result = new Map<string, number>();
+  for (const sym of symbols) {
+    const cmd = commodityHistory.filter((c) => c.symbol === sym);
+    if (cmd.length < 5) continue;
+    const cmdClose = new Map<string, number>();
+    for (const c of cmd) if (c.close > 0) cmdClose.set(c.date, c.close);
+    const cmdDates = [...cmdClose.keys()].sort();
+    const cmdReturns = new Map<string, number>();
+    for (let i = 1; i < cmdDates.length; i++) {
+      const a = cmdClose.get(cmdDates[i - 1])!;
+      const b = cmdClose.get(cmdDates[i])!;
+      if (a > 0 && b > 0) cmdReturns.set(cmdDates[i], Math.log(b / a));
+    }
+
+    // 같은 날짜끼리 페어
+    const xs: number[] = [];
+    const ys: number[] = [];
+    for (const [date, sr] of stockReturns) {
+      const cr = cmdReturns.get(date);
+      if (cr !== undefined) {
+        xs.push(sr);
+        ys.push(cr);
+      }
+    }
+    if (xs.length < minPairs) continue;
+
+    const n = xs.length;
+    const mx = xs.reduce((s, v) => s + v, 0) / n;
+    const my = ys.reduce((s, v) => s + v, 0) / n;
+    let sxy = 0;
+    let sx2 = 0;
+    let sy2 = 0;
+    for (let i = 0; i < n; i++) {
+      const dx = xs[i] - mx;
+      const dy = ys[i] - my;
+      sxy += dx * dy;
+      sx2 += dx * dx;
+      sy2 += dy * dy;
+    }
+    const denom = Math.sqrt(sx2 * sy2);
+    if (denom > 0) {
+      const r = sxy / denom;
+      // -1..1 범위 보정 (수치 오차 클램프)
+      result.set(sym, Math.max(-1, Math.min(1, r)));
+    }
+  }
+  return result;
+}
+
 // 두 symbol 의 가격 비율 시계열 (예: WTI / NG).
 // 동일 날짜에만 계산 가능 — 한 쪽 결측 시 null.
 export function ratioSeries(

@@ -118,7 +118,12 @@ export function CommodityDetail({
 
   const analysis = useMemo(() => {
     if (!data) return null;
-    const gauge = commodityImpactGauge(data.snapshot.company, data.commodities.history);
+    // 종목별 차별화: stockHistory 전달 (가격 상관계수 기반)
+    const gauge = commodityImpactGauge(
+      data.snapshot.company,
+      data.commodities.history,
+      data.snapshot.technicalHistory,
+    );
     const stats = allSymbolStats(data.commodities.history);
     const normalized = categoryNormalized(data.commodities.history);
     const wtiNgRatio = ratioSeries(data.commodities.history, "CL=F", "NG=F");
