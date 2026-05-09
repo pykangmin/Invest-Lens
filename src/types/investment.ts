@@ -47,6 +47,34 @@ export interface GlobalEnvironmentPoint {
   value: number;
 }
 
+export interface MarketIndexPoint {
+  symbol: string;
+  name: string;
+  date: string;
+  close: number;
+  open: number | null;
+  high: number | null;
+  low: number | null;
+  volume: number | null;
+  source: string;
+  isFilled: boolean;
+  sourceDate: string | null;
+}
+
+export interface FxRatePoint {
+  pair: string;
+  baseCurrency: string;
+  quoteCurrency: string;
+  date: string;
+  rate: number;
+  open: number | null;
+  high: number | null;
+  low: number | null;
+  source: string;
+  isFilled: boolean;
+  sourceDate: string | null;
+}
+
 export interface CommodityPrice {
   id: number;
   symbol: string;
@@ -93,6 +121,20 @@ export interface CommoditiesResponse {
 export interface GlobalEnvironmentResponse {
   latest: GlobalEnvironmentPoint[];
   history: GlobalEnvironmentPoint[];
+}
+
+export interface MarketIndexResponse {
+  symbol: string;
+  latest: MarketIndexPoint | null;
+  history: MarketIndexPoint[];
+  source: "db" | "external";
+}
+
+export interface FxRateResponse {
+  pair: string;
+  latest: FxRatePoint | null;
+  history: FxRatePoint[];
+  source: "db" | "external";
 }
 
 export interface DbTableHealth {

@@ -4,8 +4,10 @@ import type {
   CompanyMaster,
   CompanySnapshot,
   DbHealthResponse,
+  FxRateResponse,
   GlobalEnvironmentResponse,
   MacroRegimeResponse,
+  MarketIndexResponse,
 } from "../types/investment";
 import { fetchApiData } from "./apiClient";
 
@@ -56,6 +58,30 @@ export async function loadGlobalEnvironment(
   }
 
   return fetchApiData<GlobalEnvironmentResponse>(`/api/global-environment?${params}`);
+}
+
+export async function loadMarketIndex(
+  symbol = "^GSPC",
+  historyLimit = 252,
+): Promise<MarketIndexResponse> {
+  const params = new URLSearchParams({
+    symbol,
+    historyLimit: String(historyLimit),
+  });
+
+  return fetchApiData<MarketIndexResponse>(`/api/market-index?${params}`);
+}
+
+export async function loadFxRate(
+  pair = "USD/KRW",
+  historyLimit = 252,
+): Promise<FxRateResponse> {
+  const params = new URLSearchParams({
+    pair,
+    historyLimit: String(historyLimit),
+  });
+
+  return fetchApiData<FxRateResponse>(`/api/fx-rates?${params}`);
 }
 
 export async function loadCommodities(
