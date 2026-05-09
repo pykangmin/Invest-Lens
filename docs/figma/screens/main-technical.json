@@ -2,7 +2,7 @@
   "screen": {
     "id": "327:456",
     "slug": "main-technical",
-    "label": "기술적 흐름",
+    "label": "기술적 지표",
     "w": 1440,
     "h": 1804
   },
@@ -95,7 +95,7 @@
       }
     },
     {
-      "text": "GOOGLE > 기술적 지표 스코어카드",
+      "text": "GOOGLE > 기술적 지표",
       "size": 12,
       "weight": 500,
       "family": "Pretendard Variable",
@@ -264,7 +264,7 @@
       }
     },
     {
-      "text": "기술적 흐름",
+      "text": "기술적 지표",
       "size": 15,
       "weight": 500,
       "family": "Pretendard Variable",
@@ -5911,7 +5911,7 @@
               },
               {
                 "id": "I327:595;323:937",
-                "name": "기술적 흐름",
+                "name": "기술적 지표",
                 "type": "TEXT",
                 "box": {
                   "x": 68,
@@ -5919,7 +5919,7 @@
                   "w": 84,
                   "h": 14
                 },
-                "text": "기술적 흐름",
+                "text": "기술적 지표",
                 "font": {
                   "family": "Pretendard Variable",
                   "weight": 500,
@@ -6059,7 +6059,7 @@
             "children": [
               {
                 "id": "327:599",
-                "name": "GOOGLE > 기술적 지표 스코어카드",
+                "name": "GOOGLE > 기술적 지표",
                 "type": "TEXT",
                 "box": {
                   "x": 202,
@@ -6067,7 +6067,7 @@
                   "w": 216,
                   "h": 14
                 },
-                "text": "GOOGLE > 기술적 지표 스코어카드",
+                "text": "GOOGLE > 기술적 지표",
                 "font": {
                   "family": "Pretendard Variable",
                   "weight": 500,
@@ -6094,12 +6094,6 @@
                   0,
                   0,
                   0,
-                  2,
-                  2,
-                  2,
-                  2,
-                  2,
-                  2,
                   2,
                   2,
                   2,

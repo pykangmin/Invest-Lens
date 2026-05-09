@@ -114,7 +114,7 @@
 
 **Hover 상태**:
 - `hover=원자재 영향` — 게이지 카드 hover 시 별도 variant
-- `hover=기술적 흐름` — 동일
+- `hover=기술적 흐름` — 동일 *(시안 컴포넌트명 — 본 프로젝트 코드는 "기술적 지표"로 정정)*
 
 ---
 
@@ -291,7 +291,7 @@
 | `detail.breadcrumb.back` | (71,89) | "이전으로" 12/500 |
 | `detail.breadcrumb.path` | (202,89) | "GOOGLE > 원자재 영향 분석" 12/500 |
 | `detail.breadcrumb.updated` | (1165,89) | "데이터 업데이트: 2026.04.30 09:42 (ET)" 12/500 |
-| `detail.nav` | (68, 138~326) | 5-항목 세로 nav: 개요 / 펀더멘털 / 거시 경제 / **원자재 영향** (활성) / 기술적 흐름 |
+| `detail.nav` | (68, 138~326) | 5-항목 세로 nav: 개요 / 펀더멘털 / 거시 경제 / **원자재 영향** (활성) / 기술적 지표 |
 | `detail.title` | (239,149) | "원자재 영향 분석" 20/700 |
 | `detail.subtitle` | (239,190) | "Google의 주요 원자재 관련 비용 및 매출 영향과 시장 동향을 분석합니다." 14/500 |
 
@@ -315,7 +315,7 @@
 
 ---
 
-## 5. 화면 4: main-technical (기술적 흐름)
+## 5. 화면 4: main-technical (기술적 지표)
 
 **노드**: `327:456` · 1440×1804
 **상세 데이터**: [`screens/main-technical.json`](./screens/main-technical.json) (73 texts)
@@ -323,7 +323,7 @@
 
 ### 5.1 공통 detail shell
 
-§4.1과 동일. 활성 nav 항목만 "기술적 흐름". breadcrumb path "GOOGLE > 기술적 지표 스코어카드".
+§4.1과 동일. 활성 nav 항목만 "기술적 지표". breadcrumb path "GOOGLE > 기술적 지표 스코어카드".
 
 ### 5.2 technical 고유 섹션
 

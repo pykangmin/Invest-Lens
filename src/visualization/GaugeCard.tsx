@@ -13,13 +13,14 @@ export interface GaugeCardProps {
   mode?: GaugeMode;
   badge?: string;
   sparkline?: Array<number | null>;
+  onDetailClick?: () => void;
 }
 
 // G1~G4 모두 흡수. mode 에 따라 본문이 달라짐.
 //  - donut: G1 펀더멘털, G2 원자재 영향
 //  - regime: G3 거시 경제 (두 줄 라벨만)
 //  - progress: G4 기술적 지표 (label + progress bar value)
-export function GaugeCard({ title, gauge, mode = "donut", badge, sparkline }: GaugeCardProps) {
+export function GaugeCard({ title, gauge, mode = "donut", badge, sparkline, onDetailClick }: GaugeCardProps) {
   const autoBadge = badge ?? (gauge.tagline?.startsWith("예시") ? "예시" : undefined);
   const sparkColor = severityVar(gauge.severity);
   return (
@@ -59,7 +60,13 @@ export function GaugeCard({ title, gauge, mode = "donut", badge, sparkline }: Ga
           </>
         )}
       </div>
-      <button style={S.detail} type="button" aria-label={`${title} 세부 지표 보기`}>
+      <button
+        style={S.detail}
+        type="button"
+        aria-label={`${title} 세부 지표 보기`}
+        onClick={onDetailClick}
+        disabled={!onDetailClick}
+      >
         세부 지표 보기 〉
       </button>
     </div>

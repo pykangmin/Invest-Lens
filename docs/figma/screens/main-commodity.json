@@ -119,7 +119,7 @@
       }
     },
     {
-      "text": "GOOGLE > 원자재 영향 분석",
+      "text": "GOOGLE > 원자재 영향",
       "size": 12,
       "weight": 500,
       "family": "Pretendard Variable",
@@ -275,7 +275,7 @@
       }
     },
     {
-      "text": "기술적 흐름",
+      "text": "기술적 지표",
       "size": 15,
       "weight": 500,
       "family": "Pretendard Variable",
@@ -7838,7 +7838,7 @@
               },
               {
                 "id": "I323:938;323:915",
-                "name": "기술적 흐름",
+                "name": "기술적 지표",
                 "type": "TEXT",
                 "box": {
                   "x": 68,
@@ -7846,7 +7846,7 @@
                   "w": 84,
                   "h": 14
                 },
-                "text": "기술적 흐름",
+                "text": "기술적 지표",
                 "font": {
                   "family": "Pretendard Variable",
                   "weight": 500,
@@ -7986,7 +7986,7 @@
             "children": [
               {
                 "id": "271:579",
-                "name": "GOOGLE > 원자재 영향 분석",
+                "name": "GOOGLE > 원자재 영향",
                 "type": "TEXT",
                 "box": {
                   "x": 202,
@@ -7994,7 +7994,7 @@
                   "w": 216,
                   "h": 14
                 },
-                "text": "GOOGLE > 원자재 영향 분석",
+                "text": "GOOGLE > 원자재 영향",
                 "font": {
                   "family": "Pretendard Variable",
                   "weight": 500,
@@ -8021,9 +8021,6 @@
                   0,
                   0,
                   0,
-                  2,
-                  2,
-                  2,
                   2,
                   2,
                   2,

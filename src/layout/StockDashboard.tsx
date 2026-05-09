@@ -42,10 +42,13 @@ import { Sparkline } from "../visualization/Sparkline";
 import { SymbolHeader } from "../visualization/SymbolHeader";
 import { Top3Card } from "../visualization/Top3Card";
 
+import type { DetailSection } from "./DetailShell";
+
 export interface StockDashboardProps {
   ticker: string;
   onBack: () => void;
   onSelectTicker: (ticker: string) => void;
+  onNavigateSection?: (section: DetailSection) => void;
 }
 
 interface DashState {
@@ -73,7 +76,7 @@ async function safeLoad<T>(loader: () => Promise<T>): Promise<T | null> {
   }
 }
 
-export function StockDashboard({ ticker, onBack, onSelectTicker }: StockDashboardProps) {
+export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSection }: StockDashboardProps) {
   const [data, setData] = useState<DashState | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -171,22 +174,26 @@ export function StockDashboard({ ticker, onBack, onSelectTicker }: StockDashboar
                   title="기업 펀더멘털"
                   gauge={analysis.gauges.fundamental}
                   mode="donut"
+                  onDetailClick={onNavigateSection ? () => onNavigateSection("fundamental") : undefined}
                 />
                 <GaugeCard
                   title="거시 경제"
                   gauge={analysis.gauges.macro}
                   mode="regime"
                   sparkline={macroTrend(data.env)}
+                  onDetailClick={onNavigateSection ? () => onNavigateSection("macro") : undefined}
                 />
                 <GaugeCard
                   title="원자재 영향"
                   gauge={analysis.gauges.commodity}
                   mode="donut"
+                  onDetailClick={onNavigateSection ? () => onNavigateSection("commodity") : undefined}
                 />
                 <GaugeCard
                   title="기술적 지표"
                   gauge={analysis.gauges.technical}
                   mode="progress"
+                  onDetailClick={onNavigateSection ? () => onNavigateSection("technical") : undefined}
                 />
               </aside>
               <ChartCard priceMeta={priceMeta} />

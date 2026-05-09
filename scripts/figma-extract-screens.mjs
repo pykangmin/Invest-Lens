@@ -23,7 +23,9 @@ const SCREENS = [
   { id: "219:2558", slug: "home", label: "진입화면" },
   { id: "251:3523", slug: "main", label: "개별 주식화면" },
   { id: "271:561", slug: "main-commodity", label: "원자재 영향 분석" },
-  { id: "327:456", slug: "main-technical", label: "기술적 흐름" },
+  { id: "327:456", slug: "main-technical", label: "기술적 지표" },
+  { id: "376:483", slug: "main-fundamental", label: "펀더멘털" },
+  { id: "385:1470", slug: "main-macro", label: "거시 경제" },
 ];
 
 const tree = JSON.parse(readFileSync(TREE_PATH, "utf8"));
