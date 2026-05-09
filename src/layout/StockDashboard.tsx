@@ -293,9 +293,12 @@ function MarketContextStripe({ items }: { items: Array<MarketIndexResponse | nul
           pct == null ? fb.delta : `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
         return (
           <div key={i} style={S.marketCell}>
-            <span style={S.marketLabel}>{name}</span>
-            <span style={S.marketValue}>{value}</span>
-            <span
+            <div style={S.marketLabelRow}>
+              <span style={S.marketLabel}>{name}</span>
+              {!isReal && <ExampleBadge />}
+            </div>
+            <div style={S.marketValue}>{value}</div>
+            <div
               style={{
                 ...S.marketDelta,
                 color:
@@ -307,8 +310,7 @@ function MarketContextStripe({ items }: { items: Array<MarketIndexResponse | nul
               }}
             >
               {deltaText}
-            </span>
-            {!isReal && <ExampleBadge />}
+            </div>
           </div>
         );
       })}
@@ -552,27 +554,34 @@ const S: Record<string, CSSProperties> = {
     alignItems: "center",
     gap: 24,
   },
-  // 4 카드 가로 분포. 각 카드는 [라벨 · 지수 · 변동률] 단일 행.
-  // 셀이 컨테이너 폭을 균등 분할 + 셀 안 3 요소는 baseline 정렬 + 충분한 gap.
+  // 시안 그대로 — 4 카드가 가로 정렬되고 카드 내부는 세로 stack (라벨/지수/변동률).
+  // 카드 폭은 컨텐츠에 맞춰 가변 + 카드 사이 gap 으로 가시성 확보.
   marketStripe: {
-    display: "grid",
-    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-    gap: 16,
-    justifyItems: "end",
-    alignItems: "center",
+    display: "flex",
+    justifyContent: "flex-end",
+    alignItems: "flex-start",
+    gap: 28,
+    flexWrap: "wrap",
   },
-  // 한 카드 = 한 줄. 우측 정렬 (헤더 우측에 자연스럽게 붙음).
+  // 카드 내부 — 세로 stack (라벨 위, 지수 중간, 변동률 아래).
   marketCell: {
-    display: "inline-flex",
-    alignItems: "baseline",
-    gap: 10,
-    whiteSpace: "nowrap",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 4,
     minWidth: 0,
+    whiteSpace: "nowrap",
+  },
+  marketLabelRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
   },
   marketLabel: {
     fontSize: "var(--font-size-sm)",
     fontWeight: 600,
     color: "var(--color-text)",
+    lineHeight: 1.2,
   },
   marketValue: {
     fontSize: "var(--font-size-lg)",
@@ -580,12 +589,14 @@ const S: Record<string, CSSProperties> = {
     color: "var(--color-text)",
     fontVariantNumeric: "tabular-nums",
     fontFamily: "var(--font-numeric)",
+    lineHeight: 1.2,
   },
   marketDelta: {
     fontSize: "var(--font-size-xs)",
     fontWeight: 600,
     fontVariantNumeric: "tabular-nums",
     fontFamily: "var(--font-numeric)",
+    lineHeight: 1.2,
   },
 
   /* ───── 메인 그리드 (사이드바 + 차트) ───── */
