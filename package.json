@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "db:ping": "node scripts/db-ping.mjs",
     "db:smoke": "tsx scripts/db-smoke.ts",
-    "db:ingest-market": "tsx scripts/ingest-market-data.ts"
+    "db:ingest-market": "tsx scripts/ingest-market-data.ts",
+    "db:ingest-fundamentals": "tsx scripts/ingest-fundamentals.ts"
   },
   "dependencies": {
     "esbuild": "^0.28.0",

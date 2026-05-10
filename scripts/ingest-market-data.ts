@@ -10,6 +10,35 @@ import type { FxRatePoint, MarketIndexPoint } from "../src/types/investment";
 
 const { Client, types } = pg;
 
+const MARKET_SERIES = [
+  { yahooSymbol: "^GSPC", symbol: "^GSPC", name: "S&P 500" },
+  { yahooSymbol: "^IXIC", symbol: "^IXIC", name: "Nasdaq Composite" },
+  { yahooSymbol: "^DJI", symbol: "^DJI", name: "Dow Jones Industrial Average" },
+  { yahooSymbol: "^RUT", symbol: "^RUT", name: "Russell 2000" },
+  { yahooSymbol: "^VIX", symbol: "^VIX", name: "CBOE Volatility Index" },
+  { yahooSymbol: "XLK", symbol: "XLK", name: "Technology Select Sector SPDR" },
+  { yahooSymbol: "XLF", symbol: "XLF", name: "Financial Select Sector SPDR" },
+  { yahooSymbol: "XLV", symbol: "XLV", name: "Health Care Select Sector SPDR" },
+  { yahooSymbol: "XLY", symbol: "XLY", name: "Consumer Discretionary Select Sector SPDR" },
+  { yahooSymbol: "XLP", symbol: "XLP", name: "Consumer Staples Select Sector SPDR" },
+  { yahooSymbol: "XLC", symbol: "XLC", name: "Communication Services Select Sector SPDR" },
+  { yahooSymbol: "XLI", symbol: "XLI", name: "Industrial Select Sector SPDR" },
+  { yahooSymbol: "XLE", symbol: "XLE", name: "Energy Select Sector SPDR" },
+  { yahooSymbol: "XLU", symbol: "XLU", name: "Utilities Select Sector SPDR" },
+  { yahooSymbol: "XLB", symbol: "XLB", name: "Materials Select Sector SPDR" },
+  { yahooSymbol: "XLRE", symbol: "XLRE", name: "Real Estate Select Sector SPDR" },
+] as const;
+
+const FX_SERIES = [
+  { yahooSymbol: "KRW=X", pair: "USD/KRW", baseCurrency: "USD", quoteCurrency: "KRW" },
+  { yahooSymbol: "JPY=X", pair: "USD/JPY", baseCurrency: "USD", quoteCurrency: "JPY" },
+  { yahooSymbol: "CNY=X", pair: "USD/CNY", baseCurrency: "USD", quoteCurrency: "CNY" },
+  { yahooSymbol: "EURUSD=X", pair: "EUR/USD", baseCurrency: "EUR", quoteCurrency: "USD" },
+  { yahooSymbol: "GBPUSD=X", pair: "GBP/USD", baseCurrency: "GBP", quoteCurrency: "USD" },
+  { yahooSymbol: "EURKRW=X", pair: "EUR/KRW", baseCurrency: "EUR", quoteCurrency: "KRW" },
+  { yahooSymbol: "JPYKRW=X", pair: "JPY/KRW", baseCurrency: "JPY", quoteCurrency: "KRW" },
+] as const;
+
 types.setTypeParser(20, (value) => Number(value));
 types.setTypeParser(1082, (value) => value);
 types.setTypeParser(1700, (value) => Number(value));
@@ -35,7 +64,8 @@ function databaseUrl(): string {
   if (!url) {
     throw new Error("DATABASE_URL or MARKET_DATA_DATABASE_URL is required.");
   }
-  const parsed = new URL(url);
+  const normalized = url.replace("postgresql+psycopg2://", "postgresql://");
+  const parsed = new URL(normalized);
   parsed.searchParams.delete("sslmode");
   return parsed.toString();
 }
@@ -178,12 +208,32 @@ const range = option("--range", "2y");
 const limit = Number.parseInt(option("--limit", "600"), 10);
 const dryRun = flag("--dry-run");
 
-const [sp500Raw, usdKrwRaw] = await Promise.all([
-  fetchYahooDaily("^GSPC", range),
-  fetchYahooDaily("KRW=X", range),
-]);
-const sp500 = marketIndexFromYahoo("^GSPC", "S&P 500", sp500Raw, limit);
-const usdKrw = fxRateFromYahoo("USD/KRW", "USD", "KRW", usdKrwRaw, limit);
+const marketResults = await Promise.all(
+  MARKET_SERIES.map(async (series) => ({
+    series,
+    rows: marketIndexFromYahoo(
+      series.symbol,
+      series.name,
+      await fetchYahooDaily(series.yahooSymbol, range),
+      limit,
+    ),
+  })),
+);
+const fxResults = await Promise.all(
+  FX_SERIES.map(async (series) => ({
+    series,
+    rows: fxRateFromYahoo(
+      series.pair,
+      series.baseCurrency,
+      series.quoteCurrency,
+      await fetchYahooDaily(series.yahooSymbol, range),
+      limit,
+    ),
+  })),
+);
+
+const marketRows = marketResults.flatMap((result) => result.rows);
+const fxRows = fxResults.flatMap((result) => result.rows);
 
 if (dryRun) {
   console.log(
@@ -191,8 +241,16 @@ if (dryRun) {
       {
         ok: true,
         dryRun: true,
-        sp500: { rows: sp500.length, latest: sp500[0] ?? null },
-        usdKrw: { rows: usdKrw.length, latest: usdKrw[0] ?? null },
+        market: marketResults.map((result) => ({
+          symbol: result.series.symbol,
+          rows: result.rows.length,
+          latest: result.rows[0] ?? null,
+        })),
+        fx: fxResults.map((result) => ({
+          pair: result.series.pair,
+          rows: result.rows.length,
+          latest: result.rows[0] ?? null,
+        })),
       },
       null,
       2,
@@ -209,16 +267,24 @@ if (dryRun) {
     await client.connect();
     await client.query("BEGIN");
     await ensureTables(client);
-    await upsertMarketIndex(client, sp500);
-    await upsertFxRates(client, usdKrw);
+    await upsertMarketIndex(client, marketRows);
+    await upsertFxRates(client, fxRows);
     await client.query("COMMIT");
     console.log(
       JSON.stringify(
         {
           ok: true,
           dryRun: false,
-          sp500: { rows: sp500.length, latest: sp500[0] ?? null },
-          usdKrw: { rows: usdKrw.length, latest: usdKrw[0] ?? null },
+          market: marketResults.map((result) => ({
+            symbol: result.series.symbol,
+            rows: result.rows.length,
+            latest: result.rows[0] ?? null,
+          })),
+          fx: fxResults.map((result) => ({
+            pair: result.series.pair,
+            rows: result.rows.length,
+            latest: result.rows[0] ?? null,
+          })),
         },
         null,
         2,
