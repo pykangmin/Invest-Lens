@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { CommodityDetail } from "./CommodityDetail";
+import { FundamentalDetail } from "./FundamentalDetail";
 import { Landing } from "./Landing";
+import { MacroDetail } from "./MacroDetail";
 import { StockDashboard } from "./StockDashboard";
+import { TechnicalDetail } from "./TechnicalDetail";
 import type { DetailSection } from "./DetailShell";
 
 function readPath(): string {
@@ -60,18 +63,17 @@ export function App() {
   const detailRoute = parseDetailRoute(path);
   if (detailRoute) {
     const { ticker, section } = detailRoute;
-    if (section === "commodity") {
-      return (
-        <CommodityDetail
-          ticker={ticker}
-          onBackToHome={() => navigate("/")}
-          onBackToOverview={() => goTicker(ticker)}
-          onNavigateSection={(s) => goSection(ticker, s)}
-          onSelectTicker={goTicker}
-        />
-      );
-    }
-    // 나머지 3 section (fundamental/macro/technical) 은 추후 구현 — 일단 overview 로 fallback
+    const common = {
+      ticker,
+      onBackToHome: () => navigate("/"),
+      onBackToOverview: () => goTicker(ticker),
+      onNavigateSection: (s: DetailSection) => goSection(ticker, s),
+      onSelectTicker: goTicker,
+    };
+    if (section === "commodity") return <CommodityDetail {...common} />;
+    if (section === "fundamental") return <FundamentalDetail {...common} />;
+    if (section === "macro") return <MacroDetail {...common} />;
+    if (section === "technical") return <TechnicalDetail {...common} />;
     goTicker(ticker);
     return null;
   }

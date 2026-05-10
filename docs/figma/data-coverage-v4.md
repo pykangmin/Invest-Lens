@@ -101,15 +101,49 @@ EXAMPLE/STUB 슬롯은 **반드시** 화면 위에 배지를 부착해 채점자
 
 ## 4. main-technical (기술 detail) — B 단계 작업
 
-| 영역 | 분류 (예상) |
-|---|---|
-| Detail shell | 🟢 REAL |
-| 종합 점수 67/100 + 6 chip | 🟢 REAL (analysis/technical 6-metric 가중) |
-| 신호 등급 bar (Sell/Hold/BUY/Strong buy) | 🟢 REAL (점수 → 등급 매핑) |
-| 종합 점수 추이 line | 🟢 REAL |
-| 지표별 기여도 (6+1 컬럼) | 🟢 REAL |
-| Detail table 6행 (지표 sparkline + 설명 + 점수) | 🟢 REAL |
-| 평균이동선 차트 (MA20/50/200) | 🟢 REAL (DB 컬럼 존재) |
+DB 컬럼: `close / volume / rsi_14 / macd / ma_50 / ma_200`. ma_20·super_trend·MA cross signal 은 부재 → 코드에서 close history 로 계산.
+
+| 영역 | 분류 | 출처 / 사유 |
+|---|---|---|
+| Detail shell | 🟢 REAL | DetailShell |
+| Hero — 종합 점수 도넛 + 6 chip | 🟢 REAL | `analysis/technicalV4` 6-metric 가중 합산 |
+| 신호 등급 bar (Sell/Hold/Buy/Strong buy) | 🟢 REAL | 점수 → 등급 매핑 |
+| 6-metric ContributionRow (Super Trend 20 / MA 20 / MACD 15 / RSI 15 / VIX 15 / Volume 15) | 🟢 REAL | DB 컬럼 + close 로 계산. Super Trend 는 close vs MA200 + slope proxy 로 산출 (정식 ATR-based 미구현) |
+| 종합 점수 추이 line | 🟡 EXAMPLE | 과거 종합 점수 저장 안 함 → 직전 60일 close 기반 6-metric 재계산. 보존된 값 아닌 *재계산값* 임을 배지로 표시 |
+| Detail table 6행 (지표 / sparkline / 요약 / 점수) | 🟢 REAL | sparkline = 각 metric 의 정규화 값 60일 |
+| 평균이동선 차트 (close + MA20·MA50·MA200) | 🟢 REAL | MA20 은 close 20일 SMA 로 계산 |
+
+---
+
+## 4a. main-fundamental (펀더멘털 detail)
+
+DB 컬럼 (16): `marketCap / per / pbr / roe / netProfitMargin / debtToEquity / revenueGrowth / epsGrowth / evEbitda / fcfYield / fcfMargin / ccc / grossMarginYoy / pbrZScore / forwardPerZScore`. `/api/company` 가 forward-fill 적용 (가장 최근 분기 결측 → 직전 분기 값).
+
+| 영역 | 분류 | 출처 / 사유 |
+|---|---|---|
+| Detail shell | 🟢 REAL | DetailShell |
+| Hero — 종합 점수 도넛 + 본문·chip | 🟢 REAL | `analysis/fundamental` |
+| 9 mini metric grid (FCF / ROE / 영업이익률 / Margin / PER / PBR / Debt / Growth / FCF Yield) | 🟢 REAL | `latestFundamentals` |
+| 분기 추이 multi-line (Revenue Growth · EPS Growth · ROE 등) | 🟢 REAL | `fundamentalsHistory` (forward-filled) |
+| 종합 스코어 합산 표 (지표 × 가중치 × 점수) | 🟢 REAL | `analysis/fundamental` 의 sub-score 노출 |
+| 동종업계 비교 표 (peer N개) | 🟡 EXAMPLE | peers 데이터 부재 — 시안 mock |
+| 핵심 강점 / 리스크 카드 (텍스트) | 🟡 EXAMPLE | 본문 mock |
+
+---
+
+## 4b. main-macro (거시 detail)
+
+DB: `macro_regime_scores` (4 regime 확률 + dominantRegime + confidence). `global_environment` 시계열 4종 보유 (`^VIX / DX-Y.NYB / DGS10 / BAMLH0A0HYM2`). CPI / 실업률 / 산업생산 등 macro 변수 시계열은 DB 부재.
+
+| 영역 | 분류 | 출처 / 사유 |
+|---|---|---|
+| Detail shell | 🟢 REAL | DetailShell |
+| Hero — dominantRegime 라벨 + 도넛 | 🟢 REAL | `analysis/macro` |
+| 4 regime 확률 카드 (Soft / Hard / No / Recovery) | 🟢 REAL | `MacroRegimeScore` 4 컬럼 |
+| Regime 확률 추이 stack-area | 🟢 REAL | `macroRegime.history` 36행 |
+| 거시 시계열 4 multi-line (VIX · DXY · 10Y · HY Spread) | 🟢 REAL | `global_environment` |
+| Regime breakdown — 변수 → regime 기여도 표 | 🟡 EXAMPLE | DB 부재 (모델 내부 가중치 미공개) — 시안 mock |
+| 경고 / 신호 카드 (텍스트) | 🟡 EXAMPLE | 본문 mock |
 
 ---
 
