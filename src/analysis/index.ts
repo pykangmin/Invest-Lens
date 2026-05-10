@@ -36,12 +36,10 @@ function macroEnvComposite(
 // composite-trio 는 시점 비교: 오늘 펀더 / 이번 달 종합 / 오늘 거시·기술 종합
 export function analyze(input: AnalyzeInput): AnalysisResult {
   const fundamental = fundamentalGauge(input.snapshot.latestFundamentals);
-  // commodity 는 종목별 차별화 위해 stockHistory (technicalHistory) 전달.
-  // 같은 sector 종목들이 다른 점수를 받기 위함 — 가격 상관계수 기반.
+  // commodity — sector 가중치 표 기반 (같은 sector 종목은 동일 점수).
   const commodity = commodityImpactGauge(
     input.snapshot.company,
     input.commodities,
-    input.snapshot.technicalHistory,
   );
   const macro = macroGauge(input.macroRegime);
   const technical = technicalGauge(input.snapshot.latestTechnical, input.vix);

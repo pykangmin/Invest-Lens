@@ -1,16 +1,10 @@
-import type { CommodityPrice, CompanyMaster, StockPriceTech } from "../types/investment";
+import type { CommodityPrice, CompanyMaster } from "../types/investment";
 import type { GaugeScore } from "../types/scoring";
-import { stockCommodityCorrelations } from "./commodity-extras";
 
 // G2 — 원자재 영향.
-// **종목별** 원자재 노출 점수.
+// sector × commodity 가중치 표 기반 (같은 sector 종목은 동일 점수).
 //
-// 우선 순위:
-//   1) stockHistory 30일+ → 종목 ↔ 원자재 가격 상관계수 기반 (종목별 차별화)
-//   2) fallback: sector × commodity 가중치 표 (같은 sector 종목은 동일 점수)
-//
-// 점수 산출: 가중 합산 weighted = Σ (signal_w[sym] × pct_60d[sym])
-//   - signal_w: 상관계수 r (방법 1) 또는 sector 표 가중치 (방법 2)
+// 점수 산출: weighted = Σ (sector_w[sym] × pct_60d[sym])
 //   - pct_60d: 해당 commodity 의 최근 60일 가격 변동률 (%)
 // score = clamp(0, 100, 50 + weighted * 2)
 
@@ -28,9 +22,6 @@ const SECTOR_WEIGHTS: Record<string, Record<string, number>> = {
   "Real Estate": { "GC=F": +0.3, "CL=F": -0.2, "HG=F": 0.0, "NG=F": 0.0 },
 };
 
-// 상관 계산에 사용할 commodity symbol set (sector 표보다 넓게 — 6 종)
-const CORRELATION_SYMBOLS = ["CL=F", "NG=F", "GC=F", "HG=F", "SI=F", "ZC=F"];
-
 function trendPct(history: CommodityPrice[]): number | null {
   if (history.length < 2) return null;
   const last = history[0]?.close;
@@ -39,56 +30,10 @@ function trendPct(history: CommodityPrice[]): number | null {
   return ((last - first) / first) * 100;
 }
 
-function buildScore(weighted: number): { score: number; severity: "INFO" | "CAUTION" | "WARNING"; label: string } {
-  const score = Math.max(0, Math.min(100, 50 + weighted * 2));
-  const severity: "INFO" | "CAUTION" | "WARNING" =
-    score >= 60 ? "INFO" : score >= 30 ? "CAUTION" : "WARNING";
-  const label = score >= 60 ? "POSITIVE" : score >= 30 ? "MIXED" : "NEGATIVE";
-  return { score, severity, label };
-}
-
 export function commodityImpactGauge(
   company: CompanyMaster,
   history: CommodityPrice[],
-  stockHistory?: StockPriceTech[],
 ): GaugeScore {
-  // ── 방법 1: 종목별 상관계수 (stockHistory 30일+ 있을 때) ──
-  if (stockHistory && stockHistory.length >= 30) {
-    const correlations = stockCommodityCorrelations(
-      stockHistory.map((t) => ({ date: t.date, close: t.close })),
-      history,
-      CORRELATION_SYMBOLS,
-    );
-    if (correlations.size > 0) {
-      let weighted = 0;
-      let n = 0;
-      let strongCount = 0;
-      for (const [sym, r] of correlations) {
-        const series = history.filter((c) => c.symbol === sym);
-        const pct = trendPct(series);
-        if (pct === null) continue;
-        // r 약하면 영향 거의 없음 (|r|<0.05 → 거의 0). 그대로 곱하기.
-        weighted += r * pct;
-        n++;
-        if (Math.abs(r) >= 0.10) strongCount++;
-      }
-      if (n > 0) {
-        const { score, severity, label } = buildScore(weighted);
-        return {
-          id: "commodity",
-          label,
-          tagline: strongCount > 0
-            ? `상관 ${strongCount}/${n} 유효`
-            : "상관 약 — 영향 미미",
-          score: Math.round(score),
-          severity,
-          available: true,
-        };
-      }
-    }
-  }
-
-  // ── 방법 2: sector 가중치 (fallback) ──
   const sector = company.sector ?? "Information Technology";
   const weights = SECTOR_WEIGHTS[sector] ?? SECTOR_WEIGHTS["Information Technology"]!;
   let weighted = 0;
@@ -111,7 +56,10 @@ export function commodityImpactGauge(
       available: true,
     };
   }
-  const { score, severity, label } = buildScore(weighted);
+  const score = Math.max(0, Math.min(100, 50 + weighted * 2));
+  const severity: "INFO" | "CAUTION" | "WARNING" =
+    score >= 60 ? "INFO" : score >= 30 ? "CAUTION" : "WARNING";
+  const label = score >= 60 ? "POSITIVE" : score >= 30 ? "MIXED" : "NEGATIVE";
   return {
     id: "commodity",
     label,
