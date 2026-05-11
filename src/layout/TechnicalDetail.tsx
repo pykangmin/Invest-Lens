@@ -220,7 +220,6 @@ export function TechnicalDetail({
                         width={120}
                         height={30}
                         strokeWidth={1.5}
-                        fillOpacity={0.12}
                       />
                     ) : null
                   }
@@ -392,7 +391,6 @@ const METRIC_TABLE_COLUMNS: DataTableColumn<TechnicalMetricScore>[] = [
           width={100}
           height={28}
           strokeWidth={1.5}
-          fillOpacity={0.12}
         />
       ) : (
         <span style={{ color: "var(--color-text-muted)" }}>—</span>

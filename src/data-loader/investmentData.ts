@@ -6,6 +6,7 @@ import type {
   DbHealthResponse,
   GlobalEnvironmentResponse,
   MacroRegimeResponse,
+  PeersResponse,
 } from "../types/investment";
 import { fetchApiData } from "./apiClient";
 
@@ -56,6 +57,17 @@ export async function loadGlobalEnvironment(
   }
 
   return fetchApiData<GlobalEnvironmentResponse>(`/api/global-environment?${params}`);
+}
+
+export async function loadPeers(
+  ticker: string,
+  limit = 5,
+): Promise<PeersResponse> {
+  const params = new URLSearchParams({
+    ticker: assertTicker(ticker),
+    limit: String(limit),
+  });
+  return fetchApiData<PeersResponse>(`/api/peers?${params}`);
 }
 
 export async function loadCommodities(

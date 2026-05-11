@@ -7,7 +7,7 @@
 //   2) 9 mini metric grid (FCF Margin / ROE / 순이익률 / 매출성장 / EPS 성장 / FCF Yield / Debt/Equity / PER / PBR)
 //   3) 분기 추이 multi-line — ROE / netProfitMargin / fcfMargin (forward-filled)
 //   4) 지표 기여도 표 — 종합 점수에 들어간 5 metric × 가중치 1/5
-//   5) 동종업계 비교 표 — EXAMPLE
+//   5) 동종업계 비교 표 — REAL (2026-05 보강, /api/peers)
 //   6) 핵심 강점 / 리스크 카드 — EXAMPLE
 
 import { useEffect, useMemo, useState, type CSSProperties } from "react";
@@ -17,13 +17,12 @@ import {
   fundamentalQuarterlySeries,
   type FundamentalMetric,
 } from "../analysis/fundamentalDetail";
-import { loadCompanySnapshot } from "../data-loader/investmentData";
-import type { CompanySnapshot } from "../types/investment";
+import { loadCompanySnapshot, loadPeers } from "../data-loader/investmentData";
+import type { CompanySnapshot, PeerCompany, PeersResponse } from "../types/investment";
 import { DataTable, type DataTableColumn } from "../visualization/DataTable";
 import { Donut } from "../visualization/Donut";
 import { ExampleBadge } from "../visualization/ExampleBadge";
 import { MultiLineChart, type LineSeries } from "../visualization/MultiLineChart";
-import { Sparkline } from "../visualization/Sparkline";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import {
   ContributionRow,
@@ -44,23 +43,6 @@ export interface FundamentalDetailProps {
 // gauge 합산에 들어가는 5 metric (각 1/5 가중치)
 const GAUGE_METRIC_KEYS = ["roe", "netProfitMargin", "fcfYield", "debtToEquity", "per"] as const;
 
-interface PeerRow {
-  ticker: string;
-  name: string;
-  per: string;
-  pbr: string;
-  roe: string;
-  margin: string;
-}
-
-const EXAMPLE_PEERS: PeerRow[] = [
-  { ticker: "AAPL", name: "Apple Inc.", per: "32.4x", pbr: "57.9x", roe: "152.0%", margin: "26.0%" },
-  { ticker: "MSFT", name: "Microsoft", per: "37.1x", pbr: "12.4x", roe: "39.4%", margin: "36.0%" },
-  { ticker: "GOOGL", name: "Alphabet", per: "26.0x", pbr: "7.5x", roe: "30.6%", margin: "29.0%" },
-  { ticker: "META", name: "Meta", per: "27.5x", pbr: "9.1x", roe: "32.1%", margin: "33.4%" },
-  { ticker: "AMZN", name: "Amazon", per: "45.7x", pbr: "8.4x", roe: "20.1%", margin: "8.0%" },
-];
-
 export function FundamentalDetail({
   ticker,
   onBackToHome,
@@ -69,11 +51,13 @@ export function FundamentalDetail({
   onSelectTicker,
 }: FundamentalDetailProps) {
   const [data, setData] = useState<CompanySnapshot | null>(null);
+  const [peers, setPeers] = useState<PeersResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
     setData(null);
+    setPeers(null);
     setError(null);
     loadCompanySnapshot(ticker, 24)
       .then((s) => {
@@ -81,6 +65,13 @@ export function FundamentalDetail({
       })
       .catch((e: unknown) => {
         if (alive) setError(e instanceof Error ? e.message : String(e));
+      });
+    loadPeers(ticker, 6)
+      .then((p) => {
+        if (alive) setPeers(p);
+      })
+      .catch(() => {
+        // peer 실패는 치명적 X — 카드 숨김 처리.
       });
     return () => {
       alive = false;
@@ -222,17 +213,18 @@ export function FundamentalDetail({
             </div>
           </DetailSectionBox>
 
-          {/* 5) 동종업계 비교 — EXAMPLE */}
-          <DetailSectionBox
-            title="동종업계 비교 (예시)"
-            exampleNote="peers 데이터 부재 — 시안 mock"
-          >
-            <DataTable
-              columns={PEER_COLUMNS}
-              rows={EXAMPLE_PEERS}
-              rowKey={(r) => r.ticker}
-            />
-          </DetailSectionBox>
+          {/* 5) 동종업계 비교 — 2026-05 REAL */}
+          {peers && peers.peers.length > 0 && (
+            <DetailSectionBox
+              title={`동종업계 비교 — ${peers.sector ?? "—"} (시총 상위 ${peers.peers.length} 종목)`}
+            >
+              <DataTable
+                columns={PEER_COLUMNS}
+                rows={peers.peers}
+                rowKey={(r) => r.ticker}
+              />
+            </DetailSectionBox>
+          )}
 
           {/* 6) 강점 / 리스크 — EXAMPLE */}
           <div style={S.twoCol}>
@@ -312,27 +304,53 @@ function gaugeColor(s: "WARNING" | "CAUTION" | "INFO"): string {
   return "var(--color-up-strong)";
 }
 
-const PEER_COLUMNS: DataTableColumn<PeerRow>[] = [
-  { key: "ticker", header: "티커", align: "left", render: (r) => <strong>{r.ticker}</strong> },
-  { key: "name", header: "기업명", align: "left", render: (r) => r.name },
-  { key: "per", header: "PER", align: "right", render: (r) => r.per },
-  { key: "pbr", header: "PBR", align: "right", render: (r) => r.pbr },
-  { key: "roe", header: "ROE", align: "right", render: (r) => r.roe },
-  { key: "margin", header: "순이익률", align: "right", render: (r) => r.margin },
+function fmtMultiplier(v: number | null, digits = 1): string {
+  return v == null ? "—" : `${v.toFixed(digits)}x`;
+}
+function fmtPct(v: number | null, digits = 1): string {
+  return v == null ? "—" : `${(v * 100).toFixed(digits)}%`;
+}
+function fmtMarketCap(v: number | null): string {
+  if (v == null) return "—";
+  if (v >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
+  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
+  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
+  return `$${v.toFixed(0)}`;
+}
+
+const PEER_COLUMNS: DataTableColumn<PeerCompany>[] = [
   {
-    key: "trend",
-    header: "추이",
+    key: "ticker",
+    header: "티커",
     align: "left",
-    render: () => (
-      <Sparkline
-        values={[80, 82, 78, 85, 88, 91, 89, 93, 95, 92, 96, 100]}
-        width={80}
-        height={24}
-        strokeWidth={1.5}
-        color="var(--color-up)"
-        fillOpacity={0.1}
-      />
+    render: (r) => (
+      <strong style={r.isSelf ? { color: "var(--color-up-strong)" } : undefined}>
+        {r.ticker}
+        {r.isSelf && " ●"}
+      </strong>
     ),
+  },
+  { key: "name", header: "기업명", align: "left", render: (r) => r.name },
+  {
+    key: "marketCap",
+    header: "시총",
+    align: "right",
+    render: (r) => fmtMarketCap(r.marketCap),
+  },
+  { key: "per", header: "PER", align: "right", render: (r) => fmtMultiplier(r.per) },
+  { key: "pbr", header: "PBR", align: "right", render: (r) => fmtMultiplier(r.pbr) },
+  { key: "roe", header: "ROE", align: "right", render: (r) => fmtPct(r.roe) },
+  {
+    key: "margin",
+    header: "순이익률",
+    align: "right",
+    render: (r) => fmtPct(r.netProfitMargin),
+  },
+  {
+    key: "fcfYield",
+    header: "FCF Yield",
+    align: "right",
+    render: (r) => fmtPct(r.fcfYield),
   },
 ];
 

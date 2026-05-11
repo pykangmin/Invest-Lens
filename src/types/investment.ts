@@ -113,6 +113,28 @@ export interface GlobalEnvironmentResponse {
   history: GlobalEnvironmentPoint[];
 }
 
+// 2026-05 — /api/peers 동종업계 비교 응답.
+export interface PeerCompany {
+  ticker: string;
+  name: string;
+  subIndustry: string | null;
+  marketCap: number | null;
+  per: number | null;
+  pbr: number | null;
+  roe: number | null;
+  netProfitMargin: number | null;
+  fcfYield: number | null;
+  debtToEquity: number | null;
+  revenueGrowth: number | null;
+  isSelf: boolean;
+}
+
+export interface PeersResponse {
+  ticker: string;
+  sector: string | null;
+  peers: PeerCompany[];
+}
+
 export interface DbTableHealth {
   tableName: string;
   rows: number;

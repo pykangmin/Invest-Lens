@@ -129,7 +129,7 @@ DB 컬럼 (16): `marketCap / per / pbr / roe / netProfitMargin / debtToEquity / 
 | 9 mini metric grid (FCF / ROE / 영업이익률 / Margin / PER / PBR / Debt / Growth / FCF Yield) | 🟢 REAL | `latestFundamentals` |
 | 분기 추이 multi-line (Revenue Growth · EPS Growth · ROE 등) | 🟢 REAL | `fundamentalsHistory` (forward-filled) |
 | 종합 스코어 합산 표 (지표 × 가중치 × 점수) | 🟢 REAL | `analysis/fundamental` 의 sub-score 노출 |
-| 동종업계 비교 표 (peer N개) | 🟡 EXAMPLE | peers 데이터 부재 — 시안 mock |
+| 동종업계 비교 표 (peer N개) | 🟢 **REAL** | **2026-05 보강** — `/api/peers?ticker=X&limit=N` (같은 sector × 시총 상위 N, LATERAL JOIN 최신 펀더 행). 자신 종목 ● 표시로 강조 |
 | 핵심 강점 / 리스크 카드 (텍스트) | 🟡 EXAMPLE | 본문 mock |
 
 ---
@@ -145,7 +145,7 @@ DB: `macro_regime_scores` (4 regime 확률 + dominantRegime + confidence). `glob
 | 4 regime 확률 카드 (Soft / Hard / No / Recovery) | 🟢 REAL | `MacroRegimeScore` 4 컬럼 |
 | Regime 확률 추이 stack-area | 🟢 REAL | `macroRegime.history` 36행 |
 | 거시 시계열 4 multi-line (VIX · DXY · 10Y · HY Spread) | 🟢 REAL | `global_environment` |
-| Regime breakdown — 변수 → regime 기여도 표 | 🟡 EXAMPLE | DB 부재 (모델 내부 가중치 미공개) — 시안 mock |
+| Regime breakdown — 변수 → regime 기여도 표 | 🟢 **REAL (통계 기반 추정)** | **2026-05 보강** — `analysis/macroDetail.regimeContributionTable` 가 macro_regime_scores ↔ global_environment 변수 4종을 Pearson r 로 산출. 모델 내부 가중치 아닌 통계적 상관임을 표 헤더 note 에 명시 |
 | 경고 / 신호 카드 (텍스트) | 🟡 EXAMPLE | 본문 mock |
 
 ---
@@ -172,9 +172,9 @@ DB: `macro_regime_scores` (4 regime 확률 + dominantRegime + confidence). `glob
 | ~~S&P 500 등 시장지수 가격 시계열~~ | ✅ **2026-05 DB 보강** | `market_index_prices` 16 종목 (^GSPC/^DJI/^IXIC/^RUT/^VIX + 11 sector ETF) |
 | ~~USD/KRW 환율 시계열~~ | ✅ **2026-05 DB 보강** | `fx_rates` 7 pair (USD/JPY, USD/KRW, USD/CNY, EUR/USD, GBP/USD, EUR/KRW, JPY/KRW) |
 | ~~supertrend / MACD 신호 변화 합성~~ | ✅ **2026-05 보강** | `analysis/events.ts` 에 supertrend_flip + macd_cross 합성 |
+| ~~펀더멘털 동종업계 비교~~ | ✅ **2026-05 보강** | `/api/peers` — 같은 sector 시총 상위 N |
+| ~~거시 regime 변수 기여도~~ | ⚠️ **2026-05 통계 기반 근사** | Pearson r — 모델 내부 가중치 아님. 미래 보강 시 모델 출력 확률→변수 attribution 필요 |
 | 종합 점수 60일 history 저장 | DB 부재 | 재계산값 사용 중 — `score_history` 테이블 신규 필요 |
-| 펀더멘털 동종업계 비교 | DB 부재 | peer 매핑 + 비교 지표 테이블 필요 |
-| 거시 regime 변수 기여도 | DB 부재 | 모델 내부 가중치 노출 필요 |
 | 4지표 → 종합 합산식 | 단순 평균 (시안 미명시) | 02-data-analysis.md 에 가중치 표 정의 후 반영 |
 
 ---

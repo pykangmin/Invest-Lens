@@ -14,9 +14,11 @@ import { useEffect, useMemo, useState, type CSSProperties } from "react";
 import { macroGauge } from "../analysis/macro";
 import {
   macroIndicatorSeries,
+  regimeContributionTable,
   regimeProbs,
   regimeQuarterlySeries,
   type MacroIndicatorSeries,
+  type RegimeContribCell,
   type RegimeProb,
 } from "../analysis/macroDetail";
 import {
@@ -57,20 +59,15 @@ export interface MacroDetailProps {
   onSelectTicker: (ticker: string) => void;
 }
 
+// 통계 기반 변수↔regime 기여도 표 row 타입.
+// macro_regime_scores (월별) ↔ global_environment (월말 4 변수) Pearson 상관.
 interface BreakdownRow {
   variable: string;
-  contribution: number;
-  regime: string;
-  rationale: string;
+  softLanding: RegimeContribCell;
+  noLanding: RegimeContribCell;
+  hardLanding: RegimeContribCell;
+  recovery: RegimeContribCell;
 }
-
-const EXAMPLE_BREAKDOWN: BreakdownRow[] = [
-  { variable: "CPI YoY", contribution: 0.32, regime: "Soft Landing", rationale: "물가 안정 회귀 — 연착륙 프로비전" },
-  { variable: "Unemployment", contribution: 0.21, regime: "Soft Landing", rationale: "고용 시장 안정 유지" },
-  { variable: "Industrial Production", contribution: -0.18, regime: "Hard Landing", rationale: "산업 생산 둔화 — 침체 신호" },
-  { variable: "10Y - 2Y Spread", contribution: -0.10, regime: "Hard Landing", rationale: "수익률 곡선 부분 역전" },
-  { variable: "Consumer Confidence", contribution: 0.15, regime: "No Landing", rationale: "소비자 자신감 확대" },
-];
 
 export function MacroDetail({
   ticker,
@@ -115,8 +112,42 @@ export function MacroDetail({
       { symbol: "DGS10", history: data.treasury10y.history },
       { symbol: "BAMLH0A0HYM2", history: data.hyspread.history },
     ]);
-    return { gauge, probs, series, indicators };
+    const contribution = regimeContributionTable(data.regime.history, {
+      vix: data.vix.history,
+      dxy: data.dxy.history,
+      dgs10: data.treasury10y.history,
+      hy: data.hyspread.history,
+    });
+    return { gauge, probs, series, indicators, contribution };
   }, [data]);
+
+  const breakdownRows = useMemo<BreakdownRow[]>(() => {
+    if (!analysis) return [];
+    const byVar = new Map<string, RegimeContribCell[]>();
+    for (const cell of analysis.contribution.cells) {
+      const arr = byVar.get(cell.variable) ?? [];
+      arr.push(cell);
+      byVar.set(cell.variable, arr);
+    }
+    return analysis.contribution.variables.map((v) => {
+      const cells = byVar.get(v) ?? [];
+      const find = (k: RegimeContribCell["regime"]) =>
+        cells.find((c) => c.regime === k) ?? {
+          variable: v,
+          regime: k,
+          r: null,
+          strengthLabel: "—",
+          direction: "neutral" as const,
+        };
+      return {
+        variable: v,
+        softLanding: find("softLanding"),
+        noLanding: find("noLanding"),
+        hardLanding: find("hardLanding"),
+        recovery: find("recovery"),
+      };
+    });
+  }, [analysis]);
 
   const updatedAt = data?.regime.latest?.date ?? undefined;
 
@@ -217,14 +248,14 @@ export function MacroDetail({
             </div>
           </DetailSectionBox>
 
-          {/* 5) Regime breakdown 표 — EXAMPLE */}
+          {/* 5) Regime breakdown 표 — 통계 기반 추정 (Pearson r) */}
           <DetailSectionBox
-            title="변수별 regime 기여도 (예시)"
-            exampleNote="모델 내부 가중치 미공개 — 시안 mock"
+            title="변수별 regime 기여도 — 통계 기반 추정"
+            exampleNote={`모델 내부 가중치 부재 → Pearson 상관계수로 근사. 표본 ${analysis.contribution.sampleSize} 월말. |r| ≥ 0.5 = 강 / 0.3 = 중 / 0.15 = 약.`}
           >
             <DataTable
               columns={BREAKDOWN_COLUMNS}
-              rows={EXAMPLE_BREAKDOWN}
+              rows={breakdownRows}
               rowKey={(r) => r.variable}
             />
           </DetailSectionBox>
@@ -356,6 +387,25 @@ function gaugeColor(s: "WARNING" | "CAUTION" | "INFO"): string {
   return "var(--color-up-strong)";
 }
 
+function renderCorrCell(cell: RegimeContribCell) {
+  if (cell.r == null) return <span style={{ color: "var(--color-text-muted)" }}>—</span>;
+  const color =
+    cell.direction === "positive"
+      ? "var(--color-up-strong)"
+      : cell.direction === "negative"
+        ? "var(--color-down)"
+        : "var(--color-text-muted)";
+  return (
+    <span style={{ color, fontWeight: 700, fontFamily: "var(--font-numeric)" }}>
+      {cell.r >= 0 ? "+" : ""}
+      {cell.r.toFixed(2)}
+      <span style={{ marginLeft: 4, fontSize: "var(--font-size-xs)", opacity: 0.7 }}>
+        {cell.strengthLabel}
+      </span>
+    </span>
+  );
+}
+
 const BREAKDOWN_COLUMNS: DataTableColumn<BreakdownRow>[] = [
   {
     key: "variable",
@@ -363,22 +413,10 @@ const BREAKDOWN_COLUMNS: DataTableColumn<BreakdownRow>[] = [
     align: "left",
     render: (r) => <strong>{r.variable}</strong>,
   },
-  {
-    key: "contribution",
-    header: "기여도",
-    align: "right",
-    render: (r) => {
-      const color = r.contribution >= 0 ? "var(--color-up-strong)" : "var(--color-down)";
-      return (
-        <span style={{ color, fontWeight: 700 }}>
-          {r.contribution >= 0 ? "+" : ""}
-          {r.contribution.toFixed(2)}
-        </span>
-      );
-    },
-  },
-  { key: "regime", header: "관련 regime", align: "left", render: (r) => r.regime },
-  { key: "rationale", header: "사유", align: "left", render: (r) => r.rationale },
+  { key: "soft", header: "Soft Landing", align: "right", render: (r) => renderCorrCell(r.softLanding) },
+  { key: "no", header: "No Landing", align: "right", render: (r) => renderCorrCell(r.noLanding) },
+  { key: "hard", header: "Hard Landing", align: "right", render: (r) => renderCorrCell(r.hardLanding) },
+  { key: "rec", header: "Recovery", align: "right", render: (r) => renderCorrCell(r.recovery) },
 ];
 
 const S: Record<string, CSSProperties> = {

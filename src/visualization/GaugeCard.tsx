@@ -40,7 +40,6 @@ export function GaugeCard({ title, gauge, mode = "donut", badge, sparkline, onDe
                   width="100%"
                   height={40}
                   color={sparkColor}
-                  fillOpacity={0.14}
                   strokeWidth={2}
                 />
               </div>

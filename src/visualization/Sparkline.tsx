@@ -26,7 +26,7 @@ export function Sparkline({
   width,
   height = 36,
   color,
-  fillOpacity = 0.18,
+  fillOpacity = 0,
   strokeWidth = 1.6,
 }: SparklineProps) {
   const data = sanitize(values).slice().reverse();
@@ -71,7 +71,7 @@ export function Sparkline({
       preserveAspectRatio="none"
       aria-hidden
     >
-      <path d={areaPath} fill={stroke} opacity={fillOpacity} />
+      {fillOpacity > 0 && <path d={areaPath} fill={stroke} opacity={fillOpacity} />}
       <polyline
         points={points}
         fill="none"

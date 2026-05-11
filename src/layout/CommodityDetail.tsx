@@ -490,7 +490,6 @@ const STAT_COLUMNS: DataTableColumn<CommodityStat>[] = [
         height={24}
         strokeWidth={1.5}
         color={r.pctYoY != null && r.pctYoY >= 0 ? "var(--color-up)" : "var(--color-down)"}
-        fillOpacity={0.1}
       />
     ),
   },
