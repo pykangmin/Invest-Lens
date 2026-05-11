@@ -2,11 +2,16 @@
 // 만점: Super Trend 20 / 이동평균선 20 / MACD 15 / RSI 15 / VIX 15 / 거래량 15 = 100.
 //
 // DB 컬럼: close / volume / rsi_14 / macd / ma_50 / ma_200.
-// 부재: ma_20 (close 20일 SMA 로 계산), super_trend (close vs MA200 + 추세 proxy).
+// 2026-05 보강: ma_20, macd_signal, supertrend_signal/value/days — 단, technicalHistory
+// 와 다른 row (close=NULL) 라서 `latestSignals` 별도 인자로 전달받음.
 //
 // history 는 DESC (latest first) 가정 — `/api/company` 응답 그대로.
 
-import type { GlobalEnvironmentPoint, StockPriceTech } from "../types/investment";
+import type {
+  GlobalEnvironmentPoint,
+  StockPriceTech,
+  TechnicalSignalSnapshot,
+} from "../types/investment";
 import { clamp } from "./severity";
 
 export type TechnicalMetricKey =
@@ -82,9 +87,21 @@ function emptyMetric(key: TechnicalMetricKey, note: string): TechnicalMetricScor
   };
 }
 
-// ── 1) Super Trend (proxy) ─────────────────────────────────────
+// DB 직값 사용: supertrend_signal/days. 보강 데이터가 있으면 proxy 대신 직접 점수화.
+// 점수 분포:
+//   Buy  + days≥10 → 18~20
+//   Buy  + days<10 → 14~18 (days 비례)
+//   Sell + days≥10 → 0~3
+//   Sell + days<10 → 3~6
+function superTrendFromDb(signal: "Buy" | "Sell", days: number): number {
+  const conf = Math.min(Math.max(days, 0) / 10, 1); // 0..1
+  if (signal === "Buy") return 14 + conf * 6; // 14..20
+  return 6 - conf * 6; // 0..6
+}
+
+// ── 1) Super Trend (proxy fallback) ────────────────────────────
 // close > MA200 + MA200 rising → bullish. close < MA200 + falling → bearish.
-// 정식 ATR-based super trend 가 아니므로 STUB 영역. note 에 명시.
+// 정식 ATR-based super trend 아님 — DB 보강 신호 없을 때만 사용.
 function superTrendScore(
   closeAsc: number[],
   ma200Asc: Array<number | null>,
@@ -190,8 +207,12 @@ function movingAverageScore(
 }
 
 // ── 3) MACD ────────────────────────────────────────────────────
-// MACD 양수 + 추세 우상향 → 강세. (signal line 부재 → 자체 부호 + 변화율로 대체)
-function macdScore(macdAsc: Array<number | null>, closeAsc: number[]): { score: number; note: string; series: number[] } {
+// MACD 양수 + 추세 우상향 → 강세. signal line (DB macd_signal) 이 있으면 cross 가산.
+function macdScore(
+  macdAsc: Array<number | null>,
+  closeAsc: number[],
+  latestMacdSignal: number | null = null,
+): { score: number; note: string; series: number[] } {
   const validIdx = macdAsc.findIndex((v) => v != null);
   if (validIdx === -1) return { score: 0, note: "MACD 결측", series: [] };
 
@@ -219,13 +240,27 @@ function macdScore(macdAsc: Array<number | null>, closeAsc: number[]): { score: 
     series.push(computeAt(k) ?? 0);
   }
 
+  // signal line 보정: macd > signal → +2 (cross up bonus, cap 15) / macd < signal → -1.5
+  let adjustedScore = score;
+  let signalNote = "";
+  if (latestMacdSignal != null) {
+    const diff = cur - latestMacdSignal;
+    if (diff > 0) {
+      adjustedScore = Math.min(15, score + 2);
+      signalNote = " · signal선 위 (강세 cross)";
+    } else {
+      adjustedScore = Math.max(0, score - 1.5);
+      signalNote = " · signal선 아래";
+    }
+  }
+
   let note: string;
   if (cur > meanAbs * 0.5) note = "MACD 양수·강세 영역";
   else if (cur > 0) note = "MACD 양수 — 약강세";
   else if (cur > -meanAbs * 0.5) note = "MACD 음수 — 약약세";
   else note = "MACD 음수·약세 영역";
 
-  return { score, note, series };
+  return { score: adjustedScore, note: note + signalNote, series };
 }
 
 // ── 4) RSI ─────────────────────────────────────────────────────
@@ -357,6 +392,7 @@ export function technicalAnalysisV4(
   historyDesc: StockPriceTech[],
   vixLatest: GlobalEnvironmentPoint | null,
   vixHistoryDesc: GlobalEnvironmentPoint[] = [],
+  latestSignals: TechnicalSignalSnapshot | null = null,
 ): TechnicalAnalysisV4 {
   const asc = [...historyDesc].reverse();
   const closeAsc = asc.map((t) => t.close ?? 0);
@@ -385,14 +421,24 @@ export function technicalAnalysisV4(
   }
 
   const st = superTrendScore(closeAsc, ma200Asc);
+  // DB 직값 우선: supertrend_signal 이 있으면 점수만 override (series 는 proxy 유지).
+  let stScore = st.score;
+  let stNote = st.note;
+  let stAvailable = st.score > 0;
+  if (latestSignals?.supertrendSignal) {
+    const days = latestSignals.supertrendDays ?? 0;
+    stScore = superTrendFromDb(latestSignals.supertrendSignal, days);
+    stNote = `${latestSignals.supertrendSignal === "Buy" ? "상승 추세" : "하락 추세"} ${days}일째`;
+    stAvailable = true;
+  }
   metrics.push({
     key: "superTrend",
     label: METRIC_LABELS.superTrend,
-    score: st.score,
+    score: stScore,
     max: METRIC_MAX.superTrend,
     series: st.series,
-    note: st.note,
-    available: st.score > 0,
+    note: stNote,
+    available: stAvailable,
   });
 
   const ma = movingAverageScore(closeAsc, ma50Asc, ma200Asc);
@@ -406,7 +452,7 @@ export function technicalAnalysisV4(
     available: ma.score > 0,
   });
 
-  const macd = macdScore(macdAsc, closeAsc);
+  const macd = macdScore(macdAsc, closeAsc, latestSignals?.macdSignal ?? null);
   metrics.push({
     key: "macd",
     label: METRIC_LABELS.macd,

@@ -17,7 +17,11 @@ import {
   type StockFundamentalsRow,
   type StockPriceTechRow,
 } from "./_lib/mappers.js";
-import type { CompanySnapshot, StockFundamentals } from "../src/types/investment.js";
+import type {
+  CompanySnapshot,
+  StockFundamentals,
+  TechnicalSignalSnapshot,
+} from "../src/types/investment.js";
 
 // 펀더멘털 history 의 null 보간.
 // stock_fundamentals 는 분기 종료일에 row 가 생성되지만 실 실적 발표는 그 후 (4~5월).
@@ -95,6 +99,7 @@ export default async function handler(
       fundamentalsHistory,
       latestTechnical,
       technicalHistory,
+      latestSignalsRow,
     ] = await Promise.all([
       queryOne<StockFundamentalsRow>(
         `
@@ -139,7 +144,37 @@ export default async function handler(
         `,
         [ticker, historyLimit],
       ),
+      // 2026-05 보강 컬럼은 close 가 null 인 별도 row 에 들어옴. 별도 쿼리로 최신 row 확보.
+      queryOne<StockPriceTechRow>(
+        `
+          SELECT *
+          FROM public.stock_price_tech
+          WHERE ticker = $1
+            AND supertrend_signal IS NOT NULL
+          ORDER BY date DESC
+          LIMIT 1
+        `,
+        [ticker],
+      ),
     ]);
+
+    const latestSignals: TechnicalSignalSnapshot | null = latestSignalsRow
+      ? {
+          date:
+            latestSignalsRow.date instanceof Date
+              ? latestSignalsRow.date.toISOString().slice(0, 10)
+              : latestSignalsRow.date,
+          ma20: latestSignalsRow.ma_20,
+          macdSignal: latestSignalsRow.macd_signal,
+          supertrendSignal:
+            latestSignalsRow.supertrend_signal === "Buy" ||
+            latestSignalsRow.supertrend_signal === "Sell"
+              ? latestSignalsRow.supertrend_signal
+              : null,
+          supertrendValue: latestSignalsRow.supertrend_value,
+          supertrendDays: latestSignalsRow.supertrend_days,
+        }
+      : null;
 
     const payload: CompanySnapshot = {
       company: mapCompany(company),
@@ -149,6 +184,7 @@ export default async function handler(
       ),
       latestTechnical: latestTechnical ? mapTechnical(latestTechnical) : null,
       technicalHistory: technicalHistory.map(mapTechnical),
+      latestSignals,
     };
 
     sendData(res, payload);

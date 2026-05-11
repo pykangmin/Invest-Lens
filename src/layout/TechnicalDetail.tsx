@@ -92,13 +92,18 @@ export function TechnicalDetail({
       data.snapshot.technicalHistory,
       data.vix.latest[0] ?? null,
       data.vix.history,
+      data.snapshot.latestSignals,
     );
   }, [data]);
 
+  // MA20 라인은 close 와 같은 row 에서 보여야 하므로 SMA20 으로 계산.
+  // (DB ma_20 컬럼은 close 와 다른 row 에 있어 chart 정렬 불가)
   const ma20 = useMemo(() => {
     if (!data) return [];
     return sma20FromCloseDesc(data.snapshot.technicalHistory);
   }, [data]);
+
+  const latestSignals = data?.snapshot.latestSignals ?? null;
 
   const updatedAt =
     data?.snapshot.technicalHistory[0]?.date ?? undefined;
@@ -131,6 +136,12 @@ export function TechnicalDetail({
                 Super Trend·이동평균선·MACD·RSI·VIX·거래량 6개 지표 가중 합산. 현재
                 점수는 <strong>{analysis.totalScore}/100</strong>으로
                 {" "}<strong>{signalLabel(analysis.signal)}</strong> 구간입니다.
+                {latestSignals?.supertrendSignal && (
+                  <>
+                    {" "}DB Super Trend: <strong>{latestSignals.supertrendSignal}</strong>
+                    {" "}({latestSignals.supertrendDays ?? 0}일째, {latestSignals.date} 기준)
+                  </>
+                )}
               </p>
             }
             chips={
@@ -235,7 +246,14 @@ export function TechnicalDetail({
           </DetailSectionBox>
 
           {/* 5) 평균이동선 차트 */}
-          <DetailSectionBox title={`주가 + 이동평균선 (${ticker})`}>
+          <DetailSectionBox
+            title={`주가 + 이동평균선 (${ticker})`}
+            exampleNote={
+              latestSignals?.ma20 != null
+                ? undefined
+                : "MA20 컬럼은 보강 row(close 부재)에만 존재 — 차트는 close 20일 SMA로 계산"
+            }
+          >
             <MultiLineChart
               series={buildMASeries(data.snapshot.technicalHistory, ma20)}
               xLabels={[...data.snapshot.technicalHistory]
@@ -246,6 +264,48 @@ export function TechnicalDetail({
               height={260}
             />
           </DetailSectionBox>
+
+          {/* 6) DB 보강 신호 카드 — 2026-05 추가 */}
+          {latestSignals && (
+            <DetailSectionBox title={`DB 보강 시그널 (${latestSignals.date} 기준)`}>
+              <div style={S.signalGrid}>
+                <SignalCard
+                  label="Super Trend"
+                  value={latestSignals.supertrendSignal ?? "—"}
+                  detail={
+                    latestSignals.supertrendValue != null
+                      ? `${latestSignals.supertrendValue.toFixed(2)} · ${latestSignals.supertrendDays ?? 0}일째`
+                      : "—"
+                  }
+                  tone={
+                    latestSignals.supertrendSignal === "Buy"
+                      ? "up"
+                      : latestSignals.supertrendSignal === "Sell"
+                        ? "down"
+                        : "neutral"
+                  }
+                />
+                <SignalCard
+                  label="MA20 (보강)"
+                  value={
+                    latestSignals.ma20 != null ? latestSignals.ma20.toFixed(2) : "—"
+                  }
+                  detail="20일 단순 이동평균"
+                  tone="neutral"
+                />
+                <SignalCard
+                  label="MACD Signal"
+                  value={
+                    latestSignals.macdSignal != null
+                      ? latestSignals.macdSignal.toFixed(3)
+                      : "—"
+                  }
+                  detail="9일 EMA"
+                  tone="neutral"
+                />
+              </div>
+            </DetailSectionBox>
+          )}
         </>
       )}
     </DetailShell>
@@ -424,4 +484,61 @@ const S: Record<string, CSSProperties> = {
     flexDirection: "column",
     gap: 8,
   },
+
+  signalGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: 12,
+  },
+  signalCard: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    padding: 16,
+    background: "var(--color-card)",
+    border: "1px solid var(--color-border)",
+    borderRadius: "var(--radius-card)",
+  },
+  signalCardLabel: {
+    fontSize: "var(--font-size-xs)",
+    color: "var(--color-text-muted)",
+    fontWeight: 600,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+  },
+  signalCardValue: {
+    fontSize: "var(--font-size-2xl)",
+    fontWeight: 700,
+    fontFamily: "var(--font-numeric)",
+  },
+  signalCardDetail: {
+    fontSize: "var(--font-size-xs)",
+    color: "var(--color-text-muted)",
+  },
 };
+
+function SignalCard({
+  label,
+  value,
+  detail,
+  tone,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+  tone: "up" | "down" | "neutral";
+}) {
+  const color =
+    tone === "up"
+      ? "var(--color-up-strong)"
+      : tone === "down"
+        ? "var(--color-down)"
+        : "var(--color-text)";
+  return (
+    <div style={S.signalCard}>
+      <span style={S.signalCardLabel}>{label}</span>
+      <span style={{ ...S.signalCardValue, color }}>{value}</span>
+      <span style={S.signalCardDetail}>{detail}</span>
+    </div>
+  );
+}

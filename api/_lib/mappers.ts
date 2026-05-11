@@ -46,6 +46,11 @@ export interface StockPriceTechRow {
   macd: number | null;
   ma_50: number | null;
   ma_200: number | null;
+  ma_20: number | null;
+  macd_signal: number | null;
+  supertrend_signal: string | null;
+  supertrend_value: number | null;
+  supertrend_days: number | null;
 }
 
 export interface CommodityPriceRow {
@@ -130,6 +135,11 @@ export function mapFundamentals(row: StockFundamentalsRow): StockFundamentals {
   };
 }
 
+function normalizeSupertrendSignal(v: string | null): "Buy" | "Sell" | null {
+  if (v === "Buy" || v === "Sell") return v;
+  return null;
+}
+
 export function mapTechnical(row: StockPriceTechRow): StockPriceTech {
   return {
     id: row.id,
@@ -141,6 +151,11 @@ export function mapTechnical(row: StockPriceTechRow): StockPriceTech {
     macd: row.macd,
     ma50: row.ma_50,
     ma200: row.ma_200,
+    ma20: row.ma_20,
+    macdSignal: row.macd_signal,
+    supertrendSignal: normalizeSupertrendSignal(row.supertrend_signal),
+    supertrendValue: row.supertrend_value,
+    supertrendDays: row.supertrend_days,
   };
 }
 

@@ -37,6 +37,22 @@ export interface StockPriceTech {
   macd: number | null;
   ma50: number | null;
   ma200: number | null;
+  // 2026-05 보강: MA20·MACD signal·Super Trend 직값. close 와 다른 일자 row 에 채워질 수 있음.
+  ma20: number | null;
+  macdSignal: number | null;
+  supertrendSignal: "Buy" | "Sell" | null;
+  supertrendValue: number | null;
+  supertrendDays: number | null;
+}
+
+// 신호 컬럼만 채워진 latest row (close 부재). technicalHistory 와 별도 트랙.
+export interface TechnicalSignalSnapshot {
+  date: string;
+  ma20: number | null;
+  macdSignal: number | null;
+  supertrendSignal: "Buy" | "Sell" | null;
+  supertrendValue: number | null;
+  supertrendDays: number | null;
 }
 
 export interface GlobalEnvironmentPoint {
@@ -78,6 +94,8 @@ export interface CompanySnapshot {
   fundamentalsHistory: StockFundamentals[];
   latestTechnical: StockPriceTech | null;
   technicalHistory: StockPriceTech[];
+  // 2026-05 보강. supertrend_signal IS NOT NULL 최신 row — close 와 다른 날짜.
+  latestSignals: TechnicalSignalSnapshot | null;
 }
 
 export interface MacroRegimeResponse {

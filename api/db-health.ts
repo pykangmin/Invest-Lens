@@ -54,6 +54,12 @@ export default async function handler(
       UNION ALL
       SELECT 'macro_regime_scores', count(*)::bigint, min(date), max(date)
       FROM public.macro_regime_scores
+      UNION ALL
+      SELECT 'fx_rates', count(*)::bigint, min(date), max(date)
+      FROM public.fx_rates
+      UNION ALL
+      SELECT 'market_index_prices', count(*)::bigint, min(date), max(date)
+      FROM public.market_index_prices
       ORDER BY table_name
     `);
 
