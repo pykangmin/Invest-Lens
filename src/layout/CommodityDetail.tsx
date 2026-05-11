@@ -14,18 +14,30 @@
 //   §6 (1538-1734, h=196) — 주요 섹터별 시장 이슈 분석: 3 INSTANCE Card/원자재/주요 이슈 (각 345w)
 //   §7 (1746-2096, h=350) — 2-col: 자산군 정규화 사이클(494w) + 에너지 괴리율(597w) + 우측 사이드 지표
 
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { Icon } from "@iconify/react";
 import {
+  barChangeData,
   categoryStanceLabel,
   commodityImpactScore,
   costImpactLabel,
+  marketIndicatorsTable,
   maxDate,
+  normalizedCycleSeries,
   outlookLabel,
+  scatterData,
   scoreDayDelta,
+  sectorTrends,
   supplyStabilityLabel,
   symbolStat,
   verdictFromImpactScore,
+  wtiNgSeries,
+  type BarChangeItem,
+  type DualAxisPoint,
+  type MarketIndicatorRow,
+  type NormalizedCycleSeries,
+  type ScatterPoint,
+  type SectorChart,
 } from "../analysis/commodityNarrative";
 import {
   loadCommodities,
@@ -298,8 +310,30 @@ export function CommodityDetail({
     ];
 
     const date = maxDate(rows);
+    const barChange = barChangeData(rows);
+    const marketTable = marketIndicatorsTable(rows);
+    const scatter = scatterData(rows);
+    const sectors = sectorTrends(rows);
+    const normCycle = normalizedCycleSeries(rows);
+    const wtiNg = wtiNgSeries(rows);
 
-    return { impact, verdict, delta, stats, mainFour, priceCards, issueCards, sideIndicators, date };
+    return {
+      impact,
+      verdict,
+      delta,
+      stats,
+      mainFour,
+      priceCards,
+      issueCards,
+      sideIndicators,
+      date,
+      barChange,
+      marketTable,
+      scatter,
+      sectors,
+      normCycle,
+      wtiNg,
+    };
   }, [commodities]);
 
   const updatedAt = useMemo(
@@ -377,7 +411,7 @@ export function CommodityDetail({
             <section style={S.row3Right}>
               <div style={S.boxHeader}>원자재별 연간 가격 변동률 비교</div>
               <div style={S.subHeader}>1년 전 대비 현재 가격 변동폭 (%)</div>
-              <GraphPlaceholder hint="원자재별 변동률 가로 막대 차트" minHeight={170} />
+              <BarChangeChart items={analysis.barChange} />
             </section>
           </div>
 
@@ -386,17 +420,17 @@ export function CommodityDetail({
             <SectionBoxFull
               title="원자재 시장 지표 요약"
               flex={683}
-              height={260}
+              height={280}
             >
-              <GraphPlaceholder hint="원자재 지표 표 / 차트" />
+              <MarketIndicatorsTableView rows={analysis.marketTable} />
             </SectionBoxFull>
             <SectionBoxFull
               title="변동성-수익률 매트릭스"
               sub="시장 변동성 대비 가격 상승 모멘텀 포지셔닝"
               flex={404}
-              height={260}
+              height={280}
             >
-              <GraphPlaceholder hint="scatter plot (volatility × return)" />
+              <VolatilityScatter points={analysis.scatter} />
             </SectionBoxFull>
           </div>
 
@@ -404,22 +438,16 @@ export function CommodityDetail({
           <section style={S.row5}>
             <div style={S.row5Header}>
               <span style={S.boxHeader}>카테고리별 가격 추이</span>
-              <span style={S.boxHeaderSuffix}>(2025.04→2026.04)</span>
+              <span style={S.boxHeaderSuffix}>(12개월)</span>
             </div>
-            <div style={S.subHeader}>12개월간 월별 시세 흐름 추적</div>
+            <div style={{ ...S.subHeader, marginTop: -8 }}>12개월간 월별 시세 흐름 추적</div>
             <div style={S.row5Grid}>
-              <SectorChart
-                title="에너지 섹터 흐름"
-                sub="WTI 원유 및 천연가스 가격 월별 변등 추이"
-              />
-              <SectorChart
-                title="산업금속 섹터 흐름"
-                sub="구리 및 리튬 가격 월별 변동 추이"
-              />
-              <SectorChart
-                title="귀금속 섹터 흐름 (금 & 은)"
-                sub="금과 은의 원별 시세 변동 추이"
-              />
+              {analysis.sectors.map((sec, i) => (
+                <Fragment key={sec.title}>
+                  {i > 0 && <div style={S.row5Divider} />}
+                  <SectorChartCard chart={sec} />
+                </Fragment>
+              ))}
             </div>
           </section>
 
@@ -437,19 +465,19 @@ export function CommodityDetail({
           {/* §7 — 2-col */}
           <div style={S.row7}>
             <SectionBoxFull
-              title="자산군 정규화 사이클 (Base=100, 2021 Q2)"
+              title={`자산군 정규화 사이클 (Base=100, ${analysis.normCycle[0]?.points[0]?.date ?? "—"})`}
               flex={494}
-              height={270}
+              height={290}
             >
-              <GraphPlaceholder hint="자산군 정규화 line chart" />
+              <NormalizedCycleChart series={analysis.normCycle} />
             </SectionBoxFull>
             <SectionBoxFull
               title="에너지 · WTI vs 천연가스 괴리율"
               flex={597}
-              height={270}
+              height={290}
               rightSide={<SideIndicators items={analysis.sideIndicators} />}
             >
-              <GraphPlaceholder hint="WTI vs 천연가스 괴리율 line" />
+              <WtiNgDualChart points={analysis.wtiNg} />
             </SectionBoxFull>
           </div>
         </>
@@ -563,12 +591,514 @@ function PriceCard({ card, idx }: { card: PriceCardSpec; idx: number }) {
   );
 }
 
-function SectorChart({ title, sub }: { title: string; sub: string }) {
+// §3-B 가로 막대 차트 (음수 지원, 0 baseline)
+function BarChangeChart({ items }: { items: BarChangeItem[] }) {
+  const W = 460;
+  const H = 200;
+  const padL = 40;
+  const padR = 20;
+  const padT = 14;
+  const padB = 30;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  // y 범위: 데이터에 음수 포함 가능
+  const vals = items.map((i) => i.yoyPct);
+  const dataMax = Math.max(0, ...vals);
+  const dataMin = Math.min(0, ...vals);
+  const niceStep = niceTickStep(Math.max(Math.abs(dataMax), Math.abs(dataMin)));
+  const yMax = Math.ceil(dataMax / niceStep) * niceStep;
+  const yMin = Math.floor(dataMin / niceStep) * niceStep;
+  const yRange = yMax - yMin || 1;
+  const yTicks: number[] = [];
+  for (let t = yMin; t <= yMax; t += niceStep) yTicks.push(Number(t.toFixed(2)));
+  const yOf = (v: number) => padT + innerH - ((v - yMin) / yRange) * innerH;
+  const yZero = yOf(0);
+  const xStep = innerW / items.length;
+  const barW = Math.max(14, xStep * 0.55);
+  return (
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+      {yTicks.map((t) => {
+        const y = yOf(t);
+        const isZero = t === 0;
+        return (
+          <g key={t}>
+            <line x1={padL} x2={W - padR} y1={y} y2={y} stroke={isZero ? "#b8b8b8" : "#ececec"} strokeWidth={isZero ? 1.2 : 1} />
+            <text x={padL - 6} y={y} fontSize={9} fill="#737474" textAnchor="end" dominantBaseline="middle">
+              {t}%
+            </text>
+          </g>
+        );
+      })}
+      {items.map((it, i) => {
+        const cx = padL + (i + 0.5) * xStep;
+        const isNeg = it.yoyPct < 0;
+        const valueY = yOf(it.yoyPct);
+        const top = isNeg ? yZero : valueY;
+        const h = Math.max(1, Math.abs(valueY - yZero));
+        const labelY = isNeg ? valueY + 12 : valueY - 4;
+        return (
+          <g key={it.symbol}>
+            <rect x={cx - barW / 2} y={top} width={barW} height={h} rx={3} fill={it.color} />
+            <text x={cx} y={labelY} fontSize={10} fill={it.color} textAnchor="middle" fontWeight={700}>
+              {it.yoyPct.toFixed(1)}%
+            </text>
+            <text x={cx} y={H - 10} fontSize={10} fill="#737474" textAnchor="middle">
+              {it.label}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// 깔끔한 tick step 계산 (1, 2, 5, 10, 20, 50, 100, ...)
+function niceTickStep(max: number): number {
+  if (max <= 0) return 1;
+  const mag = Math.pow(10, Math.floor(Math.log10(max)));
+  const norm = max / mag;
+  if (norm <= 1) return 0.2 * mag;
+  if (norm <= 2) return 0.5 * mag;
+  if (norm <= 5) return 1 * mag;
+  return 2 * mag;
+}
+
+// §4-A 시장 지표 요약 표
+function MarketIndicatorsTableView({ rows }: { rows: MarketIndicatorRow[] }) {
+  return (
+    <div style={CMT.wrap}>
+      <div style={{ ...CMT.row, ...CMT.head }}>
+        <span style={{ ...CMT.cell, ...CMT.colLabel }}>원자재</span>
+        <span style={CMT.cell}>현재 시세</span>
+        <span style={CMT.cell}>연간 변동률</span>
+        <span style={CMT.cell}>변동성</span>
+        <span style={CMT.cell}>시장 흐름</span>
+        <span style={{ ...CMT.cell, ...CMT.colFactor }}>주요 영향 요인</span>
+      </div>
+      {rows.map((r) => (
+        <div key={r.symbol} style={CMT.row}>
+          <span style={{ ...CMT.cell, ...CMT.colLabel }} title={r.label}>{r.label}</span>
+          <span style={CMT.cell}>{r.currentPrice}</span>
+          <span style={{ ...CMT.cell, color: r.yoyColor, fontWeight: 700 }}>{r.yoyDisplay}</span>
+          <span style={{ ...CMT.cell, color: r.volatilityColor, fontWeight: 700 }}>{r.volatility}</span>
+          <span style={{ ...CMT.cell, color: r.flowColor, fontWeight: 700 }}>{r.flow}</span>
+          <span style={{ ...CMT.cell, ...CMT.colFactor }} title={r.factor}>{r.factor}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// §4-B 변동성-수익률 scatter
+function VolatilityScatter({ points }: { points: ScatterPoint[] }) {
+  const [hovered, setHovered] = useState<string | null>(null);
+  const W = 380;
+  const H = 240;
+  const padL = 48;
+  const padR = 14;
+  const padT = 14;
+  const padB = 40;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const xValues = points.map((p) => p.x);
+  const yValues = points.map((p) => p.y);
+  const xMax = Math.max(20, ...xValues) * 1.1;
+  const yMax = Math.max(50, ...yValues) * 1.1;
+  const yMin = Math.min(0, ...yValues);
+  const xOf = (v: number) => padL + (v / xMax) * innerW;
+  const yOf = (v: number) => padT + innerH - ((v - yMin) / (yMax - yMin)) * innerH;
+  const xMid = padL + innerW / 2;
+  const yStep = niceTickStep(yMax);
+  const yTicks: number[] = [];
+  for (let t = 0; t <= yMax; t += yStep) yTicks.push(Math.round(t));
+  // hover 된 점 마지막에 그림
+  const pointOrder = hovered
+    ? [...points.filter((p) => p.symbol !== hovered), ...points.filter((p) => p.symbol === hovered)]
+    : points;
+  return (
+    <svg
+      width="100%"
+      height="100%"
+      viewBox={`0 0 ${W} ${H}`}
+      preserveAspectRatio="xMidYMid meet"
+      style={{ display: "block" }}
+    >
+      {/* Y 축 grid + tick */}
+      {yTicks.map((t) => {
+        const y = yOf(t);
+        return (
+          <g key={t}>
+            <line x1={padL} x2={W - padR} y1={y} y2={y} stroke="#ececec" strokeWidth={1} />
+            <text x={padL - 4} y={y} fontSize={10} fill="#737474" textAnchor="end" dominantBaseline="middle">
+              {t}%
+            </text>
+          </g>
+        );
+      })}
+      <line x1={padL} y1={padT} x2={padL} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+      <line x1={padL} y1={padT + innerH} x2={W - padR} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+      {/* Y axis title (rotated) */}
+      <text
+        x={-(padT + innerH / 2)}
+        y={14}
+        fontSize={11}
+        fill="#003049"
+        textAnchor="middle"
+        fontWeight={600}
+        transform="rotate(-90)"
+      >
+        연간 변동률 (%)
+      </text>
+      {/* X axis title — 중앙 */}
+      <text
+        x={padL + innerW / 2}
+        y={H - 6}
+        fontSize={11}
+        fill="#003049"
+        textAnchor="middle"
+        fontWeight={600}
+      >
+        시장 변동성
+      </text>
+      {/* 낮음/높음 — X 축 양 끝 */}
+      <text x={padL + 4} y={padT + innerH + 14} fontSize={10} fill="#737474" textAnchor="start">
+        낮음
+      </text>
+      <text x={W - padR - 4} y={padT + innerH + 14} fontSize={10} fill="#737474" textAnchor="end">
+        높음
+      </text>
+      {/* points + labels (자동 배치, hover 시 z-order 위) */}
+      {pointOrder.map((p) => {
+        const cx = xOf(p.x);
+        const cy = yOf(p.y);
+        const r = 10;
+        const labelRight = cx <= xMid;
+        const tx = labelRight ? cx + r + 4 : cx - r - 4;
+        const anchor = labelRight ? "start" : "end";
+        const isHover = hovered === p.symbol;
+        return (
+          <g
+            key={p.symbol}
+            onMouseEnter={() => setHovered(p.symbol)}
+            onMouseLeave={() => setHovered(null)}
+            style={{ cursor: "pointer" }}
+          >
+            <circle
+              cx={cx}
+              cy={cy}
+              r={r}
+              fill={p.color}
+              stroke={isHover ? "#003049" : "none"}
+              strokeWidth={isHover ? 1.8 : 0}
+            />
+            <text
+              x={tx}
+              y={cy}
+              fontSize={isHover ? 11 : 10}
+              fill="#003049"
+              dominantBaseline="middle"
+              textAnchor={anchor}
+              fontWeight={700}
+            >
+              {p.label}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// §5 sector card (1 of 3)
+function SectorChartCard({ chart }: { chart: SectorChart }) {
   return (
     <div style={S.sectorChart}>
-      <div style={S.sectorChartTitle}>{title}</div>
-      <div style={S.sectorChartSub}>{sub}</div>
-      <GraphPlaceholder hint="line chart" minHeight={150} />
+      <div style={S.sectorChartTitle}>{chart.title}</div>
+      <div style={S.sectorChartSub}>{chart.sub}</div>
+      <div style={S.sectorLegend}>
+        {chart.series.map((s) => (
+          <span key={s.symbol} style={S.sectorLegendItem}>
+            <span style={{ ...S.sectorLegendDot, background: s.color }} />
+            <span style={{ ...S.sectorLegendText, color: s.color }}>{s.label}</span>
+          </span>
+        ))}
+      </div>
+      <SectorLineSvg chart={chart} />
+    </div>
+  );
+}
+
+function SectorLineSvg({ chart }: { chart: SectorChart }) {
+  const W = 320;
+  const H = 150;
+  const padL = 44;
+  const padR = 10;
+  const padT = 10;
+  const padB = 24;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  // 모든 데이터 값
+  const allVals: number[] = [];
+  for (const p of chart.points) {
+    for (const s of chart.series) {
+      const v = p.values[s.symbol];
+      if (v != null) allVals.push(v);
+    }
+  }
+  const dataMax = allVals.length > 0 ? Math.max(...allVals) : 1;
+  // Y 0 부터 시작, round step
+  const step = niceTickStep(dataMax);
+  const yMax = Math.ceil(dataMax / step) * step;
+  const yTicks: number[] = [];
+  for (let t = 0; t <= yMax + 1e-9; t += step) yTicks.push(Number(t.toFixed(4)));
+  const fmtTick = (v: number) =>
+    v >= 1000 ? Math.round(v).toLocaleString() : v >= 100 ? v.toFixed(0) : v.toFixed(1);
+  const stepX = chart.points.length > 1 ? innerW / (chart.points.length - 1) : 0;
+  const xOf = (i: number) => padL + i * stepX;
+  const yOf = (v: number) => padT + innerH - (v / yMax) * innerH;
+  return (
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+      {/* Y grid + tick label */}
+      {yTicks.map((t, i) => {
+        const y = yOf(t);
+        return (
+          <g key={i}>
+            <line x1={padL} x2={W - padR} y1={y} y2={y} stroke="#ececec" strokeWidth={1} />
+            <text x={padL - 4} y={y} fontSize={8} fill="#737474" textAnchor="end" dominantBaseline="middle">
+              {fmtTick(t)}
+            </text>
+          </g>
+        );
+      })}
+      {/* ㄴ axis */}
+      <line x1={padL} y1={padT} x2={padL} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+      <line x1={padL} y1={padT + innerH} x2={W - padR} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+      {chart.series.map((s) => {
+        const pts: Array<{ x: number; y: number }> = [];
+        chart.points.forEach((p, i) => {
+          const v = p.values[s.symbol];
+          if (v == null) return;
+          pts.push({ x: xOf(i), y: yOf(v) });
+        });
+        if (pts.length < 2) return null;
+        const d = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+        return (
+          <g key={s.symbol}>
+            <path d={d} stroke={s.color} strokeWidth={1.6} fill="none" strokeLinejoin="round" />
+            {pts.map((p, i) => (
+              <circle key={i} cx={p.x} cy={p.y} r={2} fill={s.color} />
+            ))}
+          </g>
+        );
+      })}
+      {chart.points.map((p, i) =>
+        i % 3 === 0 ? (
+          <text key={`xl-${i}`} x={xOf(i)} y={H - 6} fontSize={9} fill="#737474" textAnchor="middle">
+            {p.date}
+          </text>
+        ) : null,
+      )}
+    </svg>
+  );
+}
+
+// §7-A 정규화 사이클 line chart
+function NormalizedCycleChart({ series }: { series: NormalizedCycleSeries[] }) {
+  const [hovered, setHovered] = useState<string | null>(null);
+  const W = 460;
+  const H = 260;
+  const padL = 40;
+  const padR = 16;
+  const padT = 12;
+  const padB = 28;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const allVals: number[] = [];
+  for (const s of series) {
+    for (const p of s.points) {
+      if (p.index != null) allVals.push(p.index);
+    }
+  }
+  // Y max 동적: 데이터 max 위에 1단계 더
+  const dataMax = allVals.length > 0 ? Math.max(...allVals) : 100;
+  const step = dataMax >= 300 ? 100 : dataMax >= 150 ? 50 : 25;
+  const yMax = Math.ceil(dataMax / step) * step + step;
+  const yTicks: number[] = [];
+  for (let t = 0; t <= yMax; t += step) yTicks.push(t);
+  const allDates = series[0]?.points.map((p) => p.date) ?? [];
+  const stepX = allDates.length > 1 ? innerW / (allDates.length - 1) : 0;
+  const xOf = (i: number) => padL + i * stepX;
+  const yOf = (v: number) => padT + innerH - (v / yMax) * innerH;
+  return (
+    <div style={CFM.wrap}>
+      {/* 범례 — svg 위 */}
+      <div style={CFM.legendRow}>
+        {series.map((s) => (
+          <span
+            key={s.symbol}
+            style={{ ...CFM.legendItem, cursor: "pointer" }}
+            onMouseEnter={() => setHovered(s.symbol)}
+            onMouseLeave={() => setHovered(null)}
+          >
+            <span style={{ ...CFM.legendDot, background: s.color }} />
+            <span style={{ ...CFM.legendText, color: s.color }}>{s.label}</span>
+          </span>
+        ))}
+      </div>
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+        {yTicks.map((t) => {
+          const y = yOf(t);
+          return (
+            <g key={t}>
+              {t > 0 && <line x1={padL} x2={W - padR} y1={y} y2={y} stroke="#ececec" strokeWidth={1} />}
+              <text x={padL - 4} y={y} fontSize={9} fill="#737474" textAnchor="end" dominantBaseline="middle">
+                {t}
+              </text>
+            </g>
+          );
+        })}
+        <line x1={padL} y1={padT} x2={padL} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+        <line x1={padL} y1={padT + innerH} x2={W - padR} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+        <text x={padL} y={padT - 2} fontSize={9} fill="#737474">지수 (BASE=100)</text>
+        {series.map((s) => {
+          const pts: Array<{ x: number; y: number }> = [];
+          s.points.forEach((p, i) => {
+            if (p.index == null) return;
+            pts.push({ x: xOf(i), y: yOf(p.index) });
+          });
+          if (pts.length < 2) return null;
+          const d = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+          return (
+            <g key={s.symbol}>
+              <path
+                d={d}
+                stroke={s.color}
+                strokeWidth={1.8}
+                fill="none"
+                strokeDasharray={s.dashed ? "4 3" : undefined}
+                strokeLinejoin="round"
+                opacity={hovered && hovered !== s.symbol ? 0.3 : 1}
+              />
+              {pts.map((p, i) => (
+                <circle key={i} cx={p.x} cy={p.y} r={2} fill={s.color} opacity={hovered && hovered !== s.symbol ? 0.3 : 1} />
+              ))}
+            </g>
+          );
+        })}
+        {allDates.map((d, i) =>
+          i % 4 === 0 ? (
+            <text key={`xl-${i}`} x={xOf(i)} y={H - 8} fontSize={9} fill="#737474" textAnchor="middle">
+              {d}
+            </text>
+          ) : null,
+        )}
+      </svg>
+    </div>
+  );
+}
+
+// §7-B WTI vs NG dual-axis line chart
+function WtiNgDualChart({ points }: { points: DualAxisPoint[] }) {
+  const W = 460;
+  const H = 260;
+  const padL = 40;
+  const padR = 44;
+  const padT = 12;
+  const padB = 28;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const wtiVals = points.map((p) => p.wti).filter((v): v is number => v != null);
+  const ngVals = points.map((p) => p.ng).filter((v): v is number => v != null);
+  // Y 범위 동적
+  const wtiDataMax = wtiVals.length > 0 ? Math.max(...wtiVals) : 100;
+  const wtiMax = Math.ceil(wtiDataMax / 20) * 20 + 20;
+  const wtiStep = wtiMax / 4;
+  const wtiTicks: number[] = [];
+  for (let t = 0; t <= wtiMax; t += wtiStep) wtiTicks.push(Math.round(t));
+  const ngDataMax = ngVals.length > 0 ? Math.max(...ngVals) : 8;
+  const ngMax = Math.ceil(ngDataMax / 2) * 2 + 2;
+  const ngStep = ngMax / 4;
+  const ngTicks: number[] = [];
+  for (let t = 0; t <= ngMax; t += ngStep) ngTicks.push(Number(t.toFixed(1)));
+  const stepX = points.length > 1 ? innerW / (points.length - 1) : 0;
+  const xOf = (i: number) => padL + i * stepX;
+  const yWti = (v: number) => padT + innerH - (v / wtiMax) * innerH;
+  const yNg = (v: number) => padT + innerH - (v / ngMax) * innerH;
+  return (
+    <div style={CFM.wrap}>
+      {/* 범례 — svg 위 */}
+      <div style={CFM.legendRow}>
+        <span style={CFM.legendItem}>
+          <span style={{ ...CFM.legendDot, background: "#fdb43a" }} />
+          <span style={{ ...CFM.legendText, color: "#fdb43a" }}>WTI 원유 ($/bbl)</span>
+        </span>
+        <span style={CFM.legendItem}>
+          <span style={{ ...CFM.legendDot, background: "#4a7aff" }} />
+          <span style={{ ...CFM.legendText, color: "#4a7aff" }}>천연가스 ($/MMBtu)</span>
+        </span>
+      </div>
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+        {wtiTicks.map((t) => {
+          const y = yWti(t);
+          return (
+            <g key={t}>
+              <line x1={padL} x2={W - padR} y1={y} y2={y} stroke="#ececec" strokeWidth={1} />
+              <text x={padL - 4} y={y} fontSize={10} fill="#fdb43a" textAnchor="end" dominantBaseline="middle">
+                ${t}
+              </text>
+            </g>
+          );
+        })}
+        {ngTicks.map((t) => {
+          const y = yNg(t);
+          return (
+            <text key={`ng-${t}`} x={W - padR + 4} y={y} fontSize={10} fill="#4a7aff" textAnchor="start" dominantBaseline="middle">
+              ${t}
+            </text>
+          );
+        })}
+        <line x1={padL} y1={padT} x2={padL} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+        <line x1={W - padR} y1={padT} x2={W - padR} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+        {/* WTI line */}
+        {(() => {
+          const pts: Array<{ x: number; y: number }> = [];
+          points.forEach((p, i) => {
+            if (p.wti == null) return;
+            pts.push({ x: xOf(i), y: yWti(p.wti) });
+          });
+          if (pts.length < 2) return null;
+          const d = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+          return (
+            <>
+              <path d={d} stroke="#fdb43a" strokeWidth={1.8} fill="none" strokeLinejoin="round" />
+              {pts.map((p, i) => <circle key={`w-${i}`} cx={p.x} cy={p.y} r={2} fill="#fdb43a" />)}
+            </>
+          );
+        })()}
+        {/* NG line */}
+        {(() => {
+          const pts: Array<{ x: number; y: number }> = [];
+          points.forEach((p, i) => {
+            if (p.ng == null) return;
+            pts.push({ x: xOf(i), y: yNg(p.ng) });
+          });
+          if (pts.length < 2) return null;
+          const d = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+          return (
+            <>
+              <path d={d} stroke="#4a7aff" strokeWidth={1.8} fill="none" strokeLinejoin="round" />
+              {pts.map((p, i) => <circle key={`n-${i}`} cx={p.x} cy={p.y} r={2} fill="#4a7aff" />)}
+            </>
+          );
+        })()}
+        {points.map((p, i) =>
+          i % 4 === 0 ? (
+            <text key={`xl-${i}`} x={xOf(i)} y={H - 8} fontSize={9} fill="#737474" textAnchor="middle">
+              {p.date}
+            </text>
+          ) : null,
+        )}
+      </svg>
     </div>
   );
 }
@@ -637,7 +1167,7 @@ function SectionBoxFull({
   return (
     <section style={{ ...S.sectionBoxFull, flexGrow: flex }}>
       <div style={S.sectionBoxFullHead}>
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
           <div style={S.boxHeader}>{title}</div>
           {sub && <div style={S.subHeader}>{sub}</div>}
         </div>
@@ -969,14 +1499,21 @@ const S: Record<string, CSSProperties> = {
   },
   row5Grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
+    gridTemplateColumns: "1fr 1px 1fr 1px 1fr",
     gap: 12,
+    alignItems: "stretch",
+  },
+  row5Divider: {
+    width: 1,
+    background: "#ececec",
+    alignSelf: "stretch",
   },
   sectorChart: {
     display: "flex",
     flexDirection: "column",
-    gap: 6,
+    gap: 4,
     minWidth: 0,
+    alignItems: "stretch",
   },
   sectorChartTitle: {
     fontSize: 14,
@@ -1063,28 +1600,28 @@ const S: Record<string, CSSProperties> = {
     justifyContent: "center",
     gap: 0,
     flexShrink: 0,
-    width: 140,
-    paddingLeft: 16,
+    width: 150,
+    paddingLeft: 18,
     borderLeft: "1px solid var(--color-border)",
   },
   sideIndicatorRow: {
     display: "flex",
     flexDirection: "column",
-    gap: 10,
-    padding: "16px 0",
+    gap: 18,
+    padding: "20px 0",
   },
   sideIndicatorDivider: {
     height: 1,
     background: "var(--color-border)",
   },
   sideIndicatorLabel: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: 600,
     color: NAVY,
   },
   sideIndicatorValue: {
-    fontSize: 13,
-    fontWeight: 600,
+    fontSize: 16,
+    fontWeight: 700,
     color: NAVY,
     fontFamily: "var(--font-numeric)",
   },
@@ -1104,4 +1641,102 @@ const S: Record<string, CSSProperties> = {
     color: FAINT,
     fontStyle: "italic",
   },
+};
+
+// 차트 frame 공통 스타일 (legend + svg wrap)
+const CFM: Record<string, CSSProperties> = {
+  wrap: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+    flex: 1,
+  },
+  legendRow: {
+    display: "flex",
+    gap: 14,
+    alignItems: "center",
+    flexWrap: "wrap",
+  },
+  legendItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: "50%",
+    flexShrink: 0,
+  },
+  legendText: {
+    fontSize: 12,
+    fontWeight: 700,
+    fontFamily: "var(--font-numeric)",
+  },
+};
+
+// §4-A 시장 지표 표 스타일
+const CMT: Record<string, CSSProperties> = {
+  wrap: {
+    display: "flex",
+    flexDirection: "column",
+    flex: 1,
+    fontSize: 12,
+  },
+  row: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr 0.8fr 0.8fr 1.6fr",
+    alignItems: "center",
+    padding: "8px 6px",
+    borderBottom: "1px solid #ececec",
+    gap: 6,
+  },
+  head: {
+    fontWeight: 700,
+    color: NAVY,
+    background: "#fafbfc",
+    borderTop: "1px solid #ececec",
+  },
+  cell: {
+    fontSize: 12,
+    color: NAVY,
+    fontFamily: "var(--font-numeric)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+  colLabel: {
+    fontFamily: "inherit",
+    fontWeight: 600,
+  },
+  colFactor: {
+    fontFamily: "inherit",
+    color: MUTED,
+    fontWeight: 500,
+  },
+};
+
+// §5 sector legend 스타일 추가
+S.sectorLegend = {
+  display: "flex",
+  gap: 10,
+  alignItems: "center",
+  marginTop: 4,
+  flexWrap: "wrap",
+};
+S.sectorLegendItem = {
+  display: "flex",
+  alignItems: "center",
+  gap: 4,
+};
+S.sectorLegendDot = {
+  width: 8,
+  height: 8,
+  borderRadius: "50%",
+  flexShrink: 0,
+};
+S.sectorLegendText = {
+  fontSize: 10,
+  fontWeight: 700,
+  fontFamily: "var(--font-numeric)",
 };

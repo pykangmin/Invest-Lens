@@ -12,17 +12,33 @@
 //        우(520w) 섹션별 스코어 분포: title + graph placeholder + bottom 종합 판정 row
 //   §4 (1106-1380, h=274) — 핵심 투자 논거 & 리스크: 강점 3 / 약점 3 row (dot+title+body)
 
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { Icon } from "@iconify/react";
 import {
+  cashflowChartData,
+  cashflowIndicators,
   cpiYoyFrom,
+  growthChartData,
+  growthIndicators,
   growthVsInflationLabel,
   marginDefenseLabel,
   multipleLabel,
   peerRankLabel,
+  profitabilityChartData,
+  profitabilityIndicators,
   sectionScores,
   totalFromSections,
+  valuationIndicators,
+  valuationRadarData,
   valuationZoneLabel,
   verdictFromScore,
+  type CashflowChartData,
+  type CashflowIndicator,
+  type GrowthChartData,
+  type ProfitabilityChartData,
+  type RadarData,
+  type SectionScore,
+  type ValuationIndicator,
 } from "../analysis/fundamentalNarrative";
 import {
   loadCompanySnapshot,
@@ -53,8 +69,22 @@ interface HeroCard {
   label: string;
   bigValue: string;
   sub: string;
-  iconHint: "fcf" | "roe" | "revenue" | "gross" | "ev";
+  iconName: string;
+  iconBg: string;
+  iconColor: string;
 }
+
+// 시안 ellipse 36 bg + vector color (각 카드별)
+const HERO_ICON_META: Record<
+  HeroCard["key"],
+  { iconName: string; iconBg: string; iconColor: string }
+> = {
+  fcf: { iconName: "streamline:gold-remix", iconBg: "#faf9d2", iconColor: "#dad023" },
+  roe: { iconName: "tabler:trending-up", iconBg: "#dadfff", iconColor: "#4340e9" },
+  revenue: { iconName: "carbon:growth", iconBg: "#ddffdb", iconColor: "#3da12c" },
+  gross: { iconName: "foundation:graph-pie", iconBg: "#f5e8ff", iconColor: "#d978d7" },
+  ev: { iconName: "lucide:scale", iconBg: "#faeac7", iconColor: "#e5af43" },
+};
 
 function fmtPct(v: number | null, digits = 1, withSign = false): string {
   if (v == null) return "—";
@@ -83,43 +113,45 @@ function buildHeroCards(
     f?.marketCap != null && f.fcfYield != null
       ? f.marketCap * f.fcfYield
       : null;
+  const card = (
+    key: HeroCard["key"],
+    label: string,
+    bigValue: string,
+    sub: string,
+  ): HeroCard => ({
+    key,
+    label,
+    bigValue,
+    sub,
+    ...HERO_ICON_META[key],
+  });
   return [
-    {
-      key: "fcf",
-      label: "FCF (연간)",
-      bigValue: fcfAbsolute != null ? `$${fmtCompactUSD(fcfAbsolute)}` : "—",
-      sub: f?.fcfMargin != null ? `FCF Margin ${(f.fcfMargin * 100).toFixed(0)}%` : "—",
-      iconHint: "fcf",
-    },
-    {
-      key: "roe",
-      label: "ROE",
-      bigValue: f?.roe != null ? fmtPct(f.roe) : "—",
-      sub: peers && peers.length > 0 ? peerRankLabel(ticker, peers, "roe", true) : "—",
-      iconHint: "roe",
-    },
-    {
-      key: "revenue",
-      label: "매출 성장 YoY",
-      bigValue: f?.revenueGrowth != null ? fmtPct(f.revenueGrowth, 0, true) : "—",
-      sub: growthVsInflationLabel(f?.revenueGrowth ?? null, cpiYoy),
-      iconHint: "revenue",
-    },
-    {
-      key: "gross",
-      // 1.11 Gross Margin 절대값은 DB 없음 → 큰 숫자 비움 (MOCK).
-      label: "Gross Margin",
-      bigValue: "—",
-      sub: marginDefenseLabel(f?.grossMarginYoy ?? null),
-      iconHint: "gross",
-    },
-    {
-      key: "ev",
-      label: "EV/EBITDA",
-      bigValue: f?.evEbitda != null ? `${f.evEbitda.toFixed(1)}x` : "—",
-      sub: valuationZoneLabel(f?.evEbitda ?? null),
-      iconHint: "ev",
-    },
+    card(
+      "fcf",
+      "FCF (연간)",
+      fcfAbsolute != null ? `$${fmtCompactUSD(fcfAbsolute)}` : "—",
+      f?.fcfMargin != null ? `FCF Margin ${(f.fcfMargin * 100).toFixed(0)}%` : "—",
+    ),
+    card(
+      "roe",
+      "ROE",
+      f?.roe != null ? fmtPct(f.roe) : "—",
+      peers && peers.length > 0 ? peerRankLabel(ticker, peers, "roe", true) : "—",
+    ),
+    card(
+      "revenue",
+      "매출 성장 YoY",
+      f?.revenueGrowth != null ? fmtPct(f.revenueGrowth, 0, true) : "—",
+      growthVsInflationLabel(f?.revenueGrowth ?? null, cpiYoy),
+    ),
+    // Gross Margin 절대값은 DB 없음 → 큰 숫자 비움 (MOCK).
+    card("gross", "Gross Margin", "—", marginDefenseLabel(f?.grossMarginYoy ?? null)),
+    card(
+      "ev",
+      "EV/EBITDA",
+      f?.evEbitda != null ? `${f.evEbitda.toFixed(1)}x` : "—",
+      valuationZoneLabel(f?.evEbitda ?? null),
+    ),
   ];
 }
 
@@ -204,7 +236,29 @@ export function FundamentalDetail({
       data.latestFundamentals?.pbrZScore ?? null,
       data.latestFundamentals?.forwardPerZScore ?? null,
     );
-    return { sections, totalScore, verdict, heroCards, valuationTag };
+    const cashflowChart = cashflowChartData(data.fundamentalsHistory);
+    const cashflowInds = cashflowIndicators(data.fundamentalsHistory);
+    const profitabilityChart = profitabilityChartData(data.fundamentalsHistory);
+    const profitabilityInds = profitabilityIndicators(data.fundamentalsHistory);
+    const growthChart = growthChartData(data.fundamentalsHistory);
+    const growthInds = growthIndicators(data.fundamentalsHistory);
+    const valuationInds = valuationIndicators(data.fundamentalsHistory);
+    const radar = valuationRadarData(data.latestFundamentals, peerList);
+    return {
+      sections,
+      totalScore,
+      verdict,
+      heroCards,
+      valuationTag,
+      cashflowChart,
+      cashflowInds,
+      profitabilityChart,
+      profitabilityInds,
+      growthChart,
+      growthInds,
+      valuationInds,
+      radar,
+    };
   }, [data, peers, cpi, ticker]);
 
   const updatedAt = data?.latestFundamentals?.date ?? undefined;
@@ -258,21 +312,30 @@ export function FundamentalDetail({
               scoreTag={analysis.sections[0].display}
               flex={369}
             >
-              <GraphPlaceholder hint="현금흐름 추이 차트" />
+              <CashflowSection
+                chart={analysis.cashflowChart}
+                indicators={analysis.cashflowInds}
+              />
             </SectionBox>
             <SectionBox
               title="수익성"
               scoreTag={analysis.sections[1].display}
               flex={380}
             >
-              <GraphPlaceholder hint="수익성 차트 (ROE/순이익률 등)" />
+              <ProfitabilitySection
+                chart={analysis.profitabilityChart}
+                indicators={analysis.profitabilityInds}
+              />
             </SectionBox>
             <SectionBox
               title="성장성"
-              scoreTag={analysis.sections[2].display}
+              scoreTag={analysis.sections[3].display}
               flex={328}
             >
-              <GraphPlaceholder hint="성장 막대 차트 (revenue/EPS YoY)" />
+              <GrowthSection
+                chart={analysis.growthChart}
+                indicators={analysis.growthInds}
+              />
             </SectionBox>
           </div>
 
@@ -280,14 +343,20 @@ export function FundamentalDetail({
           <div style={S.row3}>
             <SectionBox
               title="가치평가 (Valuation)"
-              scoreTag={analysis.sections[3].display}
+              scoreTag={analysis.sections[2].display}
               extraTag={analysis.valuationTag}
               flex={561}
             >
-              <GraphPlaceholder hint="PER·PBR·EV/EBITDA 분포" />
+              <ValuationSection
+                indicators={analysis.valuationInds}
+                radar={analysis.radar}
+              />
             </SectionBox>
             <SectionBox title="섹션별 스코어 분포" flex={520}>
-              <GraphPlaceholder hint="레이더/막대 분포 차트" small />
+              <ScoreDistributionSection
+                totalScore={analysis.totalScore}
+                sections={analysis.sections}
+              />
               <div style={S.verdictBox}>
                 <div style={S.verdictCell}>
                   <span style={S.verdictCellLabel}>종합 판정</span>
@@ -331,8 +400,16 @@ function HeroCardView({ card }: { card: HeroCard }) {
   return (
     <div style={S.heroCard}>
       <div style={S.heroCardHead}>
-        <div style={S.heroCardIcon} aria-hidden>
-          <HeroCardIcon kind={card.iconHint} />
+        <div
+          style={{ ...S.heroCardIcon, background: card.iconBg }}
+          aria-hidden
+        >
+          <Icon
+            icon={card.iconName}
+            width={16}
+            height={16}
+            color={card.iconColor}
+          />
         </div>
         <span style={S.heroCardLabel}>{card.label}</span>
         <span style={S.heroCardTooltip} title="자세히">
@@ -342,52 +419,6 @@ function HeroCardView({ card }: { card: HeroCard }) {
       <div style={S.heroCardBig}>{card.bigValue}</div>
       <div style={S.heroCardSub}>{card.sub}</div>
     </div>
-  );
-}
-
-// 간단한 SVG 아이콘 (시안 Group 135 placeholder 위치)
-function HeroCardIcon({ kind }: { kind: HeroCard["iconHint"] }) {
-  const stroke = "#003049";
-  const common = { fill: "none", stroke, strokeWidth: 1.4, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
-  if (kind === "fcf") {
-    return (
-      <svg width="14" height="14" viewBox="0 0 14 14">
-        <circle cx="7" cy="7" r="5.5" {...common} />
-        <path d="M5 7l1.7 1.7L9.3 5.6" {...common} />
-      </svg>
-    );
-  }
-  if (kind === "roe") {
-    return (
-      <svg width="14" height="14" viewBox="0 0 14 14">
-        <path d="M2 11l3-3 2.5 2.5L12 4" {...common} />
-        <path d="M9 4h3v3" {...common} />
-      </svg>
-    );
-  }
-  if (kind === "revenue") {
-    return (
-      <svg width="14" height="14" viewBox="0 0 14 14">
-        <path d="M2 10l4-5 3 3 3-5" {...common} />
-        <path d="M9 3h3v3" {...common} />
-      </svg>
-    );
-  }
-  if (kind === "gross") {
-    // pie chart 아이콘 (foundation:graph-pie)
-    return (
-      <svg width="14" height="14" viewBox="0 0 14 14">
-        <circle cx="7" cy="7" r="5.5" {...common} />
-        <path d="M7 1.5 V7 L11.5 9.5" {...common} />
-      </svg>
-    );
-  }
-  // ev
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14">
-      <rect x="2.5" y="2.5" width="9" height="9" rx="1.2" {...common} />
-      <path d="M5 7h4M7 5v4" {...common} />
-    </svg>
   );
 }
 
@@ -431,6 +462,852 @@ function GraphPlaceholder({
     <div style={{ ...S.graphPlaceholder, minHeight: small ? 137 : 218 }}>
       <span style={S.graphPlaceholderHint}>그래프 자리 — {hint}</span>
     </div>
+  );
+}
+
+// chip 텍스트 색에 대응하는 연한 배경색
+function chipBgFromColor(textColor: string): string {
+  if (textColor === "#43bb2e" || textColor === "#60c846") return "#e4ffdf";
+  if (textColor === "#c1121f") return "#ffe4e4";
+  return "#ececec";
+}
+
+// §2-A 현금흐름 & 안정성 — 그래프 + 하단 3행 indicator
+function CashflowSection({
+  chart,
+  indicators,
+}: {
+  chart: CashflowChartData;
+  indicators: CashflowIndicator[];
+}) {
+  return (
+    <div style={CF.wrap}>
+      <div style={CF.chartHead}>
+        <span style={CF.chartTitle}>
+          매출 및 FCF 추이 <span style={CF.chartTitleUnit}>($B)</span>
+        </span>
+        <div style={CF.legendRow}>
+          <span style={CF.legendItem}>
+            <span style={{ ...CF.legendDot, background: "#c5d4f8" }} />
+            <span style={CF.legendText}>매출 (Revenue)</span>
+          </span>
+          <span style={CF.legendItem}>
+            <span style={{ ...CF.legendDot, background: "#43bb2e" }} />
+            <span style={CF.legendText}>FCF</span>
+          </span>
+        </div>
+      </div>
+      <GroupedBarChart bars={chart.bars} />
+      <div style={CF.indicators}>
+        {indicators.map((ind, i) => (
+          <Fragment key={ind.letter}>
+            {i > 0 && <div style={CF.indicatorDivider} />}
+            <div style={CF.indicatorRow}>
+              <span style={CF.indicatorLabel}>
+                {ind.letter}. {ind.label}
+              </span>
+              <span style={CF.indicatorValue}>{ind.value}</span>
+              <span
+                style={{
+                  ...CF.indicatorChip,
+                  color: ind.deltaColor,
+                  background: chipBgFromColor(ind.deltaColor),
+                }}
+              >
+                {ind.delta}
+              </span>
+            </div>
+          </Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GroupedBarChart({ bars }: { bars: CashflowChartData["bars"] }) {
+  const W = 320;
+  const H = 140;
+  const padL = 36;
+  const padR = 8;
+  const padT = 6;
+  const padB = 22;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  // 모든 값에서 max 산출
+  const allValues: number[] = [];
+  for (const b of bars) {
+    if (b.revenue != null) allValues.push(b.revenue);
+    if (b.fcf != null) allValues.push(b.fcf);
+  }
+  const dataMax = allValues.length > 0 ? Math.max(...allValues) : 0;
+  // Y축 round up: 가장 가까운 40 단위
+  const yMax = Math.max(40, Math.ceil(dataMax / 40) * 40);
+  const yTicks = [0, yMax / 3, (yMax * 2) / 3, yMax].map((v) => Math.round(v));
+
+  const groupW = innerW / bars.length;
+  const barW = Math.max(6, (groupW - 12) / 2);
+
+  return (
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+      {/* Y grid line + tick label (0 제외하고 3개 line) */}
+      {yTicks.map((t) => {
+        const y = padT + innerH - (t / yMax) * innerH;
+        return (
+          <g key={t}>
+            {t > 0 && (
+              <line
+                x1={padL}
+                x2={W - padR}
+                y1={y}
+                y2={y}
+                stroke="#ececec"
+                strokeWidth={1}
+              />
+            )}
+            <text
+              x={padL - 6}
+              y={y}
+              fontSize={9}
+              fill="#737474"
+              textAnchor="end"
+              dominantBaseline="middle"
+              fontFamily="var(--font-numeric)"
+            >
+              ${t}B
+            </text>
+          </g>
+        );
+      })}
+
+      {/* Axis lines (ㄴ 모양: 좌측 세로 + 하단 가로) */}
+      <line
+        x1={padL}
+        y1={padT}
+        x2={padL}
+        y2={padT + innerH}
+        stroke="#b8b8b8"
+        strokeWidth={1}
+      />
+      <line
+        x1={padL}
+        y1={padT + innerH}
+        x2={W - padR}
+        y2={padT + innerH}
+        stroke="#b8b8b8"
+        strokeWidth={1}
+      />
+
+      {/* Bars */}
+      {bars.map((b, i) => {
+        const groupX = padL + i * groupW;
+        const revH = b.revenue != null ? (b.revenue / yMax) * innerH : 0;
+        const fcfH = b.fcf != null ? (b.fcf / yMax) * innerH : 0;
+        const revX = groupX + groupW / 2 - barW - 1;
+        const fcfX = groupX + groupW / 2 + 1;
+        const revY = padT + innerH - revH;
+        const fcfY = padT + innerH - fcfH;
+        return (
+          <g key={i}>
+            {b.revenue != null && (
+              <rect
+                x={revX}
+                y={revY}
+                width={barW}
+                height={revH}
+                rx={2}
+                fill="#c5d4f8"
+              />
+            )}
+            {b.fcf != null && (
+              <rect
+                x={fcfX}
+                y={fcfY}
+                width={barW}
+                height={fcfH}
+                rx={2}
+                fill="#43bb2e"
+              />
+            )}
+            {/* X label */}
+            <text
+              x={groupX + groupW / 2}
+              y={H - 6}
+              fontSize={10}
+              fill="#737474"
+              textAnchor="middle"
+              fontFamily="var(--font-numeric)"
+            >
+              {b.label}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// §2-B 수익성 — line chart (Net Margin / ROE) + 하단 2행 indicator
+function ProfitabilitySection({
+  chart,
+  indicators,
+}: {
+  chart: ProfitabilityChartData;
+  indicators: CashflowIndicator[];
+}) {
+  return (
+    <div style={CF.wrap}>
+      <div style={CF.chartHead}>
+        <span style={CF.chartTitle}>
+          Net Margin & ROE 추이 <span style={CF.chartTitleUnit}>(%)</span>
+        </span>
+        <div style={CF.legendRow}>
+          <span style={CF.legendItem}>
+            <span style={{ ...CF.legendLine, background: "#5b8bd9" }} />
+            <span style={CF.legendText}>Net Margin %</span>
+          </span>
+          <span style={CF.legendItem}>
+            <span style={{ ...CF.legendLine, background: "#e5af43" }} />
+            <span style={CF.legendText}>ROE %</span>
+          </span>
+        </div>
+      </div>
+      <DualLineChart points={chart.points} />
+      <div style={CF.indicators}>
+        {indicators.map((ind, i) => (
+          <Fragment key={ind.letter}>
+            {i > 0 && <div style={CF.indicatorDivider} />}
+            <div style={CF.indicatorRow}>
+              <span style={CF.indicatorLabel}>
+                {ind.letter}. {ind.label}
+              </span>
+              <span style={CF.indicatorValue}>{ind.value}</span>
+              <span
+                style={{
+                  ...CF.indicatorChip,
+                  color: ind.deltaColor,
+                  background: chipBgFromColor(ind.deltaColor),
+                }}
+              >
+                {ind.delta}
+              </span>
+            </div>
+          </Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DualLineChart({ points }: { points: ProfitabilityChartData["points"] }) {
+  const W = 320;
+  const H = 160;
+  const padL = 36;
+  const padR = 8;
+  const padT = 6;
+  const padB = 22;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  // 0 ~ 데이터 max round-up to nearest 20, min 100
+  const allValues: number[] = [];
+  for (const p of points) {
+    if (p.netMargin != null) allValues.push(p.netMargin);
+    if (p.roe != null) allValues.push(p.roe);
+  }
+  const dataMax = allValues.length > 0 ? Math.max(...allValues) : 0;
+  const yMax = Math.max(100, Math.ceil(dataMax / 20) * 20);
+  const yTicks = [0, yMax * 0.2, yMax * 0.4, yMax * 0.6, yMax * 0.8, yMax].map((v) =>
+    Math.round(v),
+  );
+
+  const stepX = points.length > 1 ? innerW / (points.length - 1) : 0;
+  const xOf = (i: number) => padL + i * stepX;
+  const yOf = (v: number) => padT + innerH - (v / yMax) * innerH;
+
+  const buildPath = (key: "netMargin" | "roe"): string => {
+    const segs: string[] = [];
+    points.forEach((p, i) => {
+      const v = p[key];
+      if (v == null) return;
+      segs.push(`${segs.length === 0 ? "M" : "L"} ${xOf(i).toFixed(1)} ${yOf(v).toFixed(1)}`);
+    });
+    return segs.join(" ");
+  };
+
+  const lineColors = { netMargin: "#5b8bd9", roe: "#e5af43" };
+
+  return (
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+      {/* Y grid line + tick label */}
+      {yTicks.map((t) => {
+        const y = padT + innerH - (t / yMax) * innerH;
+        return (
+          <g key={t}>
+            {t > 0 && (
+              <line
+                x1={padL}
+                x2={W - padR}
+                y1={y}
+                y2={y}
+                stroke="#ececec"
+                strokeWidth={1}
+              />
+            )}
+            <text
+              x={padL - 6}
+              y={y}
+              fontSize={9}
+              fill="#737474"
+              textAnchor="end"
+              dominantBaseline="middle"
+              fontFamily="var(--font-numeric)"
+            >
+              {t}%
+            </text>
+          </g>
+        );
+      })}
+
+      {/* Axis ㄴ */}
+      <line x1={padL} y1={padT} x2={padL} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+      <line
+        x1={padL}
+        y1={padT + innerH}
+        x2={W - padR}
+        y2={padT + innerH}
+        stroke="#b8b8b8"
+        strokeWidth={1}
+      />
+
+      {/* Lines */}
+      {(["netMargin", "roe"] as const).map((key) => {
+        const d = buildPath(key);
+        if (!d) return null;
+        return (
+          <path
+            key={key}
+            d={d}
+            stroke={lineColors[key]}
+            strokeWidth={2}
+            fill="none"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+        );
+      })}
+
+      {/* Dots */}
+      {points.map((p, i) =>
+        (["netMargin", "roe"] as const).map((key) => {
+          const v = p[key];
+          if (v == null) return null;
+          return (
+            <circle
+              key={`${i}-${key}`}
+              cx={xOf(i)}
+              cy={yOf(v)}
+              r={3}
+              fill={lineColors[key]}
+            />
+          );
+        }),
+      )}
+
+      {/* X label */}
+      {points.map((p, i) => (
+        <text
+          key={`xlab-${i}`}
+          x={xOf(i)}
+          y={H - 6}
+          fontSize={10}
+          fill="#737474"
+          textAnchor="middle"
+          fontFamily="var(--font-numeric)"
+        >
+          {p.label}
+        </text>
+      ))}
+    </svg>
+  );
+}
+
+// §2-C 성장성 — single-series bar chart (Revenue Growth YoY, %) + 하단 2행 indicator
+function GrowthSection({
+  chart,
+  indicators,
+}: {
+  chart: GrowthChartData;
+  indicators: CashflowIndicator[];
+}) {
+  return (
+    <div style={CF.wrap}>
+      <div style={CF.chartHead}>
+        <span style={CF.chartTitle}>
+          성장성 지표 <span style={CF.chartTitleUnit}>(%)</span>
+        </span>
+      </div>
+      <GrowthBarChart bars={chart.bars} />
+      <div style={CF.indicators}>
+        {indicators.map((ind, i) => (
+          <Fragment key={ind.label}>
+            {i > 0 && <div style={CF.indicatorDivider} />}
+            <div style={CF.indicatorRow}>
+              <span style={CF.indicatorLabel}>{ind.label}</span>
+              <span style={CF.indicatorValue}>{ind.value}</span>
+              <span
+                style={{
+                  ...CF.indicatorChip,
+                  color: ind.deltaColor,
+                  background: chipBgFromColor(ind.deltaColor),
+                }}
+              >
+                {ind.delta}
+              </span>
+            </div>
+          </Fragment>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function GrowthBarChart({ bars }: { bars: GrowthChartData["bars"] }) {
+  const W = 320;
+  const H = 160;
+  const padL = 40;
+  const padR = 8;
+  const padT = 6;
+  const padB = 22;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+
+  const values = bars.map((b) => b.revenue).filter((v): v is number => v != null);
+  const dataMax = values.length > 0 ? Math.max(...values) : 0;
+  const dataMin = values.length > 0 ? Math.min(...values) : 0;
+  // Round Y range to nearest 20
+  const yMax = Math.max(20, Math.ceil(dataMax / 20) * 20);
+  const yMin = Math.min(0, Math.floor(dataMin / 20) * 20);
+  const yRange = yMax - yMin || 1;
+
+  // tick 4개 (yMin / 0 / yMax/2 / yMax 등 균일)
+  const tickStep = yRange / 3;
+  const yTicks = [yMin, yMin + tickStep, yMin + 2 * tickStep, yMax].map((v) =>
+    Math.round(v),
+  );
+
+  const yOf = (v: number) => padT + innerH - ((v - yMin) / yRange) * innerH;
+  const yZero = yOf(0);
+
+  const groupW = innerW / bars.length;
+  const barW = Math.max(10, groupW * 0.45);
+
+  return (
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+      {/* Y grid line */}
+      {yTicks.map((t) => {
+        const y = yOf(t);
+        // 0 위치는 더 진한 stroke (baseline 강조)
+        const isZero = t === 0;
+        return (
+          <g key={t}>
+            <line
+              x1={padL}
+              x2={W - padR}
+              y1={y}
+              y2={y}
+              stroke={isZero ? "#b8b8b8" : "#ececec"}
+              strokeWidth={1}
+            />
+            <text
+              x={padL - 6}
+              y={y}
+              fontSize={9}
+              fill="#737474"
+              textAnchor="end"
+              dominantBaseline="middle"
+              fontFamily="var(--font-numeric)"
+            >
+              {t}%
+            </text>
+          </g>
+        );
+      })}
+
+      {/* Y axis 좌측 라인 */}
+      <line x1={padL} y1={padT} x2={padL} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+
+      {/* Bars (0 baseline 기준 위/아래) */}
+      {bars.map((b, i) => {
+        if (b.revenue == null) return null;
+        const groupCenter = padL + (i + 0.5) * groupW;
+        const barX = groupCenter - barW / 2;
+        const valueY = yOf(b.revenue);
+        const top = b.revenue >= 0 ? valueY : yZero;
+        const height = Math.max(1, Math.abs(valueY - yZero));
+        return (
+          <rect
+            key={i}
+            x={barX}
+            y={top}
+            width={barW}
+            height={height}
+            rx={2}
+            fill="#c5d4f8"
+          />
+        );
+      })}
+
+      {/* X label */}
+      {bars.map((b, i) => (
+        <text
+          key={`xlab-${i}`}
+          x={padL + (i + 0.5) * groupW}
+          y={H - 6}
+          fontSize={10}
+          fill="#737474"
+          textAnchor="middle"
+          fontFamily="var(--font-numeric)"
+        >
+          {b.label}
+        </text>
+      ))}
+    </svg>
+  );
+}
+
+// §3-A 가치평가 — 좌 3행 indicator + 우 7축 레이더 차트
+function ValuationSection({
+  indicators,
+  radar,
+}: {
+  indicators: ValuationIndicator[];
+  radar: RadarData;
+}) {
+  return (
+    <div style={VAL.wrap}>
+      <div style={VAL.indicatorsCol}>
+        {indicators.map((ind, i) => (
+          <Fragment key={ind.letter}>
+            {i > 0 && <div style={CF.indicatorDivider} />}
+            <ValuationRow ind={ind} />
+          </Fragment>
+        ))}
+      </div>
+      <div style={VAL.radarCol}>
+        <RadarChart data={radar} />
+        <div style={VAL.radarLegend}>
+          <span style={VAL.radarLegendItem}>
+            <span style={{ ...VAL.radarLegendLine, background: "#43bb2e" }} />
+            <span style={VAL.radarLegendText}>NVIDIA</span>
+          </span>
+          <span style={VAL.radarLegendItem}>
+            <svg width="16" height="4" style={{ display: "block" }}>
+              <line
+                x1="0"
+                y1="2"
+                x2="16"
+                y2="2"
+                stroke="#9a9a9a"
+                strokeWidth="1.5"
+                strokeDasharray="3 2"
+              />
+            </svg>
+            <span style={VAL.radarLegendText}>섹터 평균</span>
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ValuationRow({ ind }: { ind: ValuationIndicator }) {
+  return (
+    <div style={VAL.row}>
+      <div style={VAL.rowHead}>
+        <span style={VAL.rowLabel}>
+          {ind.letter}. {ind.label}
+        </span>
+        <span style={{ ...VAL.rowValue, color: ind.barColor }}>{ind.value}</span>
+        <span
+          style={{
+            ...CF.indicatorChip,
+            color: ind.deltaColor,
+            background: chipBgFromColor(ind.deltaColor),
+          }}
+        >
+          {ind.delta}
+        </span>
+      </div>
+      <div style={VAL.rowBar}>
+        <div style={VAL.rowBarBase} />
+        <div
+          style={{
+            ...VAL.rowBarFill,
+            width: `${ind.fillRatio * 100}%`,
+            background: ind.barColor,
+          }}
+        />
+      </div>
+      <div style={VAL.rowNote}>{ind.note}</div>
+    </div>
+  );
+}
+
+function RadarChart({ data }: { data: RadarData }) {
+  const size = 200;
+  const cx = size / 2;
+  const cy = size / 2;
+  const radius = 75;
+  const n = data.axes.length;
+  const angleOf = (i: number) => -Math.PI / 2 + (i / n) * 2 * Math.PI;
+  const pointAt = (i: number, r: number) => ({
+    x: cx + Math.cos(angleOf(i)) * r,
+    y: cy + Math.sin(angleOf(i)) * r,
+  });
+
+  // 4 levels grid (25/50/75/100)
+  const levels = [0.25, 0.5, 0.75, 1];
+
+  // NVDA values polygon
+  const polyPoints = data.values
+    .map((v, i) => {
+      const p = pointAt(i, (v / 100) * radius);
+      return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+    })
+    .join(" ");
+
+  // 섹터 평균 (peers 기반, 일부 axis 는 null → 0 처리)
+  const sectorPoints = data.sectorAvg
+    .map((v, i) => {
+      const p = pointAt(i, (v / 100) * radius);
+      return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+    })
+    .join(" ");
+
+  return (
+    <svg
+      width="100%"
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      preserveAspectRatio="xMidYMid meet"
+      style={{ display: "block" }}
+    >
+      {/* Grid polygons */}
+      {levels.map((lv) => (
+        <polygon
+          key={lv}
+          points={data.values
+            .map((_, i) => {
+              const p = pointAt(i, lv * radius);
+              return `${p.x.toFixed(1)},${p.y.toFixed(1)}`;
+            })
+            .join(" ")}
+          fill="none"
+          stroke="#ececec"
+          strokeWidth={1}
+        />
+      ))}
+      {/* Axis lines */}
+      {data.axes.map((_, i) => {
+        const p = pointAt(i, radius);
+        return (
+          <line
+            key={i}
+            x1={cx}
+            y1={cy}
+            x2={p.x}
+            y2={p.y}
+            stroke="#ececec"
+            strokeWidth={1}
+          />
+        );
+      })}
+      {/* 섹터 평균 (dashed) */}
+      <polygon
+        points={sectorPoints}
+        fill="none"
+        stroke="#9a9a9a"
+        strokeWidth={1}
+        strokeDasharray="3 3"
+      />
+      {/* NVDA value polygon */}
+      <polygon
+        points={polyPoints}
+        fill="#43bb2e22"
+        stroke="#43bb2e"
+        strokeWidth={1.8}
+      />
+      {/* Vertex dots */}
+      {data.values.map((v, i) => {
+        const p = pointAt(i, (v / 100) * radius);
+        return <circle key={i} cx={p.x} cy={p.y} r={2.5} fill="#43bb2e" />;
+      })}
+      {/* Axis labels */}
+      {data.axes.map((label, i) => {
+        const p = pointAt(i, radius + 12);
+        return (
+          <text
+            key={i}
+            x={p.x}
+            y={p.y}
+            fontSize={9}
+            fill="#003049"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontWeight={600}
+          >
+            {label}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
+
+// §3-B 섹션별 스코어 — 4 색상 통일 dict (도넛 segment, 아이콘, bar 모두 동일)
+const SD_COLOR: Record<string, string> = {
+  cashflow: "#43bb2e",       // green
+  profitability: "#5b8bd9",  // blue
+  valuation: "#e5af43",      // yellow/orange
+  growth: "#c1121f",         // red
+};
+
+// §3-B 섹션별 스코어 분포 — 좌 도넛 + 우 4행 progress bar
+function ScoreDistributionSection({
+  totalScore,
+  sections,
+}: {
+  totalScore: number | null;
+  sections: SectionScore[];
+}) {
+  return (
+    <div style={SD.wrap}>
+      <ScoreDonut value={totalScore} sections={sections} />
+      <div style={SD.colDivider} />
+      <div style={SD.rows}>
+        {sections.map((s, i) => {
+          const color = SD_COLOR[s.key] ?? "#737474";
+          const ratio = s.score != null ? s.score / s.max : 0;
+          return (
+            <Fragment key={s.key}>
+              {i > 0 && <div style={SD.rowDivider} />}
+              <div style={SD.row}>
+                <span
+                  style={{
+                    ...SD.rowIconBg,
+                    background: `${color}22`,
+                  }}
+                >
+                  <ValuationCategoryIcon kind={s.key} color={color} />
+                </span>
+                <span style={SD.rowLabel}>{s.label}</span>
+                <div style={SD.rowBar}>
+                  <div style={SD.rowBarBase} />
+                  <div
+                    style={{
+                      ...SD.rowBarFill,
+                      width: `${ratio * 100}%`,
+                      background: color,
+                    }}
+                  />
+                </div>
+                <span style={SD.rowScore}>
+                  {s.score != null ? `${s.score} / ${s.max}` : `— / ${s.max}`}
+                </span>
+              </div>
+            </Fragment>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ScoreDonut({
+  value,
+  sections,
+}: {
+  value: number | null;
+  sections: SectionScore[];
+}) {
+  const size = 150;
+  const cx = size / 2;
+  const cy = size / 2;
+  const r = 60;
+  const thickness = 18;
+  const circ = 2 * Math.PI * r;
+  // 각 섹션 비율로 도넛 채우기 (segment) — 색상은 SD_COLOR 와 동일
+  const totalMax = sections.reduce((a, b) => a + b.max, 0);
+  let cum = 0;
+  return (
+    <div style={SD.donutWrap}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={cx} cy={cy} r={r} stroke="#ececec" strokeWidth={thickness} fill="none" />
+        {sections.map((s) => {
+          const ratio = (s.score ?? 0) / totalMax;
+          const dashArr = `${ratio * circ} ${circ}`;
+          const dashOff = -cum * circ;
+          cum += ratio;
+          return (
+            <circle
+              key={s.key}
+              cx={cx}
+              cy={cy}
+              r={r}
+              stroke={SD_COLOR[s.key] ?? "#737474"}
+              strokeWidth={thickness}
+              fill="none"
+              strokeDasharray={dashArr}
+              strokeDashoffset={dashOff}
+              transform={`rotate(-90 ${cx} ${cy})`}
+              strokeLinecap="butt"
+            />
+          );
+        })}
+      </svg>
+      <div style={SD.donutCenter}>
+        <span style={SD.donutValue}>{value != null ? value : "—"}</span>
+        <span style={SD.donutLabel}>총점</span>
+      </div>
+    </div>
+  );
+}
+
+function ValuationCategoryIcon({ kind, color }: { kind: string; color: string }) {
+  if (kind === "cashflow") {
+    return (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9" stroke={color} strokeWidth="2" fill="none" />
+        <text x="12" y="16" fontSize="11" fontWeight="700" fill={color} textAnchor="middle">$</text>
+      </svg>
+    );
+  }
+  if (kind === "profitability") {
+    return (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+        <path d="M3 17 L9 11 L13 14 L21 6" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M15 6 L21 6 L21 12" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (kind === "valuation") {
+    return (
+      <svg width="14" height="14" viewBox="0 0 16 16" fill={color}>
+        <path d="M1.5 1.5 V13.5 H14.5 V14.5 H0.5 V1.5 Z" />
+        <rect x="3" y="9.5" width="2" height="3" rx="0.4" />
+        <rect x="6.5" y="6.5" width="2" height="6" rx="0.4" />
+        <rect x="10" y="3.5" width="2" height="9" rx="0.4" />
+      </svg>
+    );
+  }
+  // growth (rocket)
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+      <path d="M12 3 L16 7 L16 15 L8 15 L8 7 Z" stroke={color} strokeWidth="2" strokeLinejoin="round" />
+      <path d="M9 15 L9 19 M15 15 L15 19" stroke={color} strokeWidth="2" strokeLinecap="round" />
+      <circle cx="12" cy="9" r="1.5" fill={color} />
+    </svg>
   );
 }
 
@@ -759,5 +1636,292 @@ const S: Record<string, CSSProperties> = {
     color: MUTED,
     fontStyle: "italic",
     fontWeight: 500,
+  },
+};
+
+const CF: Record<string, CSSProperties> = {
+  wrap: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+    flex: 1,
+  },
+  chartHead: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  chartTitle: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: NAVY,
+  },
+  chartTitleUnit: {
+    fontWeight: 500,
+    color: NAVY,
+  },
+  legendRow: {
+    display: "flex",
+    gap: 10,
+    alignItems: "center",
+  },
+  legendItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+  },
+  legendDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 2,
+    flexShrink: 0,
+  },
+  legendLine: {
+    width: 14,
+    height: 3,
+    borderRadius: 2,
+    flexShrink: 0,
+  },
+  legendText: {
+    fontSize: 11,
+    fontWeight: 600,
+    color: NAVY,
+  },
+  indicators: {
+    display: "flex",
+    flexDirection: "column",
+    flex: 1,
+    justifyContent: "space-around",
+    marginTop: 4,
+  },
+  indicatorRow: {
+    display: "grid",
+    gridTemplateColumns: "1fr 60px 48px",
+    alignItems: "baseline",
+    gap: 8,
+    paddingTop: 6,
+    paddingBottom: 6,
+  },
+  indicatorLabel: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: NAVY,
+  },
+  indicatorValue: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: NAVY,
+    fontFamily: "var(--font-numeric)",
+    textAlign: "right",
+  },
+  indicatorChip: {
+    fontSize: 11,
+    fontWeight: 700,
+    fontFamily: "var(--font-numeric)",
+    padding: "2px 0",
+    borderRadius: 4,
+    width: 48,
+    textAlign: "center",
+    boxSizing: "border-box",
+  },
+  indicatorDivider: {
+    height: 1,
+    background: "#ececec",
+  },
+};
+
+// §3-A 가치평가 스타일
+const VAL: Record<string, CSSProperties> = {
+  wrap: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 18,
+    flex: 1,
+  },
+  indicatorsCol: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 0,
+    justifyContent: "space-around",
+  },
+  radarCol: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 6,
+  },
+  row: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+    paddingTop: 6,
+    paddingBottom: 6,
+  },
+  rowHead: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto auto",
+    alignItems: "baseline",
+    gap: 8,
+  },
+  rowLabel: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: NAVY,
+  },
+  rowValue: {
+    fontSize: 16,
+    fontWeight: 700,
+    fontFamily: "var(--font-numeric)",
+    color: NAVY,
+  },
+  rowBar: {
+    position: "relative",
+    height: 4,
+    borderRadius: 2,
+  },
+  rowBarBase: {
+    position: "absolute",
+    inset: 0,
+    background: "#ececec",
+    borderRadius: 2,
+  },
+  rowBarFill: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    height: "100%",
+    borderRadius: 2,
+  },
+  rowNote: {
+    fontSize: 10,
+    fontWeight: 500,
+    color: MUTED,
+    lineHeight: 1.4,
+  },
+  radarLegend: {
+    display: "flex",
+    gap: 12,
+    alignItems: "center",
+  },
+  radarLegendItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: 4,
+  },
+  radarLegendLine: {
+    width: 14,
+    height: 2,
+    borderRadius: 1,
+  },
+  radarLegendText: {
+    fontSize: 10,
+    fontWeight: 600,
+    color: NAVY,
+  },
+};
+
+// §3-B 섹션별 스코어 분포 스타일
+const SD: Record<string, CSSProperties> = {
+  wrap: {
+    display: "grid",
+    gridTemplateColumns: "150px 1px 1fr",
+    columnGap: 20,
+    alignItems: "center",
+    flex: 1,
+    paddingBottom: 8,
+  },
+  donutWrap: {
+    position: "relative",
+    width: 150,
+    height: 150,
+    flexShrink: 0,
+  },
+  colDivider: {
+    width: 1,
+    height: "80%",
+    background: "#ececec",
+    alignSelf: "center",
+  },
+  donutCenter: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: 150,
+    height: 150,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  donutValue: {
+    fontSize: 36,
+    fontWeight: 700,
+    color: NAVY,
+    fontFamily: "var(--font-numeric)",
+    lineHeight: 1,
+  },
+  donutLabel: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: MUTED,
+    marginTop: 2,
+  },
+  rows: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  row: {
+    display: "grid",
+    gridTemplateColumns: "22px 1fr 90px auto",
+    alignItems: "center",
+    gap: 10,
+    paddingTop: 6,
+    paddingBottom: 6,
+  },
+  rowDivider: {
+    height: 1,
+    background: "#ececec",
+  },
+  rowIconBg: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 22,
+    height: 22,
+    borderRadius: "50%",
+    background: "#ececec",
+    flexShrink: 0,
+  },
+  rowLabel: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: NAVY,
+  },
+  rowBar: {
+    position: "relative",
+    height: 5,
+    borderRadius: 3,
+  },
+  rowBarBase: {
+    position: "absolute",
+    inset: 0,
+    background: "#ececec",
+    borderRadius: 3,
+  },
+  rowBarFill: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    height: "100%",
+    borderRadius: 3,
+  },
+  rowScore: {
+    fontSize: 13,
+    fontWeight: 700,
+    fontFamily: "var(--font-numeric)",
+    color: NAVY,
+    minWidth: 50,
+    textAlign: "right",
   },
 };

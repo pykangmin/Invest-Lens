@@ -394,6 +394,309 @@ export interface WarningCardSpec {
   body: string;
 }
 
+// ──────────────────────────────────────────────────────────────
+// §3 국면 확률 추이 (12개월) — 4-series line chart
+// ──────────────────────────────────────────────────────────────
+
+export interface RegimeTrendPoint {
+  date: string;
+  hard: number | null; // %
+  no: number | null;
+  recovery: number | null;
+  soft: number | null;
+}
+
+export function regimeTrendSeries(history: MacroRegimeScore[]): RegimeTrendPoint[] {
+  const asc = [...history].sort((a, b) => (a.date < b.date ? -1 : 1));
+  // 최근 13개월 (1년) 컷
+  const last13 = asc.slice(-13);
+  return last13.map((h) => ({
+    date: h.date,
+    hard: h.hardLandingProb != null ? h.hardLandingProb * 100 : null,
+    no: h.noLandingProb != null ? h.noLandingProb * 100 : null,
+    recovery: h.recoveryProb != null ? h.recoveryProb * 100 : null,
+    soft: h.softLandingProb != null ? h.softLandingProb * 100 : null,
+  }));
+}
+
+// ──────────────────────────────────────────────────────────────
+// §4 G · I · R 점수 추이 (24개월) — 3-series line chart
+// regime prob 합성으로 G/I/R 시계열 산출.
+//   G ∝ soft + recovery - hard - no
+//   I ∝ no - hard
+//   R ∝ hard + no - soft - recovery
+// ──────────────────────────────────────────────────────────────
+
+export interface GirTrendPoint {
+  date: string;
+  G: number | null;
+  I: number | null;
+  R: number | null;
+}
+
+export function girTrendSeries(history: MacroRegimeScore[]): GirTrendPoint[] {
+  const asc = [...history].sort((a, b) => (a.date < b.date ? -1 : 1));
+  const last25 = asc.slice(-25); // ~24개월
+  return last25.map((h) => {
+    const s = h.softLandingProb;
+    const n = h.noLandingProb;
+    const hd = h.hardLandingProb;
+    const r = h.recoveryProb;
+    return {
+      date: h.date,
+      G: s != null && n != null && hd != null && r != null ? s + r - hd - n : null,
+      I: n != null && hd != null ? n - hd : null,
+      R: s != null && n != null && hd != null && r != null ? hd + n - s - r : null,
+    };
+  });
+}
+
+// ──────────────────────────────────────────────────────────────
+// §5 거시지표 세부 수치 — 7행 표
+// ──────────────────────────────────────────────────────────────
+
+export interface MacroIndicatorRow {
+  label: string;
+  current: string;
+  previous: string;
+  delta: string;
+  deltaColor: string;
+  trend: number[]; // 최근 12개월 sparkline
+  baseline: string;
+  longAvg: string;
+  influence: string;
+  influenceColor: string;
+  message: string;
+  signal: string;
+  signalColor: string;
+}
+
+function lastValid(points: GlobalEnvironmentPoint[], offset = 0): number | null {
+  const asc = latestAsc(points);
+  for (let i = asc.length - 1 - offset; i >= 0; i--) {
+    if (asc[i]?.value != null) return asc[i]!.value;
+  }
+  return null;
+}
+
+function longAverage(points: GlobalEnvironmentPoint[], months = 24): number | null {
+  const asc = latestAsc(points).slice(-months);
+  const vals = asc.map((p) => p.value).filter((v): v is number => v != null);
+  if (vals.length === 0) return null;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+
+function trend12(points: GlobalEnvironmentPoint[]): number[] {
+  return latestAsc(points)
+    .slice(-12)
+    .map((p) => p.value)
+    .filter((v): v is number => v != null);
+}
+
+const POS = "#43bb2e";
+const NEG = "#c1121f";
+const NEU = "#737474";
+const WARN_BG = "#ffe4e4";
+const OK_BG = "#e4ffdf";
+
+function fmtPctValue(v: number | null, digits = 1, suffix = "%"): string {
+  if (v == null) return "—";
+  return `${v.toFixed(digits)}${suffix}`;
+}
+function fmtPctSign(v: number | null, digits = 1, suffix = "%p"): string {
+  if (v == null) return "—";
+  const arrow = v > 0.05 ? "↑" : v < -0.05 ? "↓" : "·";
+  const sign = v > 0 ? "+" : "";
+  return `${sign}${v.toFixed(digits)}${suffix}${arrow}`;
+}
+
+export function macroIndicatorsTable(
+  ismMan: GlobalEnvironmentPoint[],
+  ismSvc: GlobalEnvironmentPoint[],
+  cpi: GlobalEnvironmentPoint[],
+  unrate: GlobalEnvironmentPoint[],
+  fedfunds: GlobalEnvironmentPoint[],
+  hy: GlobalEnvironmentPoint[],
+  m2: GlobalEnvironmentPoint[],
+): MacroIndicatorRow[] {
+  // 공용: 변화 색 (감소가 좋은 metric vs 증가가 좋은 metric)
+  const colorByDir = (d: number | null, betterIfPositive: boolean): string => {
+    if (d == null || Math.abs(d) < 0.01) return NEU;
+    const isImproved = betterIfPositive ? d > 0 : d < 0;
+    return isImproved ? POS : NEG;
+  };
+
+  // 1. 제조업 PMI
+  const ismCur = lastValid(ismMan);
+  const ismPrv = lastValid(ismMan, 1);
+  const ismDelta = ismCur != null && ismPrv != null ? ismCur - ismPrv : null;
+  const ismIsExp = ismCur != null && ismCur >= 50;
+  // 2. 서비스 PMI
+  const svcCur = lastValid(ismSvc);
+  const svcPrv = lastValid(ismSvc, 1);
+  const svcDelta = svcCur != null && svcPrv != null ? svcCur - svcPrv : null;
+  const svcIsExp = svcCur != null && svcCur >= 50;
+  // 3. CPI YoY
+  const cpiYoy = yoyFromIndex(cpi); // decimal
+  const cpiYoyPrv = (() => {
+    const asc = latestAsc(cpi);
+    if (asc.length < 14) return null;
+    const a = asc[asc.length - 2]?.value;
+    const b = asc[asc.length - 14]?.value;
+    if (a == null || b == null || b === 0) return null;
+    return (a - b) / b;
+  })();
+  const cpiDelta =
+    cpiYoy != null && cpiYoyPrv != null ? (cpiYoy - cpiYoyPrv) * 100 : null;
+  // 4. 실업률
+  const urCur = lastValid(unrate);
+  const urPrv = lastValid(unrate, 1);
+  const urDelta = urCur != null && urPrv != null ? urCur - urPrv : null;
+  // 5. 실질 금리 (FEDFUNDS - CPI YoY)
+  const fedCur = lastValid(fedfunds);
+  const fedPrv = lastValid(fedfunds, 1);
+  const realCur =
+    fedCur != null && cpiYoy != null ? fedCur - cpiYoy * 100 : null;
+  const realPrv =
+    fedPrv != null && cpiYoyPrv != null ? fedPrv - cpiYoyPrv * 100 : null;
+  const realDelta = realCur != null && realPrv != null ? realCur - realPrv : null;
+  // 6. HY 스프레드 (DB 값 단위는 % 추정)
+  const hyCur = lastValid(hy);
+  const hyPrv = lastValid(hy, 1);
+  const hyDelta = hyCur != null && hyPrv != null ? hyCur - hyPrv : null;
+  // 7. M2 YoY
+  const m2Yoy = yoyFromIndex(m2);
+  const m2YoyPrv = (() => {
+    const asc = latestAsc(m2);
+    if (asc.length < 14) return null;
+    const a = asc[asc.length - 2]?.value;
+    const b = asc[asc.length - 14]?.value;
+    if (a == null || b == null || b === 0) return null;
+    return (a - b) / b;
+  })();
+  const m2Delta = m2Yoy != null && m2YoyPrv != null ? (m2Yoy - m2YoyPrv) * 100 : null;
+
+  return [
+    {
+      label: "제조업 PMI",
+      current: fmtPctValue(ismCur, 1, ""),
+      previous: fmtPctValue(ismPrv, 1, ""),
+      delta: ismDelta != null ? `${ismDelta > 0 ? "+" : ""}${ismDelta.toFixed(1)}${ismDelta > 0.05 ? "↑" : ismDelta < -0.05 ? "↓" : ""}` : "—",
+      deltaColor: colorByDir(ismDelta, true),
+      trend: trend12(ismMan),
+      baseline: "50",
+      longAvg: fmtPctValue(longAverage(ismMan), 1, ""),
+      influence: ismIsExp ? "긍정적" : "부정적",
+      influenceColor: ismIsExp ? POS : NEG,
+      message: ismIsExp ? "확장 안착" : "수축 지속",
+      signal: ismIsExp ? "정상" : "경고",
+      signalColor: ismIsExp ? POS : NEG,
+    },
+    {
+      label: "서비스 PMI",
+      current: fmtPctValue(svcCur, 1, ""),
+      previous: fmtPctValue(svcPrv, 1, ""),
+      delta: svcDelta != null ? `${svcDelta > 0 ? "+" : ""}${svcDelta.toFixed(1)}${svcDelta > 0.05 ? "↑" : svcDelta < -0.05 ? "↓" : ""}` : "—",
+      deltaColor: colorByDir(svcDelta, true),
+      trend: trend12(ismSvc),
+      baseline: "50",
+      longAvg: fmtPctValue(longAverage(ismSvc), 1, ""),
+      influence: svcIsExp ? "긍정적" : "부정적",
+      influenceColor: svcIsExp ? POS : NEG,
+      message: svcIsExp ? "성장 유지" : "성장 둔화",
+      signal: svcIsExp ? "정상" : "경고",
+      signalColor: svcIsExp ? POS : NEG,
+    },
+    {
+      label: "CPI (YoY)",
+      current: cpiYoy != null ? `${(cpiYoy * 100).toFixed(1)}%` : "—",
+      previous: cpiYoyPrv != null ? `${(cpiYoyPrv * 100).toFixed(1)}%` : "—",
+      delta: cpiDelta != null ? `${cpiDelta > 0 ? "+" : ""}${cpiDelta.toFixed(1)}%p${cpiDelta > 0.05 ? "↑" : cpiDelta < -0.05 ? "↓" : ""}` : "—",
+      deltaColor: colorByDir(cpiDelta, false),
+      trend: trend12(cpi).map((v, i, arr) =>
+        i >= 12 && arr[i - 12] != null && arr[i - 12]! !== 0
+          ? ((v - arr[i - 12]!) / arr[i - 12]!) * 100
+          : 0,
+      ),
+      baseline: "2%",
+      longAvg: "3.0%",
+      influence: cpiYoy != null && cpiYoy <= 0.03 ? "긍정적" : "부정적",
+      influenceColor: cpiYoy != null && cpiYoy <= 0.03 ? POS : NEG,
+      message: cpiDelta != null && cpiDelta < 0 ? "정상화 진행" : "인플레 지속",
+      signal: cpiYoy != null && cpiYoy <= 0.03 ? "정상" : "경고",
+      signalColor: cpiYoy != null && cpiYoy <= 0.03 ? POS : NEG,
+    },
+    {
+      label: "실업률",
+      current: fmtPctValue(urCur, 1, "%"),
+      previous: fmtPctValue(urPrv, 1, "%"),
+      delta: urDelta != null ? `${urDelta > 0 ? "+" : ""}${urDelta.toFixed(1)}%p${urDelta > 0.05 ? "↑" : urDelta < -0.05 ? "↓" : ""}` : "—",
+      deltaColor: colorByDir(urDelta, false),
+      trend: trend12(unrate),
+      baseline: "4.0%",
+      longAvg: fmtPctValue(longAverage(unrate), 1, "%"),
+      influence: urCur != null && urCur <= 4.2 ? "긍정적" : "부정적",
+      influenceColor: urCur != null && urCur <= 4.2 ? POS : NEG,
+      message:
+        urDelta != null && urDelta > 0.1 ? "노동시장 약화" : "고용 안정",
+      signal: urCur != null && urCur <= 4.5 ? "정상" : "경고",
+      signalColor: urCur != null && urCur <= 4.5 ? POS : NEG,
+    },
+    {
+      label: "실질 금리",
+      current: realCur != null ? `${realCur.toFixed(2)}%` : "—",
+      previous: realPrv != null ? `${realPrv.toFixed(2)}%` : "—",
+      delta: realDelta != null ? `${realDelta > 0 ? "+" : ""}${realDelta.toFixed(2)}%p${realDelta > 0.05 ? "↑" : realDelta < -0.05 ? "↓" : ""}` : "—",
+      deltaColor: colorByDir(realDelta, true),
+      trend: trend12(fedfunds),
+      baseline: "—",
+      longAvg: "2.5%",
+      influence: "긍정적",
+      influenceColor: POS,
+      message: realDelta != null && realDelta > 0 ? "긴축 강화" : "긴축 완화",
+      signal: "정상",
+      signalColor: POS,
+    },
+    {
+      label: "신용 스프레드 (HY-OAS)",
+      current: hyCur != null ? `${hyCur.toFixed(2)}%` : "—",
+      previous: hyPrv != null ? `${hyPrv.toFixed(2)}%` : "—",
+      delta: hyDelta != null ? `${hyDelta > 0 ? "+" : ""}${hyDelta.toFixed(2)}%p${hyDelta > 0.05 ? "↑" : hyDelta < -0.05 ? "↓" : ""}` : "—",
+      deltaColor: colorByDir(hyDelta, false),
+      trend: trend12(hy),
+      baseline: "—",
+      longAvg: "4.22%",
+      influence: hyCur != null && hyCur >= 5 ? "부정적" : "긍정적",
+      influenceColor: hyCur != null && hyCur >= 5 ? NEG : POS,
+      message: hyCur != null && hyCur >= 5 ? "신용 경색" : "신용 안정",
+      signal: hyCur != null && hyCur >= 4.5 ? "경고" : "정상",
+      signalColor: hyCur != null && hyCur >= 4.5 ? NEG : POS,
+    },
+    {
+      label: "M2 증가율 (YoY)",
+      current: m2Yoy != null ? `${(m2Yoy * 100).toFixed(1)}%` : "—",
+      previous: m2YoyPrv != null ? `${(m2YoyPrv * 100).toFixed(1)}%` : "—",
+      delta: m2Delta != null ? `${m2Delta > 0 ? "+" : ""}${m2Delta.toFixed(1)}%p${m2Delta > 0.05 ? "↑" : m2Delta < -0.05 ? "↓" : ""}` : "—",
+      deltaColor: colorByDir(m2Delta, true),
+      trend: trend12(m2).map((v, i, arr) =>
+        i >= 12 && arr[i - 12] != null && arr[i - 12]! !== 0
+          ? ((v - arr[i - 12]!) / arr[i - 12]!) * 100
+          : 0,
+      ),
+      baseline: "4%",
+      longAvg: "6.2%",
+      influence: m2Yoy != null && m2Yoy >= 0.03 ? "긍정적" : "부정적",
+      influenceColor: m2Yoy != null && m2Yoy >= 0.03 ? POS : NEG,
+      message: m2Delta != null && m2Delta > 0 ? "유동성 회복" : "유동성 위축",
+      signal: m2Yoy != null && m2Yoy >= 0.02 ? "정상" : "경고",
+      signalColor: m2Yoy != null && m2Yoy >= 0.02 ? POS : NEG,
+    },
+  ];
+}
+
+void WARN_BG;
+void OK_BG;
+
 export function buildWarningCards(
   hySpread: GlobalEnvironmentPoint[],
   ismMan: GlobalEnvironmentPoint[],
