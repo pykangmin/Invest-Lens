@@ -4,7 +4,6 @@ import type {
   CompanyMaster,
   CompanySnapshot,
   DbHealthResponse,
-  FxRateResponse,
   GlobalEnvironmentResponse,
   MacroRegimeResponse,
   PeersResponse,
