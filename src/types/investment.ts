@@ -126,6 +126,7 @@ export interface PeerCompany {
   fcfYield: number | null;
   debtToEquity: number | null;
   revenueGrowth: number | null;
+  roeSeries: Array<number | null>;
   isSelf: boolean;
 }
 

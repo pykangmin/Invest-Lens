@@ -23,6 +23,7 @@ import { DataTable, type DataTableColumn } from "../visualization/DataTable";
 import { Donut } from "../visualization/Donut";
 import { ExampleBadge } from "../visualization/ExampleBadge";
 import { MultiLineChart, type LineSeries } from "../visualization/MultiLineChart";
+import { Sparkline } from "../visualization/Sparkline";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import {
   ContributionRow,
@@ -216,7 +217,14 @@ export function FundamentalDetail({
           {/* 5) 동종업계 비교 — 2026-05 REAL */}
           {peers && peers.peers.length > 0 && (
             <DetailSectionBox
-              title={`동종업계 비교 — ${peers.sector ?? "—"} (시총 상위 ${peers.peers.length} 종목)`}
+              title="동종업계 비교"
+              rightSlot={
+                peers.sector ? (
+                  <span style={S.sectionMeta}>
+                    {peers.sector} · 시총 상위 {peers.peers.length}
+                  </span>
+                ) : null
+              }
             >
               <DataTable
                 columns={PEER_COLUMNS}
@@ -310,14 +318,9 @@ function fmtMultiplier(v: number | null, digits = 1): string {
 function fmtPct(v: number | null, digits = 1): string {
   return v == null ? "—" : `${(v * 100).toFixed(digits)}%`;
 }
-function fmtMarketCap(v: number | null): string {
-  if (v == null) return "—";
-  if (v >= 1e12) return `$${(v / 1e12).toFixed(2)}T`;
-  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
-  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
-  return `$${v.toFixed(0)}`;
-}
 
+// 기존 7컬럼 구조 유지 (티커·기업명·PER·PBR·ROE·순이익률·추이).
+// isSelf 는 ticker 의 strong 강조 색상만 — 컬럼 추가 없이 행 식별.
 const PEER_COLUMNS: DataTableColumn<PeerCompany>[] = [
   {
     key: "ticker",
@@ -326,31 +329,29 @@ const PEER_COLUMNS: DataTableColumn<PeerCompany>[] = [
     render: (r) => (
       <strong style={r.isSelf ? { color: "var(--color-up-strong)" } : undefined}>
         {r.ticker}
-        {r.isSelf && " ●"}
       </strong>
     ),
   },
   { key: "name", header: "기업명", align: "left", render: (r) => r.name },
-  {
-    key: "marketCap",
-    header: "시총",
-    align: "right",
-    render: (r) => fmtMarketCap(r.marketCap),
-  },
   { key: "per", header: "PER", align: "right", render: (r) => fmtMultiplier(r.per) },
   { key: "pbr", header: "PBR", align: "right", render: (r) => fmtMultiplier(r.pbr) },
   { key: "roe", header: "ROE", align: "right", render: (r) => fmtPct(r.roe) },
+  { key: "margin", header: "순이익률", align: "right", render: (r) => fmtPct(r.netProfitMargin) },
   {
-    key: "margin",
-    header: "순이익률",
-    align: "right",
-    render: (r) => fmtPct(r.netProfitMargin),
-  },
-  {
-    key: "fcfYield",
-    header: "FCF Yield",
-    align: "right",
-    render: (r) => fmtPct(r.fcfYield),
+    key: "trend",
+    header: "추이",
+    align: "left",
+    render: (r) =>
+      r.roeSeries.length >= 2 ? (
+        <Sparkline
+          values={r.roeSeries}
+          width={80}
+          height={24}
+          strokeWidth={1.5}
+        />
+      ) : (
+        <span style={{ color: "var(--color-text-muted)" }}>—</span>
+      ),
   },
 ];
 
@@ -441,5 +442,10 @@ const S: Record<string, CSSProperties> = {
     fontSize: "var(--font-size-base)",
     color: "var(--color-text-body)",
     lineHeight: 1.55,
+  },
+  sectionMeta: {
+    fontSize: "var(--font-size-xs)",
+    color: "var(--color-text-muted)",
+    fontWeight: 500,
   },
 };

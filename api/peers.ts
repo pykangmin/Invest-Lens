@@ -33,6 +33,12 @@ interface PeerRow {
   revenue_growth: number | null;
 }
 
+interface RoeSeriesRow {
+  ticker: string;
+  date: string | Date;
+  roe: number | null;
+}
+
 export interface PeerCompany {
   ticker: string;
   name: string;
@@ -45,6 +51,8 @@ export interface PeerCompany {
   fcfYield: number | null;
   debtToEquity: number | null;
   revenueGrowth: number | null;
+  /** 추이 sparkline 용 — ROE 12분기 ASC (오래된→최신). 결측 시 직전값 forward-fill */
+  roeSeries: Array<number | null>;
   isSelf: boolean;
 }
 
@@ -103,6 +111,40 @@ export default async function handler(req: ApiRequest, res: ApiResponse): Promis
       [sectorRow.sector, limit + 1],
     );
 
+    const tickers = rows.map((r) => r.ticker);
+    // sparkline 용 ROE 12분기 시계열 (peer 종목별).
+    const seriesRows = tickers.length > 0
+      ? await query<RoeSeriesRow>(
+          `
+            SELECT ticker, date, roe
+            FROM public.stock_fundamentals
+            WHERE ticker = ANY($1::text[])
+            ORDER BY ticker, date DESC
+          `,
+          [tickers],
+        )
+      : [];
+    const seriesByTicker = new Map<string, Array<number | null>>();
+    for (const t of tickers) seriesByTicker.set(t, []);
+    // ticker 별 12행 (이미 DESC) → ASC 12 값으로 forward-fill
+    const groupedDesc = new Map<string, Array<number | null>>();
+    for (const r of seriesRows) {
+      const arr = groupedDesc.get(r.ticker) ?? [];
+      if (arr.length < 12) {
+        arr.push(toNum(r.roe));
+        groupedDesc.set(r.ticker, arr);
+      }
+    }
+    for (const [t, desc] of groupedDesc) {
+      const asc = desc.slice().reverse();
+      let last: number | null = null;
+      const filled = asc.map((v) => {
+        if (v != null) last = v;
+        return last;
+      });
+      seriesByTicker.set(t, filled);
+    }
+
     const peers: PeerCompany[] = rows.map((r) => ({
       ticker: r.ticker,
       name: r.name,
@@ -115,6 +157,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse): Promis
       fcfYield: toNum(r.fcf_yield),
       debtToEquity: toNum(r.debt_to_equity),
       revenueGrowth: toNum(r.revenue_growth),
+      roeSeries: seriesByTicker.get(r.ticker) ?? [],
       isSelf: r.ticker === ticker,
     }));
 
