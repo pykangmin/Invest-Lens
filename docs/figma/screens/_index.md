@@ -2,7 +2,7 @@
 
 출처: `docs/figma/figma-tree.json` (Figma REST API 직접 fetch)
 추출 스크립트: `scripts/figma-extract-screens.mjs`
-추출 시각: 2026-05-11T12:51:06.968Z
+추출 시각: 2026-05-11T19:41:10.522Z
 
 좌표는 각 프레임 좌상단 기준 상대값. PNG 추측 0.
 
@@ -37,9 +37,9 @@
 
 - 노드 ID: `327:456`
 - 크기: 1440×1876
-- 텍스트 라벨: 80개
-- 사용 색: 27개
-- 폰트 스타일 (family:weight:size): 16개
+- 텍스트 라벨: 79개
+- 사용 색: 26개
+- 폰트 스타일 (family:weight:size): 15개
 - 추출본: [`main-technical.json`](./main-technical.json)
 
 ## 펀더멘털 (`main-fundamental`)
@@ -55,7 +55,7 @@
 
 - 노드 ID: `385:1470`
 - 크기: 1440×2160
-- 텍스트 라벨: 90개
-- 사용 색: 35개
-- 폰트 스타일 (family:weight:size): 15개
+- 텍스트 라벨: 102개
+- 사용 색: 36개
+- 폰트 스타일 (family:weight:size): 16개
 - 추출본: [`main-macro.json`](./main-macro.json)

@@ -44,6 +44,7 @@ import type {
   GlobalEnvironmentResponse,
   MacroRegimeResponse,
 } from "../types/investment";
+import { InfoTooltip } from "../visualization/InfoTooltip";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
 
@@ -323,10 +324,22 @@ function ScoreCardView({ title, score }: { title: string; score: GirScore }) {
   );
 }
 
+// 시안 card/거시경제/tooltip 4 regime variant 본문
+const REGIME_TOOLTIP: Record<RegimeProbCard["key"], string> = {
+  hard: "성장 둔화와 실업률 상승, 신용 리스크 확대가 동시에 나타나는 침체 국면입니다. 일반적으로 위험 회피 심리가 강해지는 구간입니다.",
+  no: "성장은 견조하지만 인플레이션이 높은 상태가 지속되는 국면입니다. 경기 침체 우려는 낮지만 긴축 정책 장기화 가능성이 커집니다.",
+  recovery:
+    "경기 회복과 물가 안정이 동시에 나타나는 이상적인 국면입니다. 유동성과 투자 심리가 개선되며 위험자산에 우호적인 환경으로 해석합니다.",
+  soft: "경기가 완만하게 둔화되면서 물가가 안정되는 국면입니다. 급격한 침체 없이 경제가 균형을 찾아가는 상태를 의미합니다.",
+};
+
 function RegimeCard({ regime }: { regime: RegimeProbCard }) {
   return (
     <div style={{ ...S.regimeCard, background: regime.cardBg }}>
-      <div style={S.regimeTitle}>{regime.label}</div>
+      <div style={S.regimeTitleRow}>
+        <span style={S.regimeTitle}>{regime.label}</span>
+        <InfoTooltip text={REGIME_TOOLTIP[regime.key]} mode="card" size={16} />
+      </div>
       <div style={{ ...S.regimePct, color: regime.color }}>
         {regime.pct}%
       </div>
@@ -905,6 +918,12 @@ const S: Record<string, CSSProperties> = {
     display: "grid",
     gridTemplateColumns: "repeat(4, 1fr)",
     gap: 12,
+  },
+  regimeTitleRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 8,
   },
   regimeCard: {
     borderRadius: 10,

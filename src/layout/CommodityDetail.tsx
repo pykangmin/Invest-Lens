@@ -44,6 +44,7 @@ import {
   loadCompanySnapshot,
 } from "../data-loader/investmentData";
 import type { CommoditiesResponse, CompanySnapshot } from "../types/investment";
+import { InfoTooltip } from "../visualization/InfoTooltip";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
 
@@ -305,8 +306,18 @@ export function CommodityDetail({
     const wti = symbolStat(rows, "CL=F");
     const ng = symbolStat(rows, "NG=F");
     const sideIndicators = [
-      { label: "WTI 원유", value: wti.latest != null ? `$${wti.latest.toFixed(2)}/bbl` : "—" },
-      { label: "천연가스", value: ng.latest != null ? `$${ng.latest.toFixed(2)}/MMBtu` : "—" },
+      {
+        label: "WTI 원유",
+        value: wti.latest != null ? `$${wti.latest.toFixed(2)}/bbl` : "—",
+        borderColor: "#fdb43a",
+        bgColor: "#fff8e6",
+      },
+      {
+        label: "천연가스",
+        value: ng.latest != null ? `$${ng.latest.toFixed(2)}/MMBtu` : "—",
+        borderColor: "#4a7aff",
+        bgColor: "#eaf0ff",
+      },
     ];
 
     const date = maxDate(rows);
@@ -561,11 +572,24 @@ function MainFourCard({ card }: { card: MainFourSpec }) {
   );
 }
 
+// 시안 Card/원자재/주요 가격 8 variant 본문
+const PRICE_CARD_TOOLTIP: Record<string, string> = {
+  wti: "에너지 비용과 글로벌 물가에 영향을 주는 핵심 지표입니다. 일반적으로 유가 상승은 인플레이션 압력 확대 신호로 해석합니다.",
+  ng: "전력·난방의 주요 원료로 산업 원가 부담을 보여주는 지표입니다. 가격 급등 시 에너지 집약 산업의 수익성이 악화될 수 있습니다.",
+  cu: "실물 경기 흐름을 반영하는 대표 경기 선행 지표입니다. 일반적으로 가격 상승은 제조업·건설 경기 회복 신호로 해석합니다.",
+  li: "전기차와 반도체 산업의 핵심 소재입니다. 가격 상승은 하이테크 산업의 원가 부담 확대 가능성을 의미합니다.",
+  au: "대표적인 안전자산 지표입니다. 시장 불안이나 인플레이션 우려가 커질수록 강세를 보이는 경향이 있습니다.",
+  ag: "대표적인 안전자산 지표입니다. 시장 불안이나 인플레이션 우려가 커질수록 강세를 보이는 경향이 있습니다.",
+  wheat: "식품 물가와 소비 부담에 영향을 주는 농산물 지표입니다. 가격 상승은 전반적인 물가 상승 압력으로 이어질 수 있습니다.",
+  soy: "식품 물가와 소비 부담에 영향을 주는 농산물 지표입니다. 가격 상승은 전반적인 물가 상승 압력으로 이어질 수 있습니다.",
+};
+
 function PriceCard({ card, idx }: { card: PriceCardSpec; idx: number }) {
   // 4×2 격자: 내부 선만 (마지막 열 우측 X, 마지막 행 하단 X)
   const isLastCol = idx % 4 === 3;
   const isLastRow = idx >= 4;
   const border = "1px solid var(--color-border)";
+  const tooltipText = PRICE_CARD_TOOLTIP[card.key];
   return (
     <div
       style={{
@@ -578,7 +602,7 @@ function PriceCard({ card, idx }: { card: PriceCardSpec; idx: number }) {
         <span style={S.priceCardLabel} title={card.label}>
           {card.label}
         </span>
-        <span style={S.priceCardTooltip}>i</span>
+        {tooltipText && <InfoTooltip text={tooltipText} mode="card" size={14} />}
       </div>
       <div style={S.priceCardValue}>
         <span>{card.price}</span>
@@ -1133,17 +1157,27 @@ function IssueCard({ card }: { card: IssueCardSpec }) {
   );
 }
 
-function SideIndicators({ items }: { items: Array<{ label: string; value: string }> }) {
+function SideIndicators({
+  items,
+}: {
+  items: Array<{ label: string; value: string; borderColor?: string; bgColor?: string }>;
+}) {
   return (
     <div style={S.sideIndicators}>
-      {items.map((s, i) => (
-        <Frag key={s.label}>
-          {i > 0 && <div style={S.sideIndicatorDivider} />}
-          <div style={S.sideIndicatorRow}>
-            <span style={S.sideIndicatorLabel}>{s.label}</span>
-            <span style={S.sideIndicatorValue}>{s.value}</span>
-          </div>
-        </Frag>
+      {items.map((s) => (
+        <div
+          key={s.label}
+          style={{
+            ...S.sideIndicatorRow,
+            border: `1px solid ${s.borderColor ?? "#ececec"}`,
+            background: s.bgColor ?? "transparent",
+            borderRadius: 8,
+            padding: "12px 14px",
+          }}
+        >
+          <span style={S.sideIndicatorLabel}>{s.label}</span>
+          <span style={S.sideIndicatorValue}>{s.value}</span>
+        </div>
       ))}
     </div>
   );
@@ -1598,11 +1632,10 @@ const S: Record<string, CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-    gap: 0,
+    gap: 12,
     flexShrink: 0,
-    width: 150,
-    paddingLeft: 18,
-    borderLeft: "1px solid var(--color-border)",
+    width: 160,
+    paddingLeft: 14,
   },
   sideIndicatorRow: {
     display: "flex",

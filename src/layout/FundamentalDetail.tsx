@@ -52,6 +52,7 @@ import type {
   PeersResponse,
   StockFundamentals,
 } from "../types/investment";
+import { InfoTooltip } from "../visualization/InfoTooltip";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
 
@@ -396,6 +397,17 @@ export function FundamentalDetail({
 
 // ── helpers ────────────────────────────────────────────────────
 
+// 시안 card/기업/tooltip variant 본문 (5개)
+const TOOLTIP_TEXT: Record<HeroCard["key"], string> = {
+  fcf: "영업활동으로 번 돈에서 필수 비용을 제외하고 남은 실제 여유 현금입니다. 배당, 투자, 재무 안정성을 판단할 때 사용합니다.",
+  roe: "주주 자본으로 얼마나 효율적으로 이익을 냈는지 보여주는 지표입니다. 높을수록 자본 활용 효율이 좋다고 해석합니다.",
+  revenue:
+    "전년 대비 매출 증가율입니다. 기업의 외형 성장과 시장 영향력 확대 여부를 확인할 때 사용합니다.",
+  gross:
+    "매출에서 원가를 제외한 이익 비율입니다. 제품 경쟁력과 생산 효율성을 보여주며 높을수록 본업 수익성이 좋습니다.",
+  ev: "기업가치를 영업 현금창출력으로 나눈 지표입니다. 낮을수록 투자금 회수 기간이 짧은 저평가 기업으로 해석합니다.",
+};
+
 function HeroCardView({ card }: { card: HeroCard }) {
   return (
     <div style={S.heroCard}>
@@ -412,9 +424,7 @@ function HeroCardView({ card }: { card: HeroCard }) {
           />
         </div>
         <span style={S.heroCardLabel}>{card.label}</span>
-        <span style={S.heroCardTooltip} title="자세히">
-          i
-        </span>
+        <InfoTooltip text={TOOLTIP_TEXT[card.key]} mode="card" size={16} />
       </div>
       <div style={S.heroCardBig}>{card.bigValue}</div>
       <div style={S.heroCardSub}>{card.sub}</div>
@@ -1360,6 +1370,39 @@ const S: Record<string, CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     gap: 20,
+  },
+  tooltipToggleRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    padding: "8px 12px",
+    background: "#f8faff",
+    border: "1px solid #d9e3f3",
+    borderRadius: 6,
+    fontSize: 12,
+  },
+  tooltipToggleLabel: {
+    fontWeight: 600,
+    color: "#003049",
+  },
+  tooltipToggleBtn: {
+    border: "1px solid #c4c4c4",
+    background: "#ffffff",
+    color: "#737171",
+    fontSize: 12,
+    fontWeight: 600,
+    padding: "4px 10px",
+    borderRadius: 4,
+    cursor: "pointer",
+  },
+  tooltipToggleBtnActive: {
+    background: "#003049",
+    color: "#ffffff",
+    borderColor: "#003049",
+  },
+  tooltipToggleHint: {
+    marginLeft: "auto",
+    color: "#747474",
   },
   row1Header: {
     fontSize: 16,

@@ -7,7 +7,7 @@
     "children": [
       {
         "id": "0:1",
-        "name": "1. Reference & Design",
+        "name": "Main Design",
         "type": "CANVAS",
         "scrollBehavior": "SCROLLS",
         "children": [],
@@ -31,9 +31,9 @@
   "schemaVersion": 0,
   "styles": {},
   "name": "[데이커] 투자 데이터 대시보드",
-  "lastModified": "2026-05-11T12:50:51Z",
-  "thumbnailUrl": "https://s3-alpha.figma.com/thumbnails/add9f85e-c64b-4232-a184-8e028389a21c?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWCY64QTLLE%2F20260510%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260510T120000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=6db4bbc8cd406e7786a7a30bf6c020c7e09dcab4d7912b367b4cd88382b1d5fb",
-  "version": "2352311171498112934",
+  "lastModified": "2026-05-11T13:29:18Z",
+  "thumbnailUrl": "https://s3-alpha.figma.com/thumbnails/90ef8a36-7a03-4ae1-b29a-4a65b3d9f184?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIAQ4GOSFWCRCUFAVOU%2F20260510%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20260510T120000Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=96ee63a8d58b2a2c990581db77b0311e68d5044009aea0a0135de2783f2f6adc",
+  "version": "2352320839453466008",
   "role": "viewer",
   "editorType": "figma",
   "linkAccess": "view"

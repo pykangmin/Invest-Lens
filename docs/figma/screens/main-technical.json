@@ -7,16 +7,15 @@
     "h": 1876
   },
   "stats": {
-    "textCount": 80,
-    "uniqueColorCount": 27,
-    "uniqueFontStyleCount": 16,
+    "textCount": 79,
+    "uniqueColorCount": 26,
+    "uniqueFontStyleCount": 15,
     "colors": [
       "#000000",
       "#003049",
       "#166907",
       "#33a316",
       "#43bb2e",
-      "#474747",
       "#4e4e4e",
       "#60c846",
       "#669bbc",
@@ -42,7 +41,6 @@
     "fonts": [
       "Fugaz One:400:20",
       "Pretendard Variable:400:15",
-      "Pretendard Variable:500:10",
       "Pretendard Variable:500:12",
       "Pretendard Variable:500:13",
       "Pretendard Variable:500:14",
@@ -525,19 +523,6 @@
         "y": 821,
         "w": 379,
         "h": 14
-      }
-    },
-    {
-      "text": "변동성과 가격 흐름을 기반으로 현재 추세 방향을 보여주는 \n지표입니다. 상승·하락 추세 전환 시점을 파악할 때 사용합니다.",
-      "size": 10,
-      "weight": 500,
-      "family": "Pretendard Variable",
-      "fill": "#474747",
-      "box": {
-        "x": 314,
-        "y": 841,
-        "w": 243,
-        "h": 15
       }
     },
     {
@@ -4890,11 +4875,11 @@
                               "w": 124,
                               "h": 84
                             },
-                            "componentId": "403:2337",
-                            "componentName": "지표=Super Trend, tooltip=on",
+                            "componentId": "354:1404",
+                            "componentName": "지표=Super Trend, tooltip=off",
                             "children": [
                               {
-                                "id": "I354:1426;403:2338",
+                                "id": "I354:1426;354:1400",
                                 "name": "Rectangle 130",
                                 "type": "RECTANGLE",
                                 "box": {
@@ -4917,7 +4902,7 @@
                                 "cornerRadius": 10
                               },
                               {
-                                "id": "I354:1426;403:2339",
+                                "id": "I354:1426;354:1402",
                                 "name": "score",
                                 "type": "TEXT",
                                 "box": {
@@ -4957,7 +4942,7 @@
                                 }
                               },
                               {
-                                "id": "I354:1426;403:2340",
+                                "id": "I354:1426;396:2179",
                                 "name": "Frame 117",
                                 "type": "FRAME",
                                 "box": {
@@ -4980,7 +4965,7 @@
                                 },
                                 "children": [
                                   {
-                                    "id": "I354:1426;403:2341",
+                                    "id": "I354:1426;354:1401",
                                     "name": "title",
                                     "type": "TEXT",
                                     "box": {
@@ -5008,7 +4993,7 @@
                                     ]
                                   },
                                   {
-                                    "id": "I354:1426;403:2342",
+                                    "id": "I354:1426;396:2172",
                                     "name": "tooltip icon",
                                     "type": "GROUP",
                                     "box": {
@@ -5019,7 +5004,7 @@
                                     },
                                     "children": [
                                       {
-                                        "id": "I354:1426;403:2343",
+                                        "id": "I354:1426;396:2173",
                                         "name": "Ellipse 38",
                                         "type": "ELLIPSE",
                                         "box": {
@@ -5041,7 +5026,7 @@
                                         }
                                       },
                                       {
-                                        "id": "I354:1426;403:2344",
+                                        "id": "I354:1426;396:2174",
                                         "name": "i",
                                         "type": "TEXT",
                                         "box": {
@@ -5067,90 +5052,6 @@
                                             "opacity": 1
                                           }
                                         ]
-                                      }
-                                    ]
-                                  }
-                                ]
-                              },
-                              {
-                                "id": "I354:1426;403:2375",
-                                "name": "Group 139",
-                                "type": "GROUP",
-                                "box": {
-                                  "x": 306,
-                                  "y": 829,
-                                  "w": 258,
-                                  "h": 48
-                                },
-                                "cornerRadii": [
-                                  0,
-                                  0,
-                                  0,
-                                  0
-                                ],
-                                "children": [
-                                  {
-                                    "id": "I354:1426;403:2374",
-                                    "name": "Polygon 12",
-                                    "type": "REGULAR_POLYGON",
-                                    "box": {
-                                      "x": 427,
-                                      "y": 864,
-                                      "w": 15,
-                                      "h": 13
-                                    },
-                                    "fills": [
-                                      {
-                                        "type": "SOLID",
-                                        "hex": "#e9e9e9",
-                                        "opacity": 1
-                                      }
-                                    ]
-                                  },
-                                  {
-                                    "id": "I354:1426;403:2372",
-                                    "name": "Rectangle 142",
-                                    "type": "RECTANGLE",
-                                    "box": {
-                                      "x": 306,
-                                      "y": 829,
-                                      "w": 258,
-                                      "h": 39
-                                    },
-                                    "fills": [
-                                      {
-                                        "type": "SOLID",
-                                        "hex": "#e9e9e9",
-                                        "opacity": 1
-                                      }
-                                    ],
-                                    "cornerRadius": 5
-                                  },
-                                  {
-                                    "id": "I354:1426;403:2377",
-                                    "name": "변동성과 가격 흐름을 기반으로 현재 추세 방향을 보여주는 지표입니다. 상승·하락 추세 전환 시점을 파악할 때 사용합니다.",
-                                    "type": "TEXT",
-                                    "box": {
-                                      "x": 314,
-                                      "y": 841,
-                                      "w": 243,
-                                      "h": 15
-                                    },
-                                    "text": "변동성과 가격 흐름을 기반으로 현재 추세 방향을 보여주는 \n지표입니다. 상승·하락 추세 전환 시점을 파악할 때 사용합니다.",
-                                    "font": {
-                                      "family": "Pretendard Variable",
-                                      "weight": 500,
-                                      "size": 10,
-                                      "lineHeight": 11.93359375,
-                                      "letterSpacing": 0,
-                                      "align": "CENTER",
-                                      "decoration": null
-                                    },
-                                    "fills": [
-                                      {
-                                        "type": "SOLID",
-                                        "hex": "#474747",
-                                        "opacity": 1
                                       }
                                     ]
                                   }
