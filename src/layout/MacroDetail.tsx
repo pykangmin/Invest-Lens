@@ -274,10 +274,14 @@ export function MacroDetail({
             </div>
           </DetailSectionBox>
 
-          {/* 5) Regime breakdown 표 — 통계 기반 추정 (Pearson r) */}
+          {/* 5) Regime breakdown 표 — 변수별 |r| max regime (Pearson) */}
           <DetailSectionBox
             title="변수별 regime 기여도"
-            exampleNote={`Pearson 상관계수 기반 추정 (모델 내부 가중치 부재). 표본 ${analysis.contribution.sampleSize} 월말.`}
+            rightSlot={
+              <span style={S.sectionMeta}>
+                Pearson 상관 · 표본 {analysis.contribution.sampleSize} 월말
+              </span>
+            }
           >
             <DataTable
               columns={BREAKDOWN_COLUMNS}
@@ -561,5 +565,10 @@ const S: Record<string, CSSProperties> = {
     fontSize: "var(--font-size-base)",
     color: "var(--color-text-body)",
     lineHeight: 1.55,
+  },
+  sectionMeta: {
+    fontSize: "var(--font-size-xs)",
+    color: "var(--color-text-muted)",
+    fontWeight: 500,
   },
 };
