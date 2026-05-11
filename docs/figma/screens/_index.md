@@ -2,7 +2,7 @@
 
 출처: `docs/figma/figma-tree.json` (Figma REST API 직접 fetch)
 추출 스크립트: `scripts/figma-extract-screens.mjs`
-추출 시각: 2026-05-09T07:03:05.862Z
+추출 시각: 2026-05-11T12:51:06.968Z
 
 좌표는 각 프레임 좌상단 기준 상대값. PNG 추측 0.
 
@@ -28,27 +28,27 @@
 
 - 노드 ID: `271:561`
 - 크기: 1440×2190
-- 텍스트 라벨: 90개
-- 사용 색: 47개
-- 폰트 스타일 (family:weight:size): 16개
+- 텍스트 라벨: 96개
+- 사용 색: 44개
+- 폰트 스타일 (family:weight:size): 18개
 - 추출본: [`main-commodity.json`](./main-commodity.json)
 
 ## 기술적 지표 (`main-technical`)
 
 - 노드 ID: `327:456`
-- 크기: 1440×1804
-- 텍스트 라벨: 73개
-- 사용 색: 25개
-- 폰트 스타일 (family:weight:size): 14개
+- 크기: 1440×1876
+- 텍스트 라벨: 80개
+- 사용 색: 27개
+- 폰트 스타일 (family:weight:size): 16개
 - 추출본: [`main-technical.json`](./main-technical.json)
 
 ## 펀더멘털 (`main-fundamental`)
 
 - 노드 ID: `376:483`
-- 크기: 1440×2160
-- 텍스트 라벨: 80개
-- 사용 색: 31개
-- 폰트 스타일 (family:weight:size): 15개
+- 크기: 1440×1497
+- 텍스트 라벨: 65개
+- 사용 색: 32개
+- 폰트 스타일 (family:weight:size): 16개
 - 추출본: [`main-fundamental.json`](./main-fundamental.json)
 
 ## 거시 경제 (`main-macro`)

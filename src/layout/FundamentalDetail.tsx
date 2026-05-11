@@ -1,37 +1,43 @@
 // FundamentalDetail — 기업 펀더멘털 detail 화면.
-// spec: docs/figma/dashboard-slots-v4.md §6.1 (Figma node 376:483)
-// data-coverage: docs/figma/data-coverage-v4.md §4a
+// spec: docs/figma/screens/main-fundamental.json (Figma node 376:483, 1440×1497)
 //
-// 섹션:
-//   1) Hero — 종합 점수 도넛 + 본문·요약 (gauge.score)
-//   2) 9 mini metric grid (FCF Margin / ROE / 순이익률 / 매출성장 / EPS 성장 / FCF Yield / Debt/Equity / PER / PBR)
-//   3) 분기 추이 multi-line — ROE / netProfitMargin / fcfMargin (forward-filled)
-//   4) 지표 기여도 표 — 종합 점수에 들어간 5 metric × 가중치 1/5
-//   5) 동종업계 비교 표 — REAL (2026-05 보강, /api/peers)
-//   6) 핵심 강점 / 리스크 카드 — EXAMPLE
+// 시안 구조 (y기준, 콘텐츠 영역 x=237~1338, w=1101):
+//   §1 (231-446, h=215) — 현재 기업 펀더멘털 요약
+//        좌(98w) 종합 스코어: 라벨 + N/100(28pt) + tagline(18pt)
+//        우(949w) 5-card row (182w each): icon + 라벨(11pt) + 큰 숫자(35pt) + sub(10.5pt) + i툴팁
+//   §2 (458-799, h=341) — 3 컬럼: 현금흐름 & 안정성(369w) / 수익성(380w) / 성장성(328w)
+//        각각: title + score tag(#f4f9ff) + graph placeholder
+//   §3 (811-1094, h=283) — 2 컬럼:
+//        좌(561w) 가치평가 (Valuation): title + score tag + 부연 tag + graph placeholder
+//        우(520w) 섹션별 스코어 분포: title + graph placeholder + bottom 종합 판정 row
+//   §4 (1106-1380, h=274) — 핵심 투자 논거 & 리스크: 강점 3 / 약점 3 row (dot+title+body)
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
-import { fundamentalGauge } from "../analysis/fundamental";
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import {
-  fundamentalContribution,
-  fundamentalQuarterlySeries,
-  type FundamentalMetric,
-} from "../analysis/fundamentalDetail";
-import { loadCompanySnapshot, loadPeers } from "../data-loader/investmentData";
-import type { CompanySnapshot, PeerCompany, PeersResponse } from "../types/investment";
-import { DataTable, type DataTableColumn } from "../visualization/DataTable";
-import { Donut } from "../visualization/Donut";
-import { ExampleBadge } from "../visualization/ExampleBadge";
-import { MultiLineChart, type LineSeries } from "../visualization/MultiLineChart";
-import { Sparkline } from "../visualization/Sparkline";
+  cpiYoyFrom,
+  growthVsInflationLabel,
+  marginDefenseLabel,
+  multipleLabel,
+  peerRankLabel,
+  sectionScores,
+  totalFromSections,
+  valuationZoneLabel,
+  verdictFromScore,
+} from "../analysis/fundamentalNarrative";
+import {
+  loadCompanySnapshot,
+  loadGlobalEnvironment,
+  loadPeers,
+} from "../data-loader/investmentData";
+import type {
+  CompanySnapshot,
+  GlobalEnvironmentResponse,
+  PeerCompany,
+  PeersResponse,
+  StockFundamentals,
+} from "../types/investment";
 import { DetailShell, type DetailSection } from "./DetailShell";
-import {
-  ContributionRow,
-  DetailSectionBox,
-  EmptyState,
-  HeroSummaryBlock,
-  MetricCardGrid,
-} from "./detail";
+import { EmptyState } from "./detail";
 
 export interface FundamentalDetailProps {
   ticker: string;
@@ -41,8 +47,94 @@ export interface FundamentalDetailProps {
   onSelectTicker: (ticker: string) => void;
 }
 
-// gauge 합산에 들어가는 5 metric (각 1/5 가중치)
-const GAUGE_METRIC_KEYS = ["roe", "netProfitMargin", "fcfYield", "debtToEquity", "per"] as const;
+// 5-card row mock — sub-text 와 mock 라벨은 시안 그대로 유지, 큰 숫자만 실데이터에서 매핑 (없으면 mock 유지).
+interface HeroCard {
+  key: "fcf" | "roe" | "revenue" | "gross" | "ev";
+  label: string;
+  bigValue: string;
+  sub: string;
+  iconHint: "fcf" | "roe" | "revenue" | "gross" | "ev";
+}
+
+function fmtPct(v: number | null, digits = 1, withSign = false): string {
+  if (v == null) return "—";
+  const pct = v * 100;
+  const sign = withSign && pct > 0 ? "+" : "";
+  return `${sign}${pct.toFixed(digits)}%`;
+}
+
+function fmtCompactUSD(v: number | null): string {
+  if (v == null) return "—";
+  const abs = Math.abs(v);
+  if (abs >= 1e12) return `${(v / 1e12).toFixed(2)}T`;
+  if (abs >= 1e9) return `${(v / 1e9).toFixed(1)}B`;
+  if (abs >= 1e6) return `${(v / 1e6).toFixed(1)}M`;
+  return v.toFixed(0);
+}
+
+function buildHeroCards(
+  f: StockFundamentals | null,
+  ticker: string,
+  peers: PeerCompany[] | null,
+  cpiYoy: number | null,
+): HeroCard[] {
+  // FCF 절대값 = market_cap × fcf_yield (DERIVED)
+  const fcfAbsolute =
+    f?.marketCap != null && f.fcfYield != null
+      ? f.marketCap * f.fcfYield
+      : null;
+  return [
+    {
+      key: "fcf",
+      label: "FCF (연간)",
+      bigValue: fcfAbsolute != null ? `$${fmtCompactUSD(fcfAbsolute)}` : "—",
+      sub: f?.fcfMargin != null ? `FCF Margin ${(f.fcfMargin * 100).toFixed(0)}%` : "—",
+      iconHint: "fcf",
+    },
+    {
+      key: "roe",
+      label: "ROE",
+      bigValue: f?.roe != null ? fmtPct(f.roe) : "—",
+      sub: peers && peers.length > 0 ? peerRankLabel(ticker, peers, "roe", true) : "—",
+      iconHint: "roe",
+    },
+    {
+      key: "revenue",
+      label: "매출 성장 YoY",
+      bigValue: f?.revenueGrowth != null ? fmtPct(f.revenueGrowth, 0, true) : "—",
+      sub: growthVsInflationLabel(f?.revenueGrowth ?? null, cpiYoy),
+      iconHint: "revenue",
+    },
+    {
+      key: "gross",
+      // 1.11 Gross Margin 절대값은 DB 없음 → 큰 숫자 비움 (MOCK).
+      label: "Gross Margin",
+      bigValue: "—",
+      sub: marginDefenseLabel(f?.grossMarginYoy ?? null),
+      iconHint: "gross",
+    },
+    {
+      key: "ev",
+      label: "EV/EBITDA",
+      bigValue: f?.evEbitda != null ? `${f.evEbitda.toFixed(1)}x` : "—",
+      sub: valuationZoneLabel(f?.evEbitda ?? null),
+      iconHint: "ev",
+    },
+  ];
+}
+
+// §4 강점/약점 — DB·분석 없음 (MOCK) → title/body 비움. 행 구조(dot 3+3)는 유지.
+const STRENGTHS: Array<{ dotColor: string; title: string; body: string }> = [
+  { dotColor: "#60c846", title: "", body: "" },
+  { dotColor: "#60c846", title: "", body: "" },
+  { dotColor: "#60c846", title: "", body: "" },
+];
+
+const RISKS: Array<{ dotColor: string; title: string; body: string }> = [
+  { dotColor: "#c1121f", title: "", body: "" },
+  { dotColor: "#c1121f", title: "", body: "" },
+  { dotColor: "#c1121f", title: "", body: "" },
+];
 
 export function FundamentalDetail({
   ticker,
@@ -53,6 +145,7 @@ export function FundamentalDetail({
 }: FundamentalDetailProps) {
   const [data, setData] = useState<CompanySnapshot | null>(null);
   const [peers, setPeers] = useState<PeersResponse | null>(null);
+  const [cpi, setCpi] = useState<GlobalEnvironmentResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -72,28 +165,47 @@ export function FundamentalDetail({
         if (alive) setPeers(p);
       })
       .catch(() => {
-        // peer 실패는 치명적 X — 카드 숨김 처리.
+        /* peer 실패는 비치명 */
       });
     return () => {
       alive = false;
     };
   }, [ticker]);
 
+  // CPI 는 ticker 무관 — 마운트 1회만.
+  useEffect(() => {
+    let alive = true;
+    loadGlobalEnvironment({ symbol: "CPIAUCSL", historyLimit: 14 })
+      .then((r) => {
+        if (alive) setCpi(r);
+      })
+      .catch(() => {
+        /* CPI 실패는 비치명 — sub 라벨만 "—" */
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const analysis = useMemo(() => {
     if (!data) return null;
-    const gauge = fundamentalGauge(data.latestFundamentals);
-    const contribution = fundamentalContribution(data.latestFundamentals);
-    const quarterly = fundamentalQuarterlySeries(data.fundamentalsHistory, [
-      "roe",
-      "netProfitMargin",
-      "fcfMargin",
-    ]);
-    const growthQuarterly = fundamentalQuarterlySeries(data.fundamentalsHistory, [
-      "revenueGrowth",
-      "epsGrowth",
-    ]);
-    return { gauge, contribution, quarterly, growthQuarterly };
-  }, [data]);
+    const sections = sectionScores(data.latestFundamentals);
+    const totalScore = totalFromSections(sections);
+    const verdict = verdictFromScore(totalScore);
+    const cpiYoy = cpi ? cpiYoyFrom(cpi.history) : null;
+    const peerList: PeerCompany[] | null = peers?.peers ?? null;
+    const heroCards = buildHeroCards(
+      data.latestFundamentals,
+      ticker,
+      peerList,
+      cpiYoy,
+    );
+    const valuationTag = multipleLabel(
+      data.latestFundamentals?.pbrZScore ?? null,
+      data.latestFundamentals?.forwardPerZScore ?? null,
+    );
+    return { sections, totalScore, verdict, heroCards, valuationTag };
+  }, [data, peers, cpi, ticker]);
 
   const updatedAt = data?.latestFundamentals?.date ?? undefined;
 
@@ -102,7 +214,7 @@ export function FundamentalDetail({
       ticker={ticker}
       active="fundamental"
       pageTitle="기업 펀더멘털"
-      pageSubtitle={`${data?.company.name ?? ticker}의 수익성·성장성·재무안정성·밸류에이션 9 지표를 점검합니다.`}
+      pageSubtitle="기업의 수익성, 성장성, 현금흐름, 밸류에이션 지표를 기반으로 장기 투자 매력도와 재무 건전성을 분석합니다."
       updatedAt={updatedAt ? `${updatedAt} (분기 보고)` : undefined}
       onBackToHome={onBackToHome}
       onBackToOverview={onBackToOverview}
@@ -113,150 +225,100 @@ export function FundamentalDetail({
       {!error && (!data || !analysis) && <EmptyState variant="loading" />}
       {data && analysis && (
         <>
-          {/* 1) Hero */}
-          <HeroSummaryBlock
-            title="펀더멘털 종합 평가"
-            body={
-              <p>
-                ROE·순이익률·FCF Yield·부채비율·PER 5개 지표 평균 합산.{" "}
-                <strong>
-                  {analysis.gauge.score != null ? `${analysis.gauge.score}/100` : "—"}
-                </strong>
-                {" "}— {analysis.gauge.tagline}.
-              </p>
-            }
-            chips={
-              <div style={S.chipChunkRow}>
-                {analysis.contribution.metrics
-                  .filter((m) => GAUGE_METRIC_KEYS.includes(m.key as (typeof GAUGE_METRIC_KEYS)[number]))
-                  .map((m) => (
-                    <MetricChip key={m.key} metric={m} />
-                  ))}
-              </div>
-            }
-            rightTitle="종합 스코어"
-            right={
-              <>
-                <Donut gauge={analysis.gauge} size={140} thickness={14} />
-                <div style={{ ...S.gaugeLabel, color: gaugeColor(analysis.gauge.severity) }}>
-                  {analysis.gauge.label}
+          {/* §1 현재 기업 펀더멘털 요약 */}
+          <section style={S.row1}>
+            <div style={S.row1Header}>현재 기업 펀더멘털 요약</div>
+            <div style={S.row1Body}>
+              {/* 좌: 종합 스코어 (98w block) */}
+              <div style={S.scoreBlock}>
+                <div style={S.scoreLabel}>종합 스코어</div>
+                <div
+                  style={{
+                    ...S.scoreValue,
+                    color: analysis.verdict.color,
+                  }}
+                >
+                  {analysis.totalScore != null ? `${analysis.totalScore}/100` : "—"}
                 </div>
-              </>
-            }
-          />
-
-          {/* 2) 9 metric grid */}
-          <DetailSectionBox title="주요 펀더멘털 지표 (9종)">
-            <MetricCardGrid columns={3} gap={10}>
-              {analysis.contribution.metrics.map((m) => (
-                <MetricCard key={m.key} metric={m} />
-              ))}
-            </MetricCardGrid>
-          </DetailSectionBox>
-
-          {/* 3) 분기 추이 (수익성·재무) */}
-          <div style={S.twoCol}>
-            <DetailSectionBox title="수익성 분기 추이 (forward-filled)">
-              <MultiLineChart
-                series={analysis.quarterly.map((q, i): LineSeries => ({
-                  label: q.label,
-                  values: q.values.map((v) => (v != null ? v * 100 : null)),
-                  color: ["#003049", "#60c846", "#fdb43a"][i],
-                }))}
-                xLabels={analysis.quarterly[0]?.dates.map((d) => d.slice(2, 7)) ?? []}
-                yAxisFormatter={(v) => `${v.toFixed(0)}%`}
-                showXLabels={6}
-                height={260}
-              />
-            </DetailSectionBox>
-            <DetailSectionBox title="성장 분기 추이">
-              <MultiLineChart
-                series={analysis.growthQuarterly.map((q, i): LineSeries => ({
-                  label: q.label,
-                  values: q.values.map((v) => (v != null ? v * 100 : null)),
-                  color: ["#c1121f", "#4073ff"][i],
-                }))}
-                xLabels={analysis.growthQuarterly[0]?.dates.map((d) => d.slice(2, 7)) ?? []}
-                yAxisFormatter={(v) => `${v.toFixed(0)}%`}
-                showXLabels={6}
-                height={260}
-              />
-            </DetailSectionBox>
-          </div>
-
-          {/* 4) 종합 점수 기여도 */}
-          <DetailSectionBox title="종합 점수 기여도 (5 metric × 1/5)">
-            <div style={S.contribRows}>
-              {analysis.contribution.metrics
-                .filter((m) => GAUGE_METRIC_KEYS.includes(m.key as (typeof GAUGE_METRIC_KEYS)[number]))
-                .map((m) => (
-                  <ContributionRow
-                    key={m.key}
-                    label={`${m.label} (${m.display})`}
-                    score={m.score != null ? Math.round(m.score / 5) : null}
-                    max={20}
-                    tone={m.tone}
-                  />
+                <div style={S.scoreTag}>{analysis.verdict.label}</div>
+              </div>
+              {/* 우: 5-card row */}
+              <div style={S.heroCardRow}>
+                {analysis.heroCards.map((c) => (
+                  <HeroCardView key={c.key} card={c} />
                 ))}
-              <ContributionRow
-                label="총합"
-                score={analysis.gauge.score}
-                max={100}
-                tone={
-                  analysis.gauge.severity === "INFO"
-                    ? "up"
-                    : analysis.gauge.severity === "WARNING"
-                      ? "down"
-                      : "neutral"
-                }
-                total
-              />
+              </div>
             </div>
-          </DetailSectionBox>
+          </section>
 
-          {/* 5) 동종업계 비교 — 2026-05 REAL */}
-          {peers && peers.peers.length > 0 && (
-            <DetailSectionBox
-              title="동종업계 비교"
-              rightSlot={
-                peers.sector ? (
-                  <span style={S.sectionMeta}>
-                    {peers.sector} · 시총 상위 {peers.peers.length}
-                  </span>
-                ) : null
-              }
+          {/* §2 3 컬럼 — 현금흐름 / 수익성 / 성장성 */}
+          <div style={S.row2}>
+            <SectionBox
+              title="현금흐름 & 안정성"
+              scoreTag={analysis.sections[0].display}
+              flex={369}
             >
-              <DataTable
-                columns={PEER_COLUMNS}
-                rows={peers.peers}
-                rowKey={(r) => r.ticker}
-              />
-            </DetailSectionBox>
-          )}
-
-          {/* 6) 강점 / 리스크 — EXAMPLE */}
-          <div style={S.twoCol}>
-            <DetailSectionBox
-              title="핵심 강점"
-              exampleNote="본문 mock — LLM 합성 또는 정적 텍스트"
+              <GraphPlaceholder hint="현금흐름 추이 차트" />
+            </SectionBox>
+            <SectionBox
+              title="수익성"
+              scoreTag={analysis.sections[1].display}
+              flex={380}
             >
-              <ul style={S.bullets}>
-                <li>꾸준한 마진 개선과 자본 효율성 (ROE 우상향)</li>
-                <li>현금 창출력 우수 — FCF Margin 과 Yield 동시 강세</li>
-                <li>동종업계 대비 부채 비율 하단 위치, 재무 안정성 양호</li>
-              </ul>
-            </DetailSectionBox>
-            <DetailSectionBox
-              title="잠재 리스크"
-              exampleNote="본문 mock — LLM 합성 또는 정적 텍스트"
+              <GraphPlaceholder hint="수익성 차트 (ROE/순이익률 등)" />
+            </SectionBox>
+            <SectionBox
+              title="성장성"
+              scoreTag={analysis.sections[2].display}
+              flex={328}
             >
-              <ul style={S.bullets}>
-                <li>매출 성장률이 직전 분기 대비 둔화 — 시장 기대 대비 모멘텀 약화</li>
-                <li>밸류에이션이 동종 중위값 대비 다소 부담</li>
-                <li>특정 사업부 의존도가 높아 다각화 리스크 상존</li>
-              </ul>
-            </DetailSectionBox>
+              <GraphPlaceholder hint="성장 막대 차트 (revenue/EPS YoY)" />
+            </SectionBox>
           </div>
+
+          {/* §3 2 컬럼 — 가치평가 / 섹션별 스코어 분포 */}
+          <div style={S.row3}>
+            <SectionBox
+              title="가치평가 (Valuation)"
+              scoreTag={analysis.sections[3].display}
+              extraTag={analysis.valuationTag}
+              flex={561}
+            >
+              <GraphPlaceholder hint="PER·PBR·EV/EBITDA 분포" />
+            </SectionBox>
+            <SectionBox title="섹션별 스코어 분포" flex={520}>
+              <GraphPlaceholder hint="레이더/막대 분포 차트" small />
+              <div style={S.verdictBox}>
+                <div style={S.verdictCell}>
+                  <span style={S.verdictCellLabel}>종합 판정</span>
+                  <span
+                    style={{
+                      ...S.verdictCellValue,
+                      color: analysis.verdict.color,
+                    }}
+                  >
+                    {analysis.verdict.label}
+                  </span>
+                </div>
+                <div style={S.verdictDivider} />
+                <div style={S.verdictCell}>
+                  <span style={S.verdictCellLabel}>종합 스코어</span>
+                  <span style={{ ...S.verdictCellValue, color: "#003049" }}>
+                    {analysis.totalScore != null ? `${analysis.totalScore}/100` : "—"}
+                  </span>
+                </div>
+              </div>
+            </SectionBox>
+          </div>
+
+          {/* §4 핵심 투자 논거 & 리스크 */}
+          <section style={S.row4}>
+            <div style={S.row4Title}>핵심 투자 논거 & 리스크</div>
+            <div style={S.thesisBody}>
+              <ThesisColumn title="강점 Strength" rows={STRENGTHS} />
+              <ThesisColumn title="약점 Risks" rows={RISKS} />
+            </div>
+          </section>
         </>
       )}
     </DetailShell>
@@ -265,187 +327,437 @@ export function FundamentalDetail({
 
 // ── helpers ────────────────────────────────────────────────────
 
-function MetricChip({ metric }: { metric: FundamentalMetric }) {
-  const color =
-    metric.tone === "up"
-      ? "var(--color-up-strong)"
-      : metric.tone === "down"
-        ? "var(--color-down)"
-        : "var(--color-text-muted)";
-  const bg =
-    metric.tone === "up"
-      ? "var(--color-up-bg)"
-      : metric.tone === "down"
-        ? "var(--color-down-bg)"
-        : "var(--color-header-bg)";
+function HeroCardView({ card }: { card: HeroCard }) {
   return (
-    <span style={{ ...S.chip, color, background: bg }}>
-      <span style={S.chipLabel}>{metric.label}</span>
-      <span style={S.chipValue}>{metric.display}</span>
-      {metric.value == null && <ExampleBadge text="결측" tone="stub" style={S.chipBadge} />}
-    </span>
-  );
-}
-
-function MetricCard({ metric }: { metric: FundamentalMetric }) {
-  const color =
-    metric.tone === "up"
-      ? "var(--color-up-strong)"
-      : metric.tone === "down"
-        ? "var(--color-down)"
-        : "var(--color-text)";
-  return (
-    <div style={S.metricCard}>
-      <div style={S.metricCardHead}>
-        <span style={S.metricLabel}>{metric.label}</span>
-        {metric.value == null && <ExampleBadge text="결측" tone="stub" />}
+    <div style={S.heroCard}>
+      <div style={S.heroCardHead}>
+        <div style={S.heroCardIcon} aria-hidden>
+          <HeroCardIcon kind={card.iconHint} />
+        </div>
+        <span style={S.heroCardLabel}>{card.label}</span>
+        <span style={S.heroCardTooltip} title="자세히">
+          i
+        </span>
       </div>
-      <div style={{ ...S.metricValue, color }}>{metric.display}</div>
-      <div style={S.metricNote}>{metric.note}</div>
+      <div style={S.heroCardBig}>{card.bigValue}</div>
+      <div style={S.heroCardSub}>{card.sub}</div>
     </div>
   );
 }
 
-function gaugeColor(s: "WARNING" | "CAUTION" | "INFO"): string {
-  if (s === "WARNING") return "var(--color-down)";
-  if (s === "CAUTION") return "var(--color-warn)";
-  return "var(--color-up-strong)";
+// 간단한 SVG 아이콘 (시안 Group 135 placeholder 위치)
+function HeroCardIcon({ kind }: { kind: HeroCard["iconHint"] }) {
+  const stroke = "#003049";
+  const common = { fill: "none", stroke, strokeWidth: 1.4, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  if (kind === "fcf") {
+    return (
+      <svg width="14" height="14" viewBox="0 0 14 14">
+        <circle cx="7" cy="7" r="5.5" {...common} />
+        <path d="M5 7l1.7 1.7L9.3 5.6" {...common} />
+      </svg>
+    );
+  }
+  if (kind === "roe") {
+    return (
+      <svg width="14" height="14" viewBox="0 0 14 14">
+        <path d="M2 11l3-3 2.5 2.5L12 4" {...common} />
+        <path d="M9 4h3v3" {...common} />
+      </svg>
+    );
+  }
+  if (kind === "revenue") {
+    return (
+      <svg width="14" height="14" viewBox="0 0 14 14">
+        <path d="M2 10l4-5 3 3 3-5" {...common} />
+        <path d="M9 3h3v3" {...common} />
+      </svg>
+    );
+  }
+  if (kind === "gross") {
+    // pie chart 아이콘 (foundation:graph-pie)
+    return (
+      <svg width="14" height="14" viewBox="0 0 14 14">
+        <circle cx="7" cy="7" r="5.5" {...common} />
+        <path d="M7 1.5 V7 L11.5 9.5" {...common} />
+      </svg>
+    );
+  }
+  // ev
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14">
+      <rect x="2.5" y="2.5" width="9" height="9" rx="1.2" {...common} />
+      <path d="M5 7h4M7 5v4" {...common} />
+    </svg>
+  );
 }
 
-function fmtMultiplier(v: number | null, digits = 1): string {
-  return v == null ? "—" : `${v.toFixed(digits)}x`;
-}
-function fmtPct(v: number | null, digits = 1): string {
-  return v == null ? "—" : `${(v * 100).toFixed(digits)}%`;
+function SectionBox({
+  title,
+  scoreTag,
+  extraTag,
+  flex,
+  children,
+}: {
+  title: string;
+  scoreTag?: string;
+  extraTag?: string;
+  flex: number;
+  children: ReactNode;
+}) {
+  return (
+    <section style={{ ...S.sectionBox, flexGrow: flex, flexBasis: 0 }}>
+      <div style={S.sectionBoxHeader}>
+        <span style={S.sectionBoxTitle}>{title}</span>
+        <div style={S.sectionBoxTags}>
+          {scoreTag && <span style={S.sectionScoreTag}>{scoreTag}</span>}
+          {extraTag && (
+            <span style={{ ...S.sectionScoreTag, minWidth: 140 }}>{extraTag}</span>
+          )}
+        </div>
+      </div>
+      <div style={S.sectionBoxBody}>{children}</div>
+    </section>
+  );
 }
 
-// 기존 7컬럼 구조 유지 (티커·기업명·PER·PBR·ROE·순이익률·추이).
-// isSelf 는 ticker 의 strong 강조 색상만 — 컬럼 추가 없이 행 식별.
-const PEER_COLUMNS: DataTableColumn<PeerCompany>[] = [
-  {
-    key: "ticker",
-    header: "티커",
-    align: "left",
-    render: (r) => (
-      <strong style={r.isSelf ? { color: "var(--color-up-strong)" } : undefined}>
-        {r.ticker}
-      </strong>
-    ),
-  },
-  { key: "name", header: "기업명", align: "left", render: (r) => r.name },
-  { key: "per", header: "PER", align: "right", render: (r) => fmtMultiplier(r.per) },
-  { key: "pbr", header: "PBR", align: "right", render: (r) => fmtMultiplier(r.pbr) },
-  { key: "roe", header: "ROE", align: "right", render: (r) => fmtPct(r.roe) },
-  { key: "margin", header: "순이익률", align: "right", render: (r) => fmtPct(r.netProfitMargin) },
-  {
-    key: "trend",
-    header: "추이",
-    align: "left",
-    render: (r) =>
-      r.roeSeries.length >= 2 ? (
-        <Sparkline
-          values={r.roeSeries}
-          width={80}
-          height={24}
-          strokeWidth={1.5}
-        />
-      ) : (
-        <span style={{ color: "var(--color-text-muted)" }}>—</span>
-      ),
-  },
-];
+function GraphPlaceholder({
+  hint,
+  small,
+}: {
+  hint: string;
+  small?: boolean;
+}) {
+  return (
+    <div style={{ ...S.graphPlaceholder, minHeight: small ? 137 : 218 }}>
+      <span style={S.graphPlaceholderHint}>그래프 자리 — {hint}</span>
+    </div>
+  );
+}
+
+function ThesisColumn({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: Array<{ dotColor: string; title: string; body: string }>;
+}) {
+  return (
+    <div style={S.thesisCol}>
+      <div style={S.thesisColTitle}>{title}</div>
+      <div style={S.thesisRows}>
+        {rows.map((r, i) => (
+          <div key={i}>
+            <div style={S.thesisRow}>
+              <div style={S.thesisRowHead}>
+                <span style={{ ...S.thesisDot, background: r.dotColor }} />
+                <span style={S.thesisRowTitle}>
+                  {r.title || <span style={S.thesisEmpty}>—</span>}
+                </span>
+              </div>
+              <div style={S.thesisRowBody}>
+                {r.body || <span style={S.thesisEmpty}>—</span>}
+              </div>
+            </div>
+            {i < rows.length - 1 && <div style={S.thesisRowDivider} />}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── styles ─────────────────────────────────────────────────────
+
+const NAVY = "#003049";
+const MUTED = "#737373";
+const SCORE_TAG_BG = "#f4f9ff";
+const DOWN = "#c1121f";
 
 const S: Record<string, CSSProperties> = {
-  gaugeLabel: {
-    fontSize: "var(--font-size-3xl)",
-    fontWeight: 700,
+  // §1
+  row1: {
+    background: "var(--color-card)",
+    border: "1px solid var(--color-border)",
+    borderRadius: 10,
+    padding: "20px 24px",
+    display: "flex",
+    flexDirection: "column",
+    gap: 20,
+  },
+  row1Header: {
+    fontSize: 16,
+    fontWeight: 600,
+    color: NAVY,
+  },
+  row1Body: {
+    display: "grid",
+    gridTemplateColumns: "minmax(130px, 160px) 1fr",
+    gap: 32,
+    alignItems: "flex-start",
+  },
+  scoreBlock: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+    paddingTop: 4,
+  },
+  scoreLabel: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: NAVY,
+  },
+  scoreValue: {
+    fontSize: 28,
+    fontWeight: 600,
+    color: DOWN,
     fontFamily: "var(--font-numeric)",
+    lineHeight: 1,
+  },
+  scoreTag: {
+    fontSize: 18,
+    fontWeight: 600,
+    color: NAVY,
     lineHeight: 1.1,
   },
-  chipChunkRow: {
+  heroCardRow: {
     display: "grid",
     gridTemplateColumns: "repeat(5, 1fr)",
-    gap: 8,
+    gap: 12,
   },
-  chip: {
-    position: "relative",
+  heroCard: {
     display: "flex",
     flexDirection: "column",
-    gap: 2,
-    padding: "8px 12px",
-    borderRadius: "var(--radius-tag)",
-    border: "1px solid var(--color-border)",
+    gap: 8,
+    minWidth: 0,
   },
-  chipLabel: {
-    fontSize: "var(--font-size-xs)",
+  heroCardHead: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+  },
+  heroCardIcon: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 27,
+    height: 27,
+    borderRadius: "50%",
+    background: "#f4f9ff",
+    flexShrink: 0,
+  },
+  heroCardLabel: {
+    fontSize: 11,
     fontWeight: 600,
-    opacity: 0.8,
+    color: NAVY,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    flex: 1,
   },
-  chipValue: {
-    fontSize: "var(--font-size-md)",
-    fontWeight: 700,
+  heroCardTooltip: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    width: 16,
+    height: 16,
+    borderRadius: "50%",
+    fontSize: 10.5,
+    fontWeight: 600,
+    color: MUTED,
+    border: `1px solid ${MUTED}`,
+    cursor: "help",
+    flexShrink: 0,
+  },
+  heroCardBig: {
+    fontSize: 35,
+    fontWeight: 600,
+    color: NAVY,
     fontFamily: "var(--font-numeric)",
+    lineHeight: 1,
+    whiteSpace: "nowrap",
   },
-  chipBadge: { position: "absolute", top: -4, right: -6 },
-
-  twoCol: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 16,
-    alignItems: "stretch",
+  heroCardSub: {
+    fontSize: 10.5,
+    fontWeight: 500,
+    color: MUTED,
+    lineHeight: 1.3,
   },
 
-  contribRows: {
+  // §2 §3 — 3 컬럼 / 2 컬럼 공통 row
+  row2: { display: "flex", gap: 16, alignItems: "stretch" },
+  row3: { display: "flex", gap: 16, alignItems: "stretch" },
+
+  sectionBox: {
+    background: "var(--color-card)",
+    border: "1px solid var(--color-border)",
+    borderRadius: 10,
+    padding: "20px 22px",
     display: "flex",
     flexDirection: "column",
+    gap: 14,
+    minWidth: 0,
+  },
+  sectionBoxHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 10,
+  },
+  sectionBoxTitle: {
+    fontSize: 15,
+    fontWeight: 600,
+    color: NAVY,
+  },
+  sectionBoxTags: {
+    display: "flex",
     gap: 8,
+    alignItems: "center",
+  },
+  sectionScoreTag: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minWidth: 81,
+    height: 27,
+    padding: "0 10px",
+    background: SCORE_TAG_BG,
+    borderRadius: 6,
+    fontSize: 14,
+    fontWeight: 600,
+    color: NAVY,
+    fontFamily: "var(--font-numeric)",
+    whiteSpace: "nowrap",
+  },
+  sectionBoxBody: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 12,
+    flex: 1,
+    minHeight: 0,
   },
 
-  metricCard: {
-    background: "var(--color-bg)",
-    border: "1px solid var(--color-border)",
-    borderRadius: "var(--radius-card)",
-    padding: "12px 14px",
+  graphPlaceholder: {
+    flex: 1,
+    background: "#fafbfc",
+    border: "1px dashed var(--color-border)",
+    borderRadius: 8,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+  },
+  graphPlaceholderHint: {
+    fontSize: 12,
+    color: MUTED,
+    fontStyle: "italic",
+  },
+
+  // §3-B verdict bottom box (471×75)
+  verdictBox: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1px 1fr",
+    gap: 16,
+    background: SCORE_TAG_BG,
+    borderRadius: 8,
+    padding: "12px 18px",
+    alignItems: "center",
+    height: 75,
+    boxSizing: "border-box",
+  },
+  verdictCell: {
     display: "flex",
     flexDirection: "column",
     gap: 4,
   },
-  metricCardHead: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 6,
-  },
-  metricLabel: {
-    fontSize: "var(--font-size-sm)",
+  verdictCellLabel: {
+    fontSize: 13,
     fontWeight: 600,
-    color: "var(--color-text-muted)",
+    color: NAVY,
   },
-  metricValue: {
-    fontSize: "var(--font-size-2xl)",
+  verdictCellValue: {
+    fontSize: 20,
     fontWeight: 700,
     fontFamily: "var(--font-numeric)",
-    lineHeight: 1.1,
+    lineHeight: 1,
   },
-  metricNote: {
-    fontSize: "var(--font-size-xs)",
-    color: "var(--color-text-faint)",
-    fontWeight: 500,
+  verdictDivider: {
+    width: 1,
+    height: 51,
+    background: "var(--color-border)",
+    alignSelf: "center",
   },
 
-  bullets: {
-    margin: 0,
-    paddingLeft: 18,
+  // §4
+  row4: {
+    background: "var(--color-card)",
+    border: "1px solid var(--color-border)",
+    borderRadius: 10,
+    padding: "20px 24px",
     display: "flex",
     flexDirection: "column",
-    gap: 6,
-    fontSize: "var(--font-size-base)",
-    color: "var(--color-text-body)",
+    gap: 16,
+  },
+  row4Title: {
+    fontSize: 15,
+    fontWeight: 600,
+    color: NAVY,
+  },
+  thesisBody: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 32,
+  },
+  thesisCol: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 14,
+  },
+  thesisColTitle: {
+    fontSize: 15,
+    fontWeight: 600,
+    color: NAVY,
+  },
+  thesisRows: {
+    display: "flex",
+    flexDirection: "column",
+  },
+  thesisRow: {
+    display: "grid",
+    gridTemplateColumns: "142px 1fr",
+    gap: 18,
+    alignItems: "flex-start",
+    padding: "10px 0",
+  },
+  thesisRowHead: {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+  },
+  thesisDot: {
+    width: 12,
+    height: 12,
+    borderRadius: "50%",
+    flexShrink: 0,
+  },
+  thesisRowTitle: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: NAVY,
+    lineHeight: 1.2,
+  },
+  thesisRowBody: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: MUTED,
     lineHeight: 1.55,
   },
-  sectionMeta: {
-    fontSize: "var(--font-size-xs)",
-    color: "var(--color-text-muted)",
+  thesisRowDivider: {
+    height: 1,
+    background: "var(--color-border)",
+  },
+  thesisEmpty: {
+    color: MUTED,
+    fontStyle: "italic",
     fontWeight: 500,
   },
 };

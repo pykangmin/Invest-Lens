@@ -4,21 +4,23 @@
     "slug": "main-technical",
     "label": "기술적 지표",
     "w": 1440,
-    "h": 1804
+    "h": 1876
   },
   "stats": {
-    "textCount": 73,
-    "uniqueColorCount": 25,
-    "uniqueFontStyleCount": 14,
+    "textCount": 80,
+    "uniqueColorCount": 27,
+    "uniqueFontStyleCount": 16,
     "colors": [
       "#000000",
       "#003049",
       "#166907",
       "#33a316",
       "#43bb2e",
+      "#474747",
       "#4e4e4e",
       "#60c846",
       "#669bbc",
+      "#737171",
       "#780000",
       "#9bcdff",
       "#a3a3a3",
@@ -40,10 +42,12 @@
     "fonts": [
       "Fugaz One:400:20",
       "Pretendard Variable:400:15",
+      "Pretendard Variable:500:10",
       "Pretendard Variable:500:12",
       "Pretendard Variable:500:13",
       "Pretendard Variable:500:14",
       "Pretendard Variable:500:15",
+      "Pretendard Variable:600:10.5",
       "Pretendard Variable:600:13",
       "Pretendard Variable:600:14",
       "Pretendard Variable:600:15",
@@ -524,14 +528,170 @@
       }
     },
     {
+      "text": "변동성과 가격 흐름을 기반으로 현재 추세 방향을 보여주는 \n지표입니다. 상승·하락 추세 전환 시점을 파악할 때 사용합니다.",
+      "size": 10,
+      "weight": 500,
+      "family": "Pretendard Variable",
+      "fill": "#474747",
+      "box": {
+        "x": 314,
+        "y": 841,
+        "w": 243,
+        "h": 15
+      }
+    },
+    {
+      "text": "MACD",
+      "size": 15,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#003049",
+      "box": {
+        "x": 623,
+        "y": 878,
+        "w": 45,
+        "h": 18
+      }
+    },
+    {
+      "text": "거래량",
+      "size": 15,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#003049",
+      "box": {
+        "x": 1024,
+        "y": 878,
+        "w": 39,
+        "h": 18
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 427,
+        "y": 879,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 553,
+        "y": 879,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 674,
+        "y": 879,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "VIX",
+      "size": 15,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#003049",
+      "box": {
+        "x": 898,
+        "y": 879,
+        "w": 25,
+        "h": 18
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 1071,
+        "y": 879,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "RSI",
+      "size": 15,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#003049",
+      "box": {
+        "x": 766,
+        "y": 880,
+        "w": 23,
+        "h": 18
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 931,
+        "y": 880,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 797,
+        "y": 881,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "총합",
+      "size": 15,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#003049",
+      "box": {
+        "x": 1139,
+        "y": 881,
+        "w": 93,
+        "h": 11
+      }
+    },
+    {
       "text": "Super Trend",
       "size": 15,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
-        "x": 353,
-        "y": 881,
+        "x": 334,
+        "y": 882,
         "w": 93,
         "h": 11
       }
@@ -543,74 +703,9 @@
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
-        "x": 482,
-        "y": 881,
-        "w": 93,
-        "h": 11
-      }
-    },
-    {
-      "text": "MACD",
-      "size": 15,
-      "weight": 600,
-      "family": "Pretendard Variable",
-      "fill": "#003049",
-      "box": {
-        "x": 611,
-        "y": 881,
-        "w": 93,
-        "h": 11
-      }
-    },
-    {
-      "text": "RSI",
-      "size": 15,
-      "weight": 600,
-      "family": "Pretendard Variable",
-      "fill": "#003049",
-      "box": {
-        "x": 740,
-        "y": 881,
-        "w": 93,
-        "h": 11
-      }
-    },
-    {
-      "text": "VIX",
-      "size": 15,
-      "weight": 600,
-      "family": "Pretendard Variable",
-      "fill": "#003049",
-      "box": {
-        "x": 869,
-        "y": 881,
-        "w": 93,
-        "h": 11
-      }
-    },
-    {
-      "text": "거래량",
-      "size": 15,
-      "weight": 600,
-      "family": "Pretendard Variable",
-      "fill": "#003049",
-      "box": {
-        "x": 998,
-        "y": 881,
-        "w": 93,
-        "h": 11
-      }
-    },
-    {
-      "text": "총합",
-      "size": 15,
-      "weight": 600,
-      "family": "Pretendard Variable",
-      "fill": "#003049",
-      "box": {
-        "x": 1127,
-        "y": 881,
-        "w": 93,
+        "x": 478,
+        "y": 882,
+        "w": 75,
         "h": 11
       }
     },
@@ -621,7 +716,7 @@
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
-        "x": 353,
+        "x": 342,
         "y": 909,
         "w": 93,
         "h": 22
@@ -634,7 +729,7 @@
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
-        "x": 482,
+        "x": 477,
         "y": 909,
         "w": 93,
         "h": 22
@@ -647,7 +742,7 @@
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
-        "x": 611,
+        "x": 610,
         "y": 909,
         "w": 93,
         "h": 22
@@ -660,7 +755,7 @@
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
-        "x": 740,
+        "x": 743,
         "y": 909,
         "w": 93,
         "h": 22
@@ -673,7 +768,7 @@
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
-        "x": 869,
+        "x": 873,
         "y": 909,
         "w": 93,
         "h": 22
@@ -686,7 +781,7 @@
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
-        "x": 998,
+        "x": 1009,
         "y": 909,
         "w": 93,
         "h": 22
@@ -699,7 +794,7 @@
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
-        "x": 1127,
+        "x": 1139,
         "y": 909,
         "w": 93,
         "h": 22
@@ -1013,7 +1108,7 @@
       "x": 0,
       "y": 0,
       "w": 1440,
-      "h": 1804
+      "h": 1876
     },
     "fills": [
       {
@@ -1031,7 +1126,7 @@
           "x": 202,
           "y": 121,
           "w": 1171,
-          "h": 1615
+          "h": 1637
         },
         "stroke": {
           "hex": "#e9e9e9",
@@ -1046,7 +1141,7 @@
               "x": 236,
               "y": 231,
               "w": 1102,
-              "h": 1477
+              "h": 1511
             },
             "layout": {
               "mode": "VERTICAL",
@@ -4735,13 +4830,41 @@
                         ]
                       },
                       {
+                        "id": "327:518",
+                        "name": "title",
+                        "type": "TEXT",
+                        "box": {
+                          "x": 256,
+                          "y": 821,
+                          "w": 379,
+                          "h": 14
+                        },
+                        "text": "지표별 기여도 (최근 1주일)",
+                        "font": {
+                          "family": "Pretendard Variable",
+                          "weight": 600,
+                          "size": 15,
+                          "lineHeight": 17.900390625,
+                          "letterSpacing": 0,
+                          "align": "LEFT",
+                          "decoration": null
+                        },
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "hex": "#003049",
+                            "opacity": 1
+                          }
+                        ]
+                      },
+                      {
                         "id": "347:943",
                         "name": "기여도 요약",
                         "type": "FRAME",
                         "box": {
-                          "x": 342,
+                          "x": 326,
                           "y": 865,
-                          "w": 890,
+                          "w": 922,
                           "h": 84
                         },
                         "layout": {
@@ -4762,22 +4885,22 @@
                             "name": "card/기술/기여도",
                             "type": "INSTANCE",
                             "box": {
-                              "x": 342,
+                              "x": 326,
                               "y": 865,
-                              "w": 116,
+                              "w": 124,
                               "h": 84
                             },
-                            "componentId": "354:1404",
-                            "componentName": "지표=Super Trend",
+                            "componentId": "403:2337",
+                            "componentName": "지표=Super Trend, tooltip=on",
                             "children": [
                               {
-                                "id": "I354:1426;354:1400",
+                                "id": "I354:1426;403:2338",
                                 "name": "Rectangle 130",
                                 "type": "RECTANGLE",
                                 "box": {
-                                  "x": 342,
+                                  "x": 326,
                                   "y": 865,
-                                  "w": 116,
+                                  "w": 124,
                                   "h": 84
                                 },
                                 "fills": [
@@ -4794,39 +4917,11 @@
                                 "cornerRadius": 10
                               },
                               {
-                                "id": "I354:1426;354:1401",
-                                "name": "title",
-                                "type": "TEXT",
-                                "box": {
-                                  "x": 353,
-                                  "y": 881,
-                                  "w": 93,
-                                  "h": 11
-                                },
-                                "text": "Super Trend",
-                                "font": {
-                                  "family": "Pretendard Variable",
-                                  "weight": 600,
-                                  "size": 15,
-                                  "lineHeight": 17.900390625,
-                                  "letterSpacing": 0,
-                                  "align": "CENTER",
-                                  "decoration": null
-                                },
-                                "fills": [
-                                  {
-                                    "type": "SOLID",
-                                    "hex": "#003049",
-                                    "opacity": 1
-                                  }
-                                ]
-                              },
-                              {
-                                "id": "I354:1426;354:1402",
+                                "id": "I354:1426;403:2339",
                                 "name": "score",
                                 "type": "TEXT",
                                 "box": {
-                                  "x": 353,
+                                  "x": 342,
                                   "y": 909,
                                   "w": 93,
                                   "h": 22
@@ -4860,6 +4955,206 @@
                                     "size": 15
                                   }
                                 }
+                              },
+                              {
+                                "id": "I354:1426;403:2340",
+                                "name": "Frame 117",
+                                "type": "FRAME",
+                                "box": {
+                                  "x": 334,
+                                  "y": 879,
+                                  "w": 109,
+                                  "h": 16
+                                },
+                                "layout": {
+                                  "mode": "HORIZONTAL",
+                                  "padding": {
+                                    "l": 0,
+                                    "r": 0,
+                                    "t": 0,
+                                    "b": 0
+                                  },
+                                  "gap": null,
+                                  "counterAlign": "CENTER",
+                                  "primaryAlign": "CENTER"
+                                },
+                                "children": [
+                                  {
+                                    "id": "I354:1426;403:2341",
+                                    "name": "title",
+                                    "type": "TEXT",
+                                    "box": {
+                                      "x": 334,
+                                      "y": 882,
+                                      "w": 93,
+                                      "h": 11
+                                    },
+                                    "text": "Super Trend",
+                                    "font": {
+                                      "family": "Pretendard Variable",
+                                      "weight": 600,
+                                      "size": 15,
+                                      "lineHeight": 17.900390625,
+                                      "letterSpacing": 0,
+                                      "align": "CENTER",
+                                      "decoration": null
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#003049",
+                                        "opacity": 1
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "I354:1426;403:2342",
+                                    "name": "tooltip icon",
+                                    "type": "GROUP",
+                                    "box": {
+                                      "x": 427,
+                                      "y": 879,
+                                      "w": 16,
+                                      "h": 16
+                                    },
+                                    "children": [
+                                      {
+                                        "id": "I354:1426;403:2343",
+                                        "name": "Ellipse 38",
+                                        "type": "ELLIPSE",
+                                        "box": {
+                                          "x": 427,
+                                          "y": 879,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#ffffff",
+                                            "opacity": 1
+                                          }
+                                        ],
+                                        "stroke": {
+                                          "hex": "#e9e9e9",
+                                          "weight": 1
+                                        }
+                                      },
+                                      {
+                                        "id": "I354:1426;403:2344",
+                                        "name": "i",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 427,
+                                          "y": 879,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "text": "i",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 10.5,
+                                          "lineHeight": 12.5302734375,
+                                          "letterSpacing": 0,
+                                          "align": "CENTER",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#737171",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "I354:1426;403:2375",
+                                "name": "Group 139",
+                                "type": "GROUP",
+                                "box": {
+                                  "x": 306,
+                                  "y": 829,
+                                  "w": 258,
+                                  "h": 48
+                                },
+                                "cornerRadii": [
+                                  0,
+                                  0,
+                                  0,
+                                  0
+                                ],
+                                "children": [
+                                  {
+                                    "id": "I354:1426;403:2374",
+                                    "name": "Polygon 12",
+                                    "type": "REGULAR_POLYGON",
+                                    "box": {
+                                      "x": 427,
+                                      "y": 864,
+                                      "w": 15,
+                                      "h": 13
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#e9e9e9",
+                                        "opacity": 1
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "I354:1426;403:2372",
+                                    "name": "Rectangle 142",
+                                    "type": "RECTANGLE",
+                                    "box": {
+                                      "x": 306,
+                                      "y": 829,
+                                      "w": 258,
+                                      "h": 39
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#e9e9e9",
+                                        "opacity": 1
+                                      }
+                                    ],
+                                    "cornerRadius": 5
+                                  },
+                                  {
+                                    "id": "I354:1426;403:2377",
+                                    "name": "변동성과 가격 흐름을 기반으로 현재 추세 방향을 보여주는 지표입니다. 상승·하락 추세 전환 시점을 파악할 때 사용합니다.",
+                                    "type": "TEXT",
+                                    "box": {
+                                      "x": 314,
+                                      "y": 841,
+                                      "w": 243,
+                                      "h": 15
+                                    },
+                                    "text": "변동성과 가격 흐름을 기반으로 현재 추세 방향을 보여주는 \n지표입니다. 상승·하락 추세 전환 시점을 파악할 때 사용합니다.",
+                                    "font": {
+                                      "family": "Pretendard Variable",
+                                      "weight": 500,
+                                      "size": 10,
+                                      "lineHeight": 11.93359375,
+                                      "letterSpacing": 0,
+                                      "align": "CENTER",
+                                      "decoration": null
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#474747",
+                                        "opacity": 1
+                                      }
+                                    ]
+                                  }
+                                ]
                               }
                             ]
                           },
@@ -4868,22 +5163,22 @@
                             "name": "card/기술/기여도",
                             "type": "INSTANCE",
                             "box": {
-                              "x": 471,
+                              "x": 463,
                               "y": 865,
-                              "w": 116,
+                              "w": 120,
                               "h": 84
                             },
                             "componentId": "354:1406",
-                            "componentName": "지표=이동평균선",
+                            "componentName": "지표=이동평균선, tooltip=off",
                             "children": [
                               {
                                 "id": "I354:1430;354:1407",
                                 "name": "Rectangle 130",
                                 "type": "RECTANGLE",
                                 "box": {
-                                  "x": 471,
+                                  "x": 463,
                                   "y": 865,
-                                  "w": 116,
+                                  "w": 120,
                                   "h": 84
                                 },
                                 "fills": [
@@ -4900,39 +5195,11 @@
                                 "cornerRadius": 10
                               },
                               {
-                                "id": "I354:1430;354:1408",
-                                "name": "title",
-                                "type": "TEXT",
-                                "box": {
-                                  "x": 482,
-                                  "y": 881,
-                                  "w": 93,
-                                  "h": 11
-                                },
-                                "text": "이동평균선",
-                                "font": {
-                                  "family": "Pretendard Variable",
-                                  "weight": 600,
-                                  "size": 15,
-                                  "lineHeight": 17.900390625,
-                                  "letterSpacing": 0,
-                                  "align": "CENTER",
-                                  "decoration": null
-                                },
-                                "fills": [
-                                  {
-                                    "type": "SOLID",
-                                    "hex": "#003049",
-                                    "opacity": 1
-                                  }
-                                ]
-                              },
-                              {
                                 "id": "I354:1430;354:1409",
                                 "name": "score",
                                 "type": "TEXT",
                                 "box": {
-                                  "x": 482,
+                                  "x": 477,
                                   "y": 909,
                                   "w": 93,
                                   "h": 22
@@ -4966,6 +5233,122 @@
                                     "size": 15
                                   }
                                 }
+                              },
+                              {
+                                "id": "I354:1430;396:2192",
+                                "name": "Frame 118",
+                                "type": "FRAME",
+                                "box": {
+                                  "x": 478,
+                                  "y": 879,
+                                  "w": 91,
+                                  "h": 16
+                                },
+                                "layout": {
+                                  "mode": "HORIZONTAL",
+                                  "padding": {
+                                    "l": 0,
+                                    "r": 0,
+                                    "t": 0,
+                                    "b": 0
+                                  },
+                                  "gap": null,
+                                  "counterAlign": "CENTER",
+                                  "primaryAlign": null
+                                },
+                                "children": [
+                                  {
+                                    "id": "I354:1430;354:1408",
+                                    "name": "title",
+                                    "type": "TEXT",
+                                    "box": {
+                                      "x": 478,
+                                      "y": 882,
+                                      "w": 75,
+                                      "h": 11
+                                    },
+                                    "text": "이동평균선",
+                                    "font": {
+                                      "family": "Pretendard Variable",
+                                      "weight": 600,
+                                      "size": 15,
+                                      "lineHeight": 17.900390625,
+                                      "letterSpacing": 0,
+                                      "align": "CENTER",
+                                      "decoration": null
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#003049",
+                                        "opacity": 1
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "I354:1430;396:2185",
+                                    "name": "tooltip icon",
+                                    "type": "GROUP",
+                                    "box": {
+                                      "x": 553,
+                                      "y": 879,
+                                      "w": 16,
+                                      "h": 16
+                                    },
+                                    "children": [
+                                      {
+                                        "id": "I354:1430;396:2186",
+                                        "name": "Ellipse 38",
+                                        "type": "ELLIPSE",
+                                        "box": {
+                                          "x": 553,
+                                          "y": 879,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#ffffff",
+                                            "opacity": 1
+                                          }
+                                        ],
+                                        "stroke": {
+                                          "hex": "#e9e9e9",
+                                          "weight": 1
+                                        }
+                                      },
+                                      {
+                                        "id": "I354:1430;396:2187",
+                                        "name": "i",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 553,
+                                          "y": 879,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "text": "i",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 10.5,
+                                          "lineHeight": 12.5302734375,
+                                          "letterSpacing": 0,
+                                          "align": "CENTER",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#737171",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
                               }
                             ]
                           },
@@ -4974,22 +5357,22 @@
                             "name": "card/기술/기여도",
                             "type": "INSTANCE",
                             "box": {
-                              "x": 600,
+                              "x": 596,
                               "y": 865,
-                              "w": 116,
+                              "w": 120,
                               "h": 84
                             },
                             "componentId": "354:1410",
-                            "componentName": "지표=MACD",
+                            "componentName": "지표=MACD, tooltip=off",
                             "children": [
                               {
                                 "id": "I354:1435;354:1411",
                                 "name": "Rectangle 130",
                                 "type": "RECTANGLE",
                                 "box": {
-                                  "x": 600,
+                                  "x": 596,
                                   "y": 865,
-                                  "w": 116,
+                                  "w": 120,
                                   "h": 84
                                 },
                                 "fills": [
@@ -5006,39 +5389,11 @@
                                 "cornerRadius": 10
                               },
                               {
-                                "id": "I354:1435;354:1412",
-                                "name": "title",
-                                "type": "TEXT",
-                                "box": {
-                                  "x": 611,
-                                  "y": 881,
-                                  "w": 93,
-                                  "h": 11
-                                },
-                                "text": "MACD",
-                                "font": {
-                                  "family": "Pretendard Variable",
-                                  "weight": 600,
-                                  "size": 15,
-                                  "lineHeight": 17.900390625,
-                                  "letterSpacing": 0,
-                                  "align": "CENTER",
-                                  "decoration": null
-                                },
-                                "fills": [
-                                  {
-                                    "type": "SOLID",
-                                    "hex": "#003049",
-                                    "opacity": 1
-                                  }
-                                ]
-                              },
-                              {
                                 "id": "I354:1435;354:1413",
                                 "name": "score",
                                 "type": "TEXT",
                                 "box": {
-                                  "x": 611,
+                                  "x": 610,
                                   "y": 909,
                                   "w": 93,
                                   "h": 22
@@ -5072,6 +5427,122 @@
                                     "size": 15
                                   }
                                 }
+                              },
+                              {
+                                "id": "I354:1435;396:2215",
+                                "name": "Frame 119",
+                                "type": "FRAME",
+                                "box": {
+                                  "x": 610,
+                                  "y": 878,
+                                  "w": 93,
+                                  "h": 18
+                                },
+                                "layout": {
+                                  "mode": "HORIZONTAL",
+                                  "padding": {
+                                    "l": 0,
+                                    "r": 0,
+                                    "t": 0,
+                                    "b": 0
+                                  },
+                                  "gap": 6,
+                                  "counterAlign": "CENTER",
+                                  "primaryAlign": "CENTER"
+                                },
+                                "children": [
+                                  {
+                                    "id": "I354:1435;354:1412",
+                                    "name": "title",
+                                    "type": "TEXT",
+                                    "box": {
+                                      "x": 623,
+                                      "y": 878,
+                                      "w": 45,
+                                      "h": 18
+                                    },
+                                    "text": "MACD",
+                                    "font": {
+                                      "family": "Pretendard Variable",
+                                      "weight": 600,
+                                      "size": 15,
+                                      "lineHeight": 17.900390625,
+                                      "letterSpacing": 0,
+                                      "align": "CENTER",
+                                      "decoration": null
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#003049",
+                                        "opacity": 1
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "I354:1435;396:2198",
+                                    "name": "tooltip icon",
+                                    "type": "GROUP",
+                                    "box": {
+                                      "x": 674,
+                                      "y": 879,
+                                      "w": 16,
+                                      "h": 16
+                                    },
+                                    "children": [
+                                      {
+                                        "id": "I354:1435;396:2199",
+                                        "name": "Ellipse 38",
+                                        "type": "ELLIPSE",
+                                        "box": {
+                                          "x": 674,
+                                          "y": 879,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#ffffff",
+                                            "opacity": 1
+                                          }
+                                        ],
+                                        "stroke": {
+                                          "hex": "#e9e9e9",
+                                          "weight": 1
+                                        }
+                                      },
+                                      {
+                                        "id": "I354:1435;396:2200",
+                                        "name": "i",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 674,
+                                          "y": 879,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "text": "i",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 10.5,
+                                          "lineHeight": 12.5302734375,
+                                          "letterSpacing": 0,
+                                          "align": "CENTER",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#737171",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
                               }
                             ]
                           },
@@ -5082,11 +5553,11 @@
                             "box": {
                               "x": 729,
                               "y": 865,
-                              "w": 116,
+                              "w": 120,
                               "h": 84
                             },
                             "componentId": "354:1414",
-                            "componentName": "지표=RSI",
+                            "componentName": "지표=RSI, tooltip=off",
                             "children": [
                               {
                                 "id": "I354:1440;354:1415",
@@ -5095,7 +5566,7 @@
                                 "box": {
                                   "x": 729,
                                   "y": 865,
-                                  "w": 116,
+                                  "w": 120,
                                   "h": 84
                                 },
                                 "fills": [
@@ -5112,30 +5583,118 @@
                                 "cornerRadius": 10
                               },
                               {
-                                "id": "I354:1440;354:1416",
-                                "name": "title",
-                                "type": "TEXT",
+                                "id": "I354:1440;396:2228",
+                                "name": "Frame 120",
+                                "type": "FRAME",
                                 "box": {
-                                  "x": 740,
-                                  "y": 881,
+                                  "x": 743,
+                                  "y": 880,
                                   "w": 93,
-                                  "h": 11
+                                  "h": 18
                                 },
-                                "text": "RSI",
-                                "font": {
-                                  "family": "Pretendard Variable",
-                                  "weight": 600,
-                                  "size": 15,
-                                  "lineHeight": 17.900390625,
-                                  "letterSpacing": 0,
-                                  "align": "CENTER",
-                                  "decoration": null
+                                "layout": {
+                                  "mode": "HORIZONTAL",
+                                  "padding": {
+                                    "l": 0,
+                                    "r": 0,
+                                    "t": 0,
+                                    "b": 0
+                                  },
+                                  "gap": 8,
+                                  "counterAlign": "CENTER",
+                                  "primaryAlign": "CENTER"
                                 },
-                                "fills": [
+                                "children": [
                                   {
-                                    "type": "SOLID",
-                                    "hex": "#003049",
-                                    "opacity": 1
+                                    "id": "I354:1440;354:1416",
+                                    "name": "title",
+                                    "type": "TEXT",
+                                    "box": {
+                                      "x": 766,
+                                      "y": 880,
+                                      "w": 23,
+                                      "h": 18
+                                    },
+                                    "text": "RSI",
+                                    "font": {
+                                      "family": "Pretendard Variable",
+                                      "weight": 600,
+                                      "size": 15,
+                                      "lineHeight": 17.900390625,
+                                      "letterSpacing": 0,
+                                      "align": "CENTER",
+                                      "decoration": null
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#003049",
+                                        "opacity": 1
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "I354:1440;396:2221",
+                                    "name": "tooltip icon",
+                                    "type": "GROUP",
+                                    "box": {
+                                      "x": 797,
+                                      "y": 881,
+                                      "w": 16,
+                                      "h": 16
+                                    },
+                                    "children": [
+                                      {
+                                        "id": "I354:1440;396:2222",
+                                        "name": "Ellipse 38",
+                                        "type": "ELLIPSE",
+                                        "box": {
+                                          "x": 797,
+                                          "y": 881,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#ffffff",
+                                            "opacity": 1
+                                          }
+                                        ],
+                                        "stroke": {
+                                          "hex": "#e9e9e9",
+                                          "weight": 1
+                                        }
+                                      },
+                                      {
+                                        "id": "I354:1440;396:2223",
+                                        "name": "i",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 797,
+                                          "y": 881,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "text": "i",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 10.5,
+                                          "lineHeight": 12.5302734375,
+                                          "letterSpacing": 0,
+                                          "align": "CENTER",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#737171",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      }
+                                    ]
                                   }
                                 ]
                               },
@@ -5144,7 +5703,7 @@
                                 "name": "score",
                                 "type": "TEXT",
                                 "box": {
-                                  "x": 740,
+                                  "x": 743,
                                   "y": 909,
                                   "w": 93,
                                   "h": 22
@@ -5186,22 +5745,22 @@
                             "name": "card/기술/기여도",
                             "type": "INSTANCE",
                             "box": {
-                              "x": 858,
+                              "x": 862,
                               "y": 865,
-                              "w": 116,
+                              "w": 120,
                               "h": 84
                             },
                             "componentId": "354:1418",
-                            "componentName": "지표=VIX",
+                            "componentName": "지표=VIX, tooltip=off",
                             "children": [
                               {
                                 "id": "I354:1445;354:1419",
                                 "name": "Rectangle 130",
                                 "type": "RECTANGLE",
                                 "box": {
-                                  "x": 858,
+                                  "x": 862,
                                   "y": 865,
-                                  "w": 116,
+                                  "w": 120,
                                   "h": 84
                                 },
                                 "fills": [
@@ -5218,39 +5777,11 @@
                                 "cornerRadius": 10
                               },
                               {
-                                "id": "I354:1445;354:1420",
-                                "name": "title",
-                                "type": "TEXT",
-                                "box": {
-                                  "x": 869,
-                                  "y": 881,
-                                  "w": 93,
-                                  "h": 11
-                                },
-                                "text": "VIX",
-                                "font": {
-                                  "family": "Pretendard Variable",
-                                  "weight": 600,
-                                  "size": 15,
-                                  "lineHeight": 17.900390625,
-                                  "letterSpacing": 0,
-                                  "align": "CENTER",
-                                  "decoration": null
-                                },
-                                "fills": [
-                                  {
-                                    "type": "SOLID",
-                                    "hex": "#003049",
-                                    "opacity": 1
-                                  }
-                                ]
-                              },
-                              {
                                 "id": "I354:1445;354:1421",
                                 "name": "score",
                                 "type": "TEXT",
                                 "box": {
-                                  "x": 869,
+                                  "x": 873,
                                   "y": 909,
                                   "w": 93,
                                   "h": 22
@@ -5283,6 +5814,122 @@
                                     "size": 15
                                   }
                                 }
+                              },
+                              {
+                                "id": "I354:1445;396:2241",
+                                "name": "Frame 121",
+                                "type": "FRAME",
+                                "box": {
+                                  "x": 876,
+                                  "y": 879,
+                                  "w": 93,
+                                  "h": 18
+                                },
+                                "layout": {
+                                  "mode": "HORIZONTAL",
+                                  "padding": {
+                                    "l": 0,
+                                    "r": 0,
+                                    "t": 0,
+                                    "b": 0
+                                  },
+                                  "gap": 8,
+                                  "counterAlign": "CENTER",
+                                  "primaryAlign": "CENTER"
+                                },
+                                "children": [
+                                  {
+                                    "id": "I354:1445;354:1420",
+                                    "name": "title",
+                                    "type": "TEXT",
+                                    "box": {
+                                      "x": 898,
+                                      "y": 879,
+                                      "w": 25,
+                                      "h": 18
+                                    },
+                                    "text": "VIX",
+                                    "font": {
+                                      "family": "Pretendard Variable",
+                                      "weight": 600,
+                                      "size": 15,
+                                      "lineHeight": 17.900390625,
+                                      "letterSpacing": 0,
+                                      "align": "CENTER",
+                                      "decoration": null
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#003049",
+                                        "opacity": 1
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "I354:1445;396:2234",
+                                    "name": "tooltip icon",
+                                    "type": "GROUP",
+                                    "box": {
+                                      "x": 931,
+                                      "y": 880,
+                                      "w": 16,
+                                      "h": 16
+                                    },
+                                    "children": [
+                                      {
+                                        "id": "I354:1445;396:2235",
+                                        "name": "Ellipse 38",
+                                        "type": "ELLIPSE",
+                                        "box": {
+                                          "x": 931,
+                                          "y": 880,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#ffffff",
+                                            "opacity": 1
+                                          }
+                                        ],
+                                        "stroke": {
+                                          "hex": "#e9e9e9",
+                                          "weight": 1
+                                        }
+                                      },
+                                      {
+                                        "id": "I354:1445;396:2236",
+                                        "name": "i",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 931,
+                                          "y": 880,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "text": "i",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 10.5,
+                                          "lineHeight": 12.5302734375,
+                                          "letterSpacing": 0,
+                                          "align": "CENTER",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#737171",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
                               }
                             ]
                           },
@@ -5291,22 +5938,22 @@
                             "name": "card/기술/기여도",
                             "type": "INSTANCE",
                             "box": {
-                              "x": 987,
+                              "x": 995,
                               "y": 865,
-                              "w": 116,
+                              "w": 120,
                               "h": 84
                             },
                             "componentId": "354:1422",
-                            "componentName": "지표=거래량",
+                            "componentName": "지표=거래량, tooltip=off",
                             "children": [
                               {
                                 "id": "I354:1450;354:1423",
                                 "name": "Rectangle 130",
                                 "type": "RECTANGLE",
                                 "box": {
-                                  "x": 987,
+                                  "x": 995,
                                   "y": 865,
-                                  "w": 116,
+                                  "w": 120,
                                   "h": 84
                                 },
                                 "fills": [
@@ -5323,39 +5970,11 @@
                                 "cornerRadius": 10
                               },
                               {
-                                "id": "I354:1450;354:1424",
-                                "name": "title",
-                                "type": "TEXT",
-                                "box": {
-                                  "x": 998,
-                                  "y": 881,
-                                  "w": 93,
-                                  "h": 11
-                                },
-                                "text": "거래량",
-                                "font": {
-                                  "family": "Pretendard Variable",
-                                  "weight": 600,
-                                  "size": 15,
-                                  "lineHeight": 17.900390625,
-                                  "letterSpacing": 0,
-                                  "align": "CENTER",
-                                  "decoration": null
-                                },
-                                "fills": [
-                                  {
-                                    "type": "SOLID",
-                                    "hex": "#003049",
-                                    "opacity": 1
-                                  }
-                                ]
-                              },
-                              {
                                 "id": "I354:1450;354:1425",
                                 "name": "score",
                                 "type": "TEXT",
                                 "box": {
-                                  "x": 998,
+                                  "x": 1009,
                                   "y": 909,
                                   "w": 93,
                                   "h": 22
@@ -5388,6 +6007,122 @@
                                     "size": 15
                                   }
                                 }
+                              },
+                              {
+                                "id": "I354:1450;396:2254",
+                                "name": "Frame 122",
+                                "type": "FRAME",
+                                "box": {
+                                  "x": 1009,
+                                  "y": 878,
+                                  "w": 93,
+                                  "h": 18
+                                },
+                                "layout": {
+                                  "mode": "HORIZONTAL",
+                                  "padding": {
+                                    "l": 0,
+                                    "r": 0,
+                                    "t": 0,
+                                    "b": 0
+                                  },
+                                  "gap": 8,
+                                  "counterAlign": "CENTER",
+                                  "primaryAlign": "CENTER"
+                                },
+                                "children": [
+                                  {
+                                    "id": "I354:1450;354:1424",
+                                    "name": "title",
+                                    "type": "TEXT",
+                                    "box": {
+                                      "x": 1024,
+                                      "y": 878,
+                                      "w": 39,
+                                      "h": 18
+                                    },
+                                    "text": "거래량",
+                                    "font": {
+                                      "family": "Pretendard Variable",
+                                      "weight": 600,
+                                      "size": 15,
+                                      "lineHeight": 17.900390625,
+                                      "letterSpacing": 0,
+                                      "align": "CENTER",
+                                      "decoration": null
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#003049",
+                                        "opacity": 1
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "I354:1450;396:2247",
+                                    "name": "tooltip icon",
+                                    "type": "GROUP",
+                                    "box": {
+                                      "x": 1071,
+                                      "y": 879,
+                                      "w": 16,
+                                      "h": 16
+                                    },
+                                    "children": [
+                                      {
+                                        "id": "I354:1450;396:2248",
+                                        "name": "Ellipse 38",
+                                        "type": "ELLIPSE",
+                                        "box": {
+                                          "x": 1071,
+                                          "y": 879,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#ffffff",
+                                            "opacity": 1
+                                          }
+                                        ],
+                                        "stroke": {
+                                          "hex": "#e9e9e9",
+                                          "weight": 1
+                                        }
+                                      },
+                                      {
+                                        "id": "I354:1450;396:2249",
+                                        "name": "i",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 1071,
+                                          "y": 879,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "text": "i",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 10.5,
+                                          "lineHeight": 12.5302734375,
+                                          "letterSpacing": 0,
+                                          "align": "CENTER",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#737171",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
                               }
                             ]
                           },
@@ -5396,22 +6131,22 @@
                             "name": "card/기술/기여도",
                             "type": "INSTANCE",
                             "box": {
-                              "x": 1116,
+                              "x": 1128,
                               "y": 865,
-                              "w": 116,
+                              "w": 120,
                               "h": 84
                             },
                             "componentId": "354:1460",
-                            "componentName": "지표=총합",
+                            "componentName": "지표=총합, tooltip=off",
                             "children": [
                               {
                                 "id": "I354:1455;354:1461",
                                 "name": "Rectangle 130",
                                 "type": "RECTANGLE",
                                 "box": {
-                                  "x": 1116,
+                                  "x": 1128,
                                   "y": 865,
-                                  "w": 116,
+                                  "w": 120,
                                   "h": 84
                                 },
                                 "fills": [
@@ -5432,7 +6167,7 @@
                                 "name": "title",
                                 "type": "TEXT",
                                 "box": {
-                                  "x": 1127,
+                                  "x": 1139,
                                   "y": 881,
                                   "w": 93,
                                   "h": 11
@@ -5460,7 +6195,7 @@
                                 "name": "score",
                                 "type": "TEXT",
                                 "box": {
-                                  "x": 1127,
+                                  "x": 1139,
                                   "y": 909,
                                   "w": 93,
                                   "h": 22
@@ -5499,34 +6234,6 @@
                             ]
                           }
                         ]
-                      },
-                      {
-                        "id": "327:518",
-                        "name": "title",
-                        "type": "TEXT",
-                        "box": {
-                          "x": 256,
-                          "y": 821,
-                          "w": 379,
-                          "h": 14
-                        },
-                        "text": "지표별 기여도 (최근 1주일)",
-                        "font": {
-                          "family": "Pretendard Variable",
-                          "weight": 600,
-                          "size": 15,
-                          "lineHeight": 17.900390625,
-                          "letterSpacing": 0,
-                          "align": "LEFT",
-                          "decoration": null
-                        },
-                        "fills": [
-                          {
-                            "type": "SOLID",
-                            "hex": "#003049",
-                            "opacity": 1
-                          }
-                        ]
                       }
                     ]
                   }
@@ -5563,7 +6270,7 @@
                       "x": 236,
                       "y": 1365,
                       "w": 1102,
-                      "h": 343
+                      "h": 377
                     },
                     "stroke": {
                       "hex": "#e9e9e9",
@@ -5572,14 +6279,14 @@
                     "cornerRadius": 10,
                     "children": [
                       {
-                        "id": "347:1060",
-                        "name": "스크린샷 2026-05-09 오전 12.05.16 1",
+                        "id": "423:824",
+                        "name": "ChatGPT Image May 11, 2026, 08_52_48 AM 1",
                         "type": "RECTANGLE",
                         "box": {
-                          "x": 511,
-                          "y": 1434,
-                          "w": 551,
-                          "h": 240
+                          "x": 417,
+                          "y": 1414,
+                          "w": 740,
+                          "h": 313
                         },
                         "fills": [
                           {

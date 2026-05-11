@@ -7,21 +7,21 @@
     "h": 2190
   },
   "stats": {
-    "textCount": 90,
-    "uniqueColorCount": 47,
-    "uniqueFontStyleCount": 16,
+    "textCount": 96,
+    "uniqueColorCount": 44,
+    "uniqueFontStyleCount": 18,
     "colors": [
       "#000000",
       "#003049",
       "#0e8955",
       "#2b9111",
-      "#329864",
-      "#34a84d",
       "#3a8c14",
       "#569379",
       "#60c846",
       "#669bbc",
+      "#737171",
       "#747474",
+      "#767676",
       "#780000",
       "#9bcdff",
       "#a3a3a3",
@@ -36,7 +36,6 @@
       "#ed6a67",
       "#eeffe6",
       "#f0f6f2",
-      "#f1ffe7",
       "#f3f9ff",
       "#f3fff0",
       "#f6bc65",
@@ -49,11 +48,9 @@
       "#fbfbe2",
       "#fcfcfc",
       "#fdf0d5",
-      "#ffa6a6",
       "#ffae35",
       "#ffc2c1",
       "#ffe1b5",
-      "#ffe8e8",
       "#fff1dc",
       "#fff4f4",
       "#fff7f7",
@@ -66,11 +63,13 @@
       "Pretendard Variable:500:14",
       "Pretendard Variable:500:15",
       "Pretendard Variable:600:10",
+      "Pretendard Variable:600:10.5",
       "Pretendard Variable:600:12",
       "Pretendard Variable:600:13",
       "Pretendard Variable:600:14",
       "Pretendard Variable:600:15",
       "Pretendard Variable:600:16",
+      "Pretendard Variable:600:18",
       "Pretendard Variable:600:25",
       "Pretendard Variable:600:30",
       "Pretendard Variable:600:35",
@@ -535,6 +534,84 @@
       }
     },
     {
+      "text": "천연가스",
+      "size": 13,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#003049",
+      "box": {
+        "x": 410,
+        "y": 634,
+        "w": 45,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 460,
+        "y": 634,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "구리 (LME)",
+      "size": 13,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#003049",
+      "box": {
+        "x": 538,
+        "y": 634,
+        "w": 62,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 605,
+        "y": 634,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "리튬 (탄산)",
+      "size": 13,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#003049",
+      "box": {
+        "x": 666,
+        "y": 634,
+        "w": 58,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 729,
+        "y": 634,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
       "text": "WTI 원유",
       "size": 13,
       "weight": 600,
@@ -543,47 +620,21 @@
       "box": {
         "x": 282,
         "y": 635,
-        "w": 96,
-        "h": 14
+        "w": 50,
+        "h": 16
       }
     },
     {
-      "text": "WTI 원유",
-      "size": 13,
+      "text": "i",
+      "size": 10.5,
       "weight": 600,
       "family": "Pretendard Variable",
-      "fill": "#003049",
+      "fill": "#737171",
       "box": {
-        "x": 410,
+        "x": 337,
         "y": 635,
-        "w": 96,
-        "h": 14
-      }
-    },
-    {
-      "text": "WTI 원유",
-      "size": 13,
-      "weight": 600,
-      "family": "Pretendard Variable",
-      "fill": "#003049",
-      "box": {
-        "x": 538,
-        "y": 635,
-        "w": 96,
-        "h": 14
-      }
-    },
-    {
-      "text": "WTI 원유",
-      "size": 13,
-      "weight": 600,
-      "family": "Pretendard Variable",
-      "fill": "#003049",
-      "box": {
-        "x": 666,
-        "y": 635,
-        "w": 96,
-        "h": 14
+        "w": 16,
+        "h": 16
       }
     },
     {
@@ -600,40 +651,40 @@
       }
     },
     {
-      "text": "$93.3/bbl",
-      "size": 13,
+      "text": "$2.88",
+      "size": 18,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
         "x": 410,
-        "y": 663,
+        "y": 664,
         "w": 96,
         "h": 14
       }
     },
     {
-      "text": "$93.3/bbl",
+      "text": "~$9,800/T",
       "size": 13,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
         "x": 538,
-        "y": 663,
+        "y": 664,
         "w": 96,
         "h": 14
       }
     },
     {
-      "text": "$93.3/bbl",
+      "text": "¥167,500/T",
       "size": 13,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
         "x": 666,
-        "y": 663,
+        "y": 664,
         "w": 96,
         "h": 14
       }
@@ -652,196 +703,248 @@
       }
     },
     {
-      "text": "+48.9% (1년)",
+      "text": "+59.4% (3월)",
       "size": 10,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#60c846",
       "box": {
         "x": 420,
-        "y": 686,
+        "y": 687,
         "w": 97,
         "h": 14
       }
     },
     {
-      "text": "+48.9% (1년)",
+      "text": "안정 상승세",
       "size": 10,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#60c846",
       "box": {
         "x": 548,
-        "y": 686,
+        "y": 687,
         "w": 97,
         "h": 14
       }
     },
     {
-      "text": "+48.9% (1년)",
+      "text": "+134% (1년)",
       "size": 10,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#60c846",
       "box": {
         "x": 676,
-        "y": 686,
+        "y": 687,
         "w": 97,
         "h": 14
       }
     },
     {
-      "text": "WTI 원유",
+      "text": "금 (Gold)",
       "size": 13,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
         "x": 282,
-        "y": 726,
-        "w": 96,
-        "h": 14
+        "y": 725,
+        "w": 53,
+        "h": 16
       }
     },
     {
-      "text": "WTI 원유",
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 341,
+        "y": 725,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "은 (Silber)",
       "size": 13,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
         "x": 410,
-        "y": 726,
-        "w": 96,
-        "h": 14
+        "y": 725,
+        "w": 59,
+        "h": 16
       }
     },
     {
-      "text": "WTI 원유",
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 474,
+        "y": 725,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "소맥 (Wheat)",
       "size": 13,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
         "x": 538,
-        "y": 726,
-        "w": 96,
-        "h": 14
+        "y": 725,
+        "w": 75,
+        "h": 16
       }
     },
     {
-      "text": "WTI 원유",
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 618,
+        "y": 725,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "대두 (Soybean)",
       "size": 13,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
-        "x": 666,
-        "y": 726,
-        "w": 96,
-        "h": 14
+        "x": 663,
+        "y": 725,
+        "w": 88,
+        "h": 16
       }
     },
     {
-      "text": "$93.3/bbl",
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 756,
+        "y": 725,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "$4,763/oz",
       "size": 13,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
         "x": 282,
-        "y": 754,
+        "y": 755,
         "w": 96,
         "h": 14
       }
     },
     {
-      "text": "$93.3/bbl",
+      "text": "$91.65/oz",
       "size": 13,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
         "x": 410,
-        "y": 754,
+        "y": 755,
         "w": 96,
         "h": 14
       }
     },
     {
-      "text": "$93.3/bbl",
-      "size": 13,
+      "text": "안정세",
+      "size": 18,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
         "x": 538,
-        "y": 754,
+        "y": 755,
         "w": 96,
         "h": 14
       }
     },
     {
-      "text": "$93.3/bbl",
-      "size": 13,
+      "text": "상승 중",
+      "size": 18,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#003049",
       "box": {
-        "x": 666,
-        "y": 754,
+        "x": 663,
+        "y": 755,
         "w": 96,
         "h": 14
       }
     },
     {
-      "text": "+48.9% (1년)",
+      "text": "+40% (1년)",
       "size": 10,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#60c846",
       "box": {
         "x": 292,
-        "y": 777,
+        "y": 778,
         "w": 97,
         "h": 14
       }
     },
     {
-      "text": "+48.9% (1년)",
+      "text": "+5.15%",
       "size": 10,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#60c846",
       "box": {
         "x": 420,
-        "y": 777,
+        "y": 778,
         "w": 97,
         "h": 14
       }
     },
     {
-      "text": "+48.9% (1년)",
+      "text": "공급 충분",
       "size": 10,
       "weight": 600,
       "family": "Pretendard Variable",
-      "fill": "#60c846",
+      "fill": "#767676",
       "box": {
         "x": 548,
-        "y": 777,
+        "y": 778,
         "w": 97,
         "h": 14
       }
     },
     {
-      "text": "+48.9% (1년)",
+      "text": "유가 연동",
       "size": 10,
       "weight": 600,
       "family": "Pretendard Variable",
       "fill": "#60c846",
       "box": {
-        "x": 676,
-        "y": 777,
+        "x": 673,
+        "y": 778,
         "w": 97,
         "h": 14
       }
@@ -1050,7 +1153,7 @@
       "box": {
         "x": 329,
         "y": 1621,
-        "w": 127,
+        "w": 83,
         "h": 14
       }
     },
@@ -1063,7 +1166,7 @@
       "box": {
         "x": 686,
         "y": 1621,
-        "w": 127,
+        "w": 117,
         "h": 14
       }
     },
@@ -1076,7 +1179,7 @@
       "box": {
         "x": 1043,
         "y": 1621,
-        "w": 127,
+        "w": 75,
         "h": 14
       }
     },
@@ -1087,7 +1190,7 @@
       "family": "Pretendard Variable",
       "fill": "#569379",
       "box": {
-        "x": 511,
+        "x": 513,
         "y": 1624,
         "w": 62,
         "h": 7
@@ -1179,7 +1282,7 @@
       "fill": "#003049",
       "box": {
         "x": 1190,
-        "y": 1817,
+        "y": 1848,
         "w": 106,
         "h": 13
       }
@@ -1192,22 +1295,9 @@
       "fill": "#003049",
       "box": {
         "x": 1190,
-        "y": 1855,
-        "w": 83,
+        "y": 1886,
+        "w": 106,
         "h": 13
-      }
-    },
-    {
-      "text": "Long↑",
-      "size": 12,
-      "weight": 600,
-      "family": "Pretendard Variable",
-      "fill": "#329864",
-      "box": {
-        "x": 1191,
-        "y": 1882,
-        "w": 50,
-        "h": 11
       }
     },
     {
@@ -1234,19 +1324,6 @@
         "y": 1983,
         "w": 121,
         "h": 13
-      }
-    },
-    {
-      "text": "Short↓",
-      "size": 12,
-      "weight": 600,
-      "family": "Pretendard Variable",
-      "fill": "#db2d29",
-      "box": {
-        "x": 1191,
-        "y": 2010,
-        "w": 52,
-        "h": 11
       }
     }
   ],
@@ -3277,6 +3354,49 @@
                     "cornerRadius": 10,
                     "children": [
                       {
+                        "id": "274:794",
+                        "name": "title",
+                        "type": "TEXT",
+                        "box": {
+                          "x": 257,
+                          "y": 586,
+                          "w": 379,
+                          "h": 14
+                        },
+                        "text": "주요 원자재 가격 현황 (2026년 4월 23일 기준)",
+                        "font": {
+                          "family": "Pretendard Variable",
+                          "weight": 600,
+                          "size": 15,
+                          "lineHeight": 17.900390625,
+                          "letterSpacing": 0,
+                          "align": "LEFT",
+                          "decoration": null
+                        },
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "hex": "#003049",
+                            "opacity": 1
+                          }
+                        ]
+                      },
+                      {
+                        "id": "274:874",
+                        "name": "middle-line",
+                        "type": "LINE",
+                        "box": {
+                          "x": 268,
+                          "y": 713,
+                          "w": 509,
+                          "h": 0
+                        },
+                        "stroke": {
+                          "hex": "#e9e9e9",
+                          "weight": 1
+                        }
+                      },
+                      {
                         "id": "321:1858",
                         "name": "lines",
                         "type": "FRAME",
@@ -3347,862 +3467,6 @@
                         ]
                       },
                       {
-                        "id": "321:1856",
-                        "name": "bottom-row",
-                        "type": "FRAME",
-                        "box": {
-                          "x": 262,
-                          "y": 713,
-                          "w": 511,
-                          "h": 91
-                        },
-                        "layout": {
-                          "mode": "HORIZONTAL",
-                          "padding": {
-                            "l": 0,
-                            "r": 0,
-                            "t": 0,
-                            "b": 0
-                          },
-                          "gap": 1,
-                          "counterAlign": "CENTER",
-                          "primaryAlign": null
-                        },
-                        "children": [
-                          {
-                            "id": "321:1841",
-                            "name": "Card/원자재/주요 가격",
-                            "type": "INSTANCE",
-                            "box": {
-                              "x": 262,
-                              "y": 713,
-                              "w": 127,
-                              "h": 91
-                            },
-                            "componentId": "321:1701",
-                            "componentName": "원자재=원유",
-                            "children": [
-                              {
-                                "id": "I321:1841;321:1700",
-                                "name": "Frame 51",
-                                "type": "FRAME",
-                                "box": {
-                                  "x": 282,
-                                  "y": 726,
-                                  "w": 96,
-                                  "h": 65
-                                },
-                                "layout": {
-                                  "mode": "VERTICAL",
-                                  "padding": {
-                                    "l": 0,
-                                    "r": 0,
-                                    "t": 0,
-                                    "b": 0
-                                  },
-                                  "gap": 14,
-                                  "counterAlign": null,
-                                  "primaryAlign": null
-                                },
-                                "children": [
-                                  {
-                                    "id": "I321:1841;321:1643",
-                                    "name": "title",
-                                    "type": "TEXT",
-                                    "box": {
-                                      "x": 282,
-                                      "y": 726,
-                                      "w": 96,
-                                      "h": 14
-                                    },
-                                    "text": "WTI 원유",
-                                    "font": {
-                                      "family": "Pretendard Variable",
-                                      "weight": 600,
-                                      "size": 13,
-                                      "lineHeight": 15.513671875,
-                                      "letterSpacing": 0,
-                                      "align": "LEFT",
-                                      "decoration": null
-                                    },
-                                    "fills": [
-                                      {
-                                        "type": "SOLID",
-                                        "hex": "#003049",
-                                        "opacity": 1
-                                      }
-                                    ]
-                                  },
-                                  {
-                                    "id": "I321:1841;321:1699",
-                                    "name": "text",
-                                    "type": "FRAME",
-                                    "box": {
-                                      "x": 282,
-                                      "y": 754,
-                                      "w": 96,
-                                      "h": 37
-                                    },
-                                    "layout": {
-                                      "mode": "VERTICAL",
-                                      "padding": {
-                                        "l": 0,
-                                        "r": 0,
-                                        "t": 0,
-                                        "b": 0
-                                      },
-                                      "gap": 9,
-                                      "counterAlign": null,
-                                      "primaryAlign": null
-                                    },
-                                    "children": [
-                                      {
-                                        "id": "I321:1841;321:1645",
-                                        "name": "$93.3/bbl",
-                                        "type": "TEXT",
-                                        "box": {
-                                          "x": 282,
-                                          "y": 754,
-                                          "w": 96,
-                                          "h": 14
-                                        },
-                                        "text": "$93.3/bbl",
-                                        "font": {
-                                          "family": "Pretendard Variable",
-                                          "weight": 600,
-                                          "size": 13,
-                                          "lineHeight": 15.513671875,
-                                          "letterSpacing": 0,
-                                          "align": "LEFT",
-                                          "decoration": null
-                                        },
-                                        "fills": [
-                                          {
-                                            "type": "SOLID",
-                                            "hex": "#003049",
-                                            "opacity": 1
-                                          }
-                                        ],
-                                        "characterStyleOverrides": [
-                                          1,
-                                          1,
-                                          1,
-                                          1,
-                                          1
-                                        ],
-                                        "styleOverrideTable": {
-                                          "1": {
-                                            "size": 18
-                                          }
-                                        }
-                                      },
-                                      {
-                                        "id": "I321:1841;321:1698",
-                                        "name": "bottom-row",
-                                        "type": "FRAME",
-                                        "box": {
-                                          "x": 282,
-                                          "y": 777,
-                                          "w": 96,
-                                          "h": 14
-                                        },
-                                        "layout": {
-                                          "mode": "HORIZONTAL",
-                                          "padding": {
-                                            "l": 0,
-                                            "r": 0,
-                                            "t": 0,
-                                            "b": 0
-                                          },
-                                          "gap": 2,
-                                          "counterAlign": "CENTER",
-                                          "primaryAlign": null
-                                        },
-                                        "children": [
-                                          {
-                                            "id": "I321:1841;321:1647",
-                                            "name": "Polygon 7",
-                                            "type": "REGULAR_POLYGON",
-                                            "box": {
-                                              "x": 282,
-                                              "y": 780,
-                                              "w": 8,
-                                              "h": 8
-                                            },
-                                            "fills": [
-                                              {
-                                                "type": "SOLID",
-                                                "hex": "#60c846",
-                                                "opacity": 1
-                                              }
-                                            ]
-                                          },
-                                          {
-                                            "id": "I321:1841;321:1646",
-                                            "name": "+48.9% (1년)",
-                                            "type": "TEXT",
-                                            "box": {
-                                              "x": 292,
-                                              "y": 777,
-                                              "w": 97,
-                                              "h": 14
-                                            },
-                                            "text": "+48.9% (1년)",
-                                            "font": {
-                                              "family": "Pretendard Variable",
-                                              "weight": 600,
-                                              "size": 10,
-                                              "lineHeight": 11.93359375,
-                                              "letterSpacing": 0,
-                                              "align": "LEFT",
-                                              "decoration": null
-                                            },
-                                            "fills": [
-                                              {
-                                                "type": "SOLID",
-                                                "hex": "#60c846",
-                                                "opacity": 1
-                                              }
-                                            ]
-                                          }
-                                        ]
-                                      }
-                                    ]
-                                  }
-                                ]
-                              }
-                            ]
-                          },
-                          {
-                            "id": "321:1832",
-                            "name": "Card/원자재/주요 가격",
-                            "type": "INSTANCE",
-                            "box": {
-                              "x": 390,
-                              "y": 713,
-                              "w": 127,
-                              "h": 91
-                            },
-                            "componentId": "321:1701",
-                            "componentName": "원자재=원유",
-                            "children": [
-                              {
-                                "id": "I321:1832;321:1700",
-                                "name": "Frame 51",
-                                "type": "FRAME",
-                                "box": {
-                                  "x": 410,
-                                  "y": 726,
-                                  "w": 96,
-                                  "h": 65
-                                },
-                                "layout": {
-                                  "mode": "VERTICAL",
-                                  "padding": {
-                                    "l": 0,
-                                    "r": 0,
-                                    "t": 0,
-                                    "b": 0
-                                  },
-                                  "gap": 14,
-                                  "counterAlign": null,
-                                  "primaryAlign": null
-                                },
-                                "children": [
-                                  {
-                                    "id": "I321:1832;321:1643",
-                                    "name": "title",
-                                    "type": "TEXT",
-                                    "box": {
-                                      "x": 410,
-                                      "y": 726,
-                                      "w": 96,
-                                      "h": 14
-                                    },
-                                    "text": "WTI 원유",
-                                    "font": {
-                                      "family": "Pretendard Variable",
-                                      "weight": 600,
-                                      "size": 13,
-                                      "lineHeight": 15.513671875,
-                                      "letterSpacing": 0,
-                                      "align": "LEFT",
-                                      "decoration": null
-                                    },
-                                    "fills": [
-                                      {
-                                        "type": "SOLID",
-                                        "hex": "#003049",
-                                        "opacity": 1
-                                      }
-                                    ]
-                                  },
-                                  {
-                                    "id": "I321:1832;321:1699",
-                                    "name": "text",
-                                    "type": "FRAME",
-                                    "box": {
-                                      "x": 410,
-                                      "y": 754,
-                                      "w": 96,
-                                      "h": 37
-                                    },
-                                    "layout": {
-                                      "mode": "VERTICAL",
-                                      "padding": {
-                                        "l": 0,
-                                        "r": 0,
-                                        "t": 0,
-                                        "b": 0
-                                      },
-                                      "gap": 9,
-                                      "counterAlign": null,
-                                      "primaryAlign": null
-                                    },
-                                    "children": [
-                                      {
-                                        "id": "I321:1832;321:1645",
-                                        "name": "$93.3/bbl",
-                                        "type": "TEXT",
-                                        "box": {
-                                          "x": 410,
-                                          "y": 754,
-                                          "w": 96,
-                                          "h": 14
-                                        },
-                                        "text": "$93.3/bbl",
-                                        "font": {
-                                          "family": "Pretendard Variable",
-                                          "weight": 600,
-                                          "size": 13,
-                                          "lineHeight": 15.513671875,
-                                          "letterSpacing": 0,
-                                          "align": "LEFT",
-                                          "decoration": null
-                                        },
-                                        "fills": [
-                                          {
-                                            "type": "SOLID",
-                                            "hex": "#003049",
-                                            "opacity": 1
-                                          }
-                                        ],
-                                        "characterStyleOverrides": [
-                                          1,
-                                          1,
-                                          1,
-                                          1,
-                                          1
-                                        ],
-                                        "styleOverrideTable": {
-                                          "1": {
-                                            "size": 18
-                                          }
-                                        }
-                                      },
-                                      {
-                                        "id": "I321:1832;321:1698",
-                                        "name": "bottom-row",
-                                        "type": "FRAME",
-                                        "box": {
-                                          "x": 410,
-                                          "y": 777,
-                                          "w": 96,
-                                          "h": 14
-                                        },
-                                        "layout": {
-                                          "mode": "HORIZONTAL",
-                                          "padding": {
-                                            "l": 0,
-                                            "r": 0,
-                                            "t": 0,
-                                            "b": 0
-                                          },
-                                          "gap": 2,
-                                          "counterAlign": "CENTER",
-                                          "primaryAlign": null
-                                        },
-                                        "children": [
-                                          {
-                                            "id": "I321:1832;321:1647",
-                                            "name": "Polygon 7",
-                                            "type": "REGULAR_POLYGON",
-                                            "box": {
-                                              "x": 410,
-                                              "y": 780,
-                                              "w": 8,
-                                              "h": 8
-                                            },
-                                            "fills": [
-                                              {
-                                                "type": "SOLID",
-                                                "hex": "#60c846",
-                                                "opacity": 1
-                                              }
-                                            ]
-                                          },
-                                          {
-                                            "id": "I321:1832;321:1646",
-                                            "name": "+48.9% (1년)",
-                                            "type": "TEXT",
-                                            "box": {
-                                              "x": 420,
-                                              "y": 777,
-                                              "w": 97,
-                                              "h": 14
-                                            },
-                                            "text": "+48.9% (1년)",
-                                            "font": {
-                                              "family": "Pretendard Variable",
-                                              "weight": 600,
-                                              "size": 10,
-                                              "lineHeight": 11.93359375,
-                                              "letterSpacing": 0,
-                                              "align": "LEFT",
-                                              "decoration": null
-                                            },
-                                            "fills": [
-                                              {
-                                                "type": "SOLID",
-                                                "hex": "#60c846",
-                                                "opacity": 1
-                                              }
-                                            ]
-                                          }
-                                        ]
-                                      }
-                                    ]
-                                  }
-                                ]
-                              }
-                            ]
-                          },
-                          {
-                            "id": "321:1823",
-                            "name": "Card/원자재/주요 가격",
-                            "type": "INSTANCE",
-                            "box": {
-                              "x": 518,
-                              "y": 713,
-                              "w": 127,
-                              "h": 91
-                            },
-                            "componentId": "321:1701",
-                            "componentName": "원자재=원유",
-                            "children": [
-                              {
-                                "id": "I321:1823;321:1700",
-                                "name": "Frame 51",
-                                "type": "FRAME",
-                                "box": {
-                                  "x": 538,
-                                  "y": 726,
-                                  "w": 96,
-                                  "h": 65
-                                },
-                                "layout": {
-                                  "mode": "VERTICAL",
-                                  "padding": {
-                                    "l": 0,
-                                    "r": 0,
-                                    "t": 0,
-                                    "b": 0
-                                  },
-                                  "gap": 14,
-                                  "counterAlign": null,
-                                  "primaryAlign": null
-                                },
-                                "children": [
-                                  {
-                                    "id": "I321:1823;321:1643",
-                                    "name": "title",
-                                    "type": "TEXT",
-                                    "box": {
-                                      "x": 538,
-                                      "y": 726,
-                                      "w": 96,
-                                      "h": 14
-                                    },
-                                    "text": "WTI 원유",
-                                    "font": {
-                                      "family": "Pretendard Variable",
-                                      "weight": 600,
-                                      "size": 13,
-                                      "lineHeight": 15.513671875,
-                                      "letterSpacing": 0,
-                                      "align": "LEFT",
-                                      "decoration": null
-                                    },
-                                    "fills": [
-                                      {
-                                        "type": "SOLID",
-                                        "hex": "#003049",
-                                        "opacity": 1
-                                      }
-                                    ]
-                                  },
-                                  {
-                                    "id": "I321:1823;321:1699",
-                                    "name": "text",
-                                    "type": "FRAME",
-                                    "box": {
-                                      "x": 538,
-                                      "y": 754,
-                                      "w": 96,
-                                      "h": 37
-                                    },
-                                    "layout": {
-                                      "mode": "VERTICAL",
-                                      "padding": {
-                                        "l": 0,
-                                        "r": 0,
-                                        "t": 0,
-                                        "b": 0
-                                      },
-                                      "gap": 9,
-                                      "counterAlign": null,
-                                      "primaryAlign": null
-                                    },
-                                    "children": [
-                                      {
-                                        "id": "I321:1823;321:1645",
-                                        "name": "$93.3/bbl",
-                                        "type": "TEXT",
-                                        "box": {
-                                          "x": 538,
-                                          "y": 754,
-                                          "w": 96,
-                                          "h": 14
-                                        },
-                                        "text": "$93.3/bbl",
-                                        "font": {
-                                          "family": "Pretendard Variable",
-                                          "weight": 600,
-                                          "size": 13,
-                                          "lineHeight": 15.513671875,
-                                          "letterSpacing": 0,
-                                          "align": "LEFT",
-                                          "decoration": null
-                                        },
-                                        "fills": [
-                                          {
-                                            "type": "SOLID",
-                                            "hex": "#003049",
-                                            "opacity": 1
-                                          }
-                                        ],
-                                        "characterStyleOverrides": [
-                                          1,
-                                          1,
-                                          1,
-                                          1,
-                                          1
-                                        ],
-                                        "styleOverrideTable": {
-                                          "1": {
-                                            "size": 18
-                                          }
-                                        }
-                                      },
-                                      {
-                                        "id": "I321:1823;321:1698",
-                                        "name": "bottom-row",
-                                        "type": "FRAME",
-                                        "box": {
-                                          "x": 538,
-                                          "y": 777,
-                                          "w": 96,
-                                          "h": 14
-                                        },
-                                        "layout": {
-                                          "mode": "HORIZONTAL",
-                                          "padding": {
-                                            "l": 0,
-                                            "r": 0,
-                                            "t": 0,
-                                            "b": 0
-                                          },
-                                          "gap": 2,
-                                          "counterAlign": "CENTER",
-                                          "primaryAlign": null
-                                        },
-                                        "children": [
-                                          {
-                                            "id": "I321:1823;321:1647",
-                                            "name": "Polygon 7",
-                                            "type": "REGULAR_POLYGON",
-                                            "box": {
-                                              "x": 538,
-                                              "y": 780,
-                                              "w": 8,
-                                              "h": 8
-                                            },
-                                            "fills": [
-                                              {
-                                                "type": "SOLID",
-                                                "hex": "#60c846",
-                                                "opacity": 1
-                                              }
-                                            ]
-                                          },
-                                          {
-                                            "id": "I321:1823;321:1646",
-                                            "name": "+48.9% (1년)",
-                                            "type": "TEXT",
-                                            "box": {
-                                              "x": 548,
-                                              "y": 777,
-                                              "w": 97,
-                                              "h": 14
-                                            },
-                                            "text": "+48.9% (1년)",
-                                            "font": {
-                                              "family": "Pretendard Variable",
-                                              "weight": 600,
-                                              "size": 10,
-                                              "lineHeight": 11.93359375,
-                                              "letterSpacing": 0,
-                                              "align": "LEFT",
-                                              "decoration": null
-                                            },
-                                            "fills": [
-                                              {
-                                                "type": "SOLID",
-                                                "hex": "#60c846",
-                                                "opacity": 1
-                                              }
-                                            ]
-                                          }
-                                        ]
-                                      }
-                                    ]
-                                  }
-                                ]
-                              }
-                            ]
-                          },
-                          {
-                            "id": "321:1814",
-                            "name": "Card/원자재/주요 가격",
-                            "type": "INSTANCE",
-                            "box": {
-                              "x": 646,
-                              "y": 713,
-                              "w": 127,
-                              "h": 91
-                            },
-                            "componentId": "321:1701",
-                            "componentName": "원자재=원유",
-                            "children": [
-                              {
-                                "id": "I321:1814;321:1700",
-                                "name": "Frame 51",
-                                "type": "FRAME",
-                                "box": {
-                                  "x": 666,
-                                  "y": 726,
-                                  "w": 96,
-                                  "h": 65
-                                },
-                                "layout": {
-                                  "mode": "VERTICAL",
-                                  "padding": {
-                                    "l": 0,
-                                    "r": 0,
-                                    "t": 0,
-                                    "b": 0
-                                  },
-                                  "gap": 14,
-                                  "counterAlign": null,
-                                  "primaryAlign": null
-                                },
-                                "children": [
-                                  {
-                                    "id": "I321:1814;321:1643",
-                                    "name": "title",
-                                    "type": "TEXT",
-                                    "box": {
-                                      "x": 666,
-                                      "y": 726,
-                                      "w": 96,
-                                      "h": 14
-                                    },
-                                    "text": "WTI 원유",
-                                    "font": {
-                                      "family": "Pretendard Variable",
-                                      "weight": 600,
-                                      "size": 13,
-                                      "lineHeight": 15.513671875,
-                                      "letterSpacing": 0,
-                                      "align": "LEFT",
-                                      "decoration": null
-                                    },
-                                    "fills": [
-                                      {
-                                        "type": "SOLID",
-                                        "hex": "#003049",
-                                        "opacity": 1
-                                      }
-                                    ]
-                                  },
-                                  {
-                                    "id": "I321:1814;321:1699",
-                                    "name": "text",
-                                    "type": "FRAME",
-                                    "box": {
-                                      "x": 666,
-                                      "y": 754,
-                                      "w": 96,
-                                      "h": 37
-                                    },
-                                    "layout": {
-                                      "mode": "VERTICAL",
-                                      "padding": {
-                                        "l": 0,
-                                        "r": 0,
-                                        "t": 0,
-                                        "b": 0
-                                      },
-                                      "gap": 9,
-                                      "counterAlign": null,
-                                      "primaryAlign": null
-                                    },
-                                    "children": [
-                                      {
-                                        "id": "I321:1814;321:1645",
-                                        "name": "$93.3/bbl",
-                                        "type": "TEXT",
-                                        "box": {
-                                          "x": 666,
-                                          "y": 754,
-                                          "w": 96,
-                                          "h": 14
-                                        },
-                                        "text": "$93.3/bbl",
-                                        "font": {
-                                          "family": "Pretendard Variable",
-                                          "weight": 600,
-                                          "size": 13,
-                                          "lineHeight": 15.513671875,
-                                          "letterSpacing": 0,
-                                          "align": "LEFT",
-                                          "decoration": null
-                                        },
-                                        "fills": [
-                                          {
-                                            "type": "SOLID",
-                                            "hex": "#003049",
-                                            "opacity": 1
-                                          }
-                                        ],
-                                        "characterStyleOverrides": [
-                                          1,
-                                          1,
-                                          1,
-                                          1,
-                                          1
-                                        ],
-                                        "styleOverrideTable": {
-                                          "1": {
-                                            "size": 18
-                                          }
-                                        }
-                                      },
-                                      {
-                                        "id": "I321:1814;321:1698",
-                                        "name": "bottom-row",
-                                        "type": "FRAME",
-                                        "box": {
-                                          "x": 666,
-                                          "y": 777,
-                                          "w": 96,
-                                          "h": 14
-                                        },
-                                        "layout": {
-                                          "mode": "HORIZONTAL",
-                                          "padding": {
-                                            "l": 0,
-                                            "r": 0,
-                                            "t": 0,
-                                            "b": 0
-                                          },
-                                          "gap": 2,
-                                          "counterAlign": "CENTER",
-                                          "primaryAlign": null
-                                        },
-                                        "children": [
-                                          {
-                                            "id": "I321:1814;321:1647",
-                                            "name": "Polygon 7",
-                                            "type": "REGULAR_POLYGON",
-                                            "box": {
-                                              "x": 666,
-                                              "y": 780,
-                                              "w": 8,
-                                              "h": 8
-                                            },
-                                            "fills": [
-                                              {
-                                                "type": "SOLID",
-                                                "hex": "#60c846",
-                                                "opacity": 1
-                                              }
-                                            ]
-                                          },
-                                          {
-                                            "id": "I321:1814;321:1646",
-                                            "name": "+48.9% (1년)",
-                                            "type": "TEXT",
-                                            "box": {
-                                              "x": 676,
-                                              "y": 777,
-                                              "w": 97,
-                                              "h": 14
-                                            },
-                                            "text": "+48.9% (1년)",
-                                            "font": {
-                                              "family": "Pretendard Variable",
-                                              "weight": 600,
-                                              "size": 10,
-                                              "lineHeight": 11.93359375,
-                                              "letterSpacing": 0,
-                                              "align": "LEFT",
-                                              "decoration": null
-                                            },
-                                            "fills": [
-                                              {
-                                                "type": "SOLID",
-                                                "hex": "#60c846",
-                                                "opacity": 1
-                                              }
-                                            ]
-                                          }
-                                        ]
-                                      }
-                                    ]
-                                  }
-                                ]
-                              }
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "id": "274:874",
-                        "name": "middle-line",
-                        "type": "LINE",
-                        "box": {
-                          "x": 268,
-                          "y": 713,
-                          "w": 509,
-                          "h": 0
-                        },
-                        "stroke": {
-                          "hex": "#e9e9e9",
-                          "weight": 1
-                        }
-                      },
-                      {
                         "id": "321:1859",
                         "name": "up-row",
                         "type": "FRAME",
@@ -4236,11 +3500,11 @@
                               "h": 91
                             },
                             "componentId": "321:1701",
-                            "componentName": "원자재=원유",
+                            "componentName": "원자재=원유, tooltip=off",
                             "children": [
                               {
-                                "id": "I321:1702;321:1700",
-                                "name": "Frame 51",
+                                "id": "I321:1702;412:1402",
+                                "name": "Frame 132",
                                 "type": "FRAME",
                                 "box": {
                                   "x": 282,
@@ -4256,36 +3520,124 @@
                                     "t": 0,
                                     "b": 0
                                   },
-                                  "gap": 14,
+                                  "gap": 12,
                                   "counterAlign": null,
                                   "primaryAlign": null
                                 },
                                 "children": [
                                   {
-                                    "id": "I321:1702;321:1643",
-                                    "name": "title",
-                                    "type": "TEXT",
+                                    "id": "I321:1702;412:1382",
+                                    "name": "Frame 131",
+                                    "type": "FRAME",
                                     "box": {
                                       "x": 282,
                                       "y": 635,
-                                      "w": 96,
-                                      "h": 14
+                                      "w": 52,
+                                      "h": 16
                                     },
-                                    "text": "WTI 원유",
-                                    "font": {
-                                      "family": "Pretendard Variable",
-                                      "weight": 600,
-                                      "size": 13,
-                                      "lineHeight": 15.513671875,
-                                      "letterSpacing": 0,
-                                      "align": "LEFT",
-                                      "decoration": null
+                                    "layout": {
+                                      "mode": "HORIZONTAL",
+                                      "padding": {
+                                        "l": 0,
+                                        "r": 0,
+                                        "t": 0,
+                                        "b": 0
+                                      },
+                                      "gap": 5,
+                                      "counterAlign": null,
+                                      "primaryAlign": null
                                     },
-                                    "fills": [
+                                    "children": [
                                       {
-                                        "type": "SOLID",
-                                        "hex": "#003049",
-                                        "opacity": 1
+                                        "id": "I321:1702;321:1643",
+                                        "name": "title",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 282,
+                                          "y": 635,
+                                          "w": 50,
+                                          "h": 16
+                                        },
+                                        "text": "WTI 원유",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 13,
+                                          "lineHeight": 15.513671875,
+                                          "letterSpacing": 0,
+                                          "align": "LEFT",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#003049",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "I321:1702;412:1365",
+                                        "name": "tooltip icon",
+                                        "type": "GROUP",
+                                        "box": {
+                                          "x": 337,
+                                          "y": 635,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "children": [
+                                          {
+                                            "id": "I321:1702;412:1366",
+                                            "name": "Ellipse 38",
+                                            "type": "ELLIPSE",
+                                            "box": {
+                                              "x": 337,
+                                              "y": 635,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#ffffff",
+                                                "opacity": 1
+                                              }
+                                            ],
+                                            "stroke": {
+                                              "hex": "#e9e9e9",
+                                              "weight": 1
+                                            }
+                                          },
+                                          {
+                                            "id": "I321:1702;412:1367",
+                                            "name": "i",
+                                            "type": "TEXT",
+                                            "box": {
+                                              "x": 337,
+                                              "y": 635,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "text": "i",
+                                            "font": {
+                                              "family": "Pretendard Variable",
+                                              "weight": 600,
+                                              "size": 10.5,
+                                              "lineHeight": 12.5302734375,
+                                              "letterSpacing": 0,
+                                              "align": "CENTER",
+                                              "decoration": null
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#737171",
+                                                "opacity": 1
+                                              }
+                                            ]
+                                          }
+                                        ]
                                       }
                                     ]
                                   },
@@ -4439,18 +3791,18 @@
                               "w": 127,
                               "h": 91
                             },
-                            "componentId": "321:1701",
-                            "componentName": "원자재=원유",
+                            "componentId": "412:1278",
+                            "componentName": "원자재=천연가스, tooltip=off",
                             "children": [
                               {
-                                "id": "I321:1787;321:1700",
+                                "id": "I321:1787;412:1279",
                                 "name": "Frame 51",
                                 "type": "FRAME",
                                 "box": {
                                   "x": 410,
-                                  "y": 635,
+                                  "y": 634,
                                   "w": 96,
-                                  "h": 65
+                                  "h": 67
                                 },
                                 "layout": {
                                   "mode": "VERTICAL",
@@ -4466,40 +3818,128 @@
                                 },
                                 "children": [
                                   {
-                                    "id": "I321:1787;321:1643",
-                                    "name": "title",
-                                    "type": "TEXT",
+                                    "id": "I321:1787;412:1526",
+                                    "name": "Frame 139",
+                                    "type": "FRAME",
                                     "box": {
                                       "x": 410,
-                                      "y": 635,
+                                      "y": 634,
                                       "w": 96,
-                                      "h": 14
+                                      "h": 16
                                     },
-                                    "text": "WTI 원유",
-                                    "font": {
-                                      "family": "Pretendard Variable",
-                                      "weight": 600,
-                                      "size": 13,
-                                      "lineHeight": 15.513671875,
-                                      "letterSpacing": 0,
-                                      "align": "LEFT",
-                                      "decoration": null
+                                    "layout": {
+                                      "mode": "HORIZONTAL",
+                                      "padding": {
+                                        "l": 0,
+                                        "r": 0,
+                                        "t": 0,
+                                        "b": 0
+                                      },
+                                      "gap": 5,
+                                      "counterAlign": null,
+                                      "primaryAlign": null
                                     },
-                                    "fills": [
+                                    "children": [
                                       {
-                                        "type": "SOLID",
-                                        "hex": "#003049",
-                                        "opacity": 1
+                                        "id": "I321:1787;412:1280",
+                                        "name": "title",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 410,
+                                          "y": 634,
+                                          "w": 45,
+                                          "h": 16
+                                        },
+                                        "text": "천연가스",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 13,
+                                          "lineHeight": 15.513671875,
+                                          "letterSpacing": 0,
+                                          "align": "LEFT",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#003049",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "I321:1787;412:1510",
+                                        "name": "tooltip icon",
+                                        "type": "GROUP",
+                                        "box": {
+                                          "x": 460,
+                                          "y": 634,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "children": [
+                                          {
+                                            "id": "I321:1787;412:1511",
+                                            "name": "Ellipse 38",
+                                            "type": "ELLIPSE",
+                                            "box": {
+                                              "x": 460,
+                                              "y": 634,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#ffffff",
+                                                "opacity": 1
+                                              }
+                                            ],
+                                            "stroke": {
+                                              "hex": "#e9e9e9",
+                                              "weight": 1
+                                            }
+                                          },
+                                          {
+                                            "id": "I321:1787;412:1512",
+                                            "name": "i",
+                                            "type": "TEXT",
+                                            "box": {
+                                              "x": 460,
+                                              "y": 634,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "text": "i",
+                                            "font": {
+                                              "family": "Pretendard Variable",
+                                              "weight": 600,
+                                              "size": 10.5,
+                                              "lineHeight": 12.5302734375,
+                                              "letterSpacing": 0,
+                                              "align": "CENTER",
+                                              "decoration": null
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#737171",
+                                                "opacity": 1
+                                              }
+                                            ]
+                                          }
+                                        ]
                                       }
                                     ]
                                   },
                                   {
-                                    "id": "I321:1787;321:1699",
+                                    "id": "I321:1787;412:1281",
                                     "name": "text",
                                     "type": "FRAME",
                                     "box": {
                                       "x": 410,
-                                      "y": 663,
+                                      "y": 664,
                                       "w": 96,
                                       "h": 37
                                     },
@@ -4517,21 +3957,21 @@
                                     },
                                     "children": [
                                       {
-                                        "id": "I321:1787;321:1645",
-                                        "name": "$93.3/bbl",
+                                        "id": "I321:1787;412:1282",
+                                        "name": "$2.88",
                                         "type": "TEXT",
                                         "box": {
                                           "x": 410,
-                                          "y": 663,
+                                          "y": 664,
                                           "w": 96,
                                           "h": 14
                                         },
-                                        "text": "$93.3/bbl",
+                                        "text": "$2.88",
                                         "font": {
                                           "family": "Pretendard Variable",
                                           "weight": 600,
-                                          "size": 13,
-                                          "lineHeight": 15.513671875,
+                                          "size": 18,
+                                          "lineHeight": 21.48046875,
                                           "letterSpacing": 0,
                                           "align": "LEFT",
                                           "decoration": null
@@ -4542,27 +3982,15 @@
                                             "hex": "#003049",
                                             "opacity": 1
                                           }
-                                        ],
-                                        "characterStyleOverrides": [
-                                          1,
-                                          1,
-                                          1,
-                                          1,
-                                          1
-                                        ],
-                                        "styleOverrideTable": {
-                                          "1": {
-                                            "size": 18
-                                          }
-                                        }
+                                        ]
                                       },
                                       {
-                                        "id": "I321:1787;321:1698",
+                                        "id": "I321:1787;412:1283",
                                         "name": "bottom-row",
                                         "type": "FRAME",
                                         "box": {
                                           "x": 410,
-                                          "y": 686,
+                                          "y": 687,
                                           "w": 96,
                                           "h": 14
                                         },
@@ -4580,12 +4008,12 @@
                                         },
                                         "children": [
                                           {
-                                            "id": "I321:1787;321:1647",
+                                            "id": "I321:1787;412:1284",
                                             "name": "Polygon 7",
                                             "type": "REGULAR_POLYGON",
                                             "box": {
                                               "x": 410,
-                                              "y": 689,
+                                              "y": 690,
                                               "w": 8,
                                               "h": 8
                                             },
@@ -4598,16 +4026,16 @@
                                             ]
                                           },
                                           {
-                                            "id": "I321:1787;321:1646",
-                                            "name": "+48.9% (1년)",
+                                            "id": "I321:1787;412:1285",
+                                            "name": "+59.4% (3월)",
                                             "type": "TEXT",
                                             "box": {
                                               "x": 420,
-                                              "y": 686,
+                                              "y": 687,
                                               "w": 97,
                                               "h": 14
                                             },
-                                            "text": "+48.9% (1년)",
+                                            "text": "+59.4% (3월)",
                                             "font": {
                                               "family": "Pretendard Variable",
                                               "weight": 600,
@@ -4643,18 +4071,18 @@
                               "w": 127,
                               "h": 91
                             },
-                            "componentId": "321:1701",
-                            "componentName": "원자재=원유",
+                            "componentId": "321:1737",
+                            "componentName": "원자재=구리, tooltip=off",
                             "children": [
                               {
-                                "id": "I321:1796;321:1700",
+                                "id": "I321:1796;321:1738",
                                 "name": "Frame 51",
                                 "type": "FRAME",
                                 "box": {
                                   "x": 538,
-                                  "y": 635,
+                                  "y": 634,
                                   "w": 96,
-                                  "h": 65
+                                  "h": 67
                                 },
                                 "layout": {
                                   "mode": "VERTICAL",
@@ -4670,40 +4098,128 @@
                                 },
                                 "children": [
                                   {
-                                    "id": "I321:1796;321:1643",
-                                    "name": "title",
-                                    "type": "TEXT",
+                                    "id": "I321:1796;412:1424",
+                                    "name": "Frame 133",
+                                    "type": "FRAME",
                                     "box": {
                                       "x": 538,
-                                      "y": 635,
+                                      "y": 634,
                                       "w": 96,
-                                      "h": 14
+                                      "h": 16
                                     },
-                                    "text": "WTI 원유",
-                                    "font": {
-                                      "family": "Pretendard Variable",
-                                      "weight": 600,
-                                      "size": 13,
-                                      "lineHeight": 15.513671875,
-                                      "letterSpacing": 0,
-                                      "align": "LEFT",
-                                      "decoration": null
+                                    "layout": {
+                                      "mode": "HORIZONTAL",
+                                      "padding": {
+                                        "l": 0,
+                                        "r": 0,
+                                        "t": 0,
+                                        "b": 0
+                                      },
+                                      "gap": 5,
+                                      "counterAlign": null,
+                                      "primaryAlign": null
                                     },
-                                    "fills": [
+                                    "children": [
                                       {
-                                        "type": "SOLID",
-                                        "hex": "#003049",
-                                        "opacity": 1
+                                        "id": "I321:1796;321:1739",
+                                        "name": "title",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 538,
+                                          "y": 634,
+                                          "w": 62,
+                                          "h": 16
+                                        },
+                                        "text": "구리 (LME)",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 13,
+                                          "lineHeight": 15.513671875,
+                                          "letterSpacing": 0,
+                                          "align": "LEFT",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#003049",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "I321:1796;412:1414",
+                                        "name": "tooltip icon",
+                                        "type": "GROUP",
+                                        "box": {
+                                          "x": 605,
+                                          "y": 634,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "children": [
+                                          {
+                                            "id": "I321:1796;412:1415",
+                                            "name": "Ellipse 38",
+                                            "type": "ELLIPSE",
+                                            "box": {
+                                              "x": 605,
+                                              "y": 634,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#ffffff",
+                                                "opacity": 1
+                                              }
+                                            ],
+                                            "stroke": {
+                                              "hex": "#e9e9e9",
+                                              "weight": 1
+                                            }
+                                          },
+                                          {
+                                            "id": "I321:1796;412:1416",
+                                            "name": "i",
+                                            "type": "TEXT",
+                                            "box": {
+                                              "x": 605,
+                                              "y": 634,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "text": "i",
+                                            "font": {
+                                              "family": "Pretendard Variable",
+                                              "weight": 600,
+                                              "size": 10.5,
+                                              "lineHeight": 12.5302734375,
+                                              "letterSpacing": 0,
+                                              "align": "CENTER",
+                                              "decoration": null
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#737171",
+                                                "opacity": 1
+                                              }
+                                            ]
+                                          }
+                                        ]
                                       }
                                     ]
                                   },
                                   {
-                                    "id": "I321:1796;321:1699",
+                                    "id": "I321:1796;321:1740",
                                     "name": "text",
                                     "type": "FRAME",
                                     "box": {
                                       "x": 538,
-                                      "y": 663,
+                                      "y": 664,
                                       "w": 96,
                                       "h": 37
                                     },
@@ -4721,16 +4237,16 @@
                                     },
                                     "children": [
                                       {
-                                        "id": "I321:1796;321:1645",
-                                        "name": "$93.3/bbl",
+                                        "id": "I321:1796;321:1741",
+                                        "name": "~$9,800/T",
                                         "type": "TEXT",
                                         "box": {
                                           "x": 538,
-                                          "y": 663,
+                                          "y": 664,
                                           "w": 96,
                                           "h": 14
                                         },
-                                        "text": "$93.3/bbl",
+                                        "text": "~$9,800/T",
                                         "font": {
                                           "family": "Pretendard Variable",
                                           "weight": 600,
@@ -4748,25 +4264,32 @@
                                           }
                                         ],
                                         "characterStyleOverrides": [
-                                          1,
-                                          1,
-                                          1,
-                                          1,
-                                          1
+                                          2,
+                                          2,
+                                          2,
+                                          2,
+                                          2,
+                                          2,
+                                          2,
+                                          3,
+                                          3
                                         ],
                                         "styleOverrideTable": {
-                                          "1": {
+                                          "2": {
                                             "size": 18
+                                          },
+                                          "3": {
+                                            "size": 13
                                           }
                                         }
                                       },
                                       {
-                                        "id": "I321:1796;321:1698",
+                                        "id": "I321:1796;321:1742",
                                         "name": "bottom-row",
                                         "type": "FRAME",
                                         "box": {
                                           "x": 538,
-                                          "y": 686,
+                                          "y": 687,
                                           "w": 96,
                                           "h": 14
                                         },
@@ -4784,12 +4307,12 @@
                                         },
                                         "children": [
                                           {
-                                            "id": "I321:1796;321:1647",
+                                            "id": "I321:1796;321:1743",
                                             "name": "Polygon 7",
                                             "type": "REGULAR_POLYGON",
                                             "box": {
                                               "x": 538,
-                                              "y": 689,
+                                              "y": 690,
                                               "w": 8,
                                               "h": 8
                                             },
@@ -4802,16 +4325,16 @@
                                             ]
                                           },
                                           {
-                                            "id": "I321:1796;321:1646",
-                                            "name": "+48.9% (1년)",
+                                            "id": "I321:1796;321:1744",
+                                            "name": "안정 상승세",
                                             "type": "TEXT",
                                             "box": {
                                               "x": 548,
-                                              "y": 686,
+                                              "y": 687,
                                               "w": 97,
                                               "h": 14
                                             },
-                                            "text": "+48.9% (1년)",
+                                            "text": "안정 상승세",
                                             "font": {
                                               "family": "Pretendard Variable",
                                               "weight": 600,
@@ -4847,18 +4370,18 @@
                               "w": 127,
                               "h": 91
                             },
-                            "componentId": "321:1701",
-                            "componentName": "원자재=원유",
+                            "componentId": "321:1769",
+                            "componentName": "원자재=리튬, tooltip=off",
                             "children": [
                               {
-                                "id": "I321:1805;321:1700",
+                                "id": "I321:1805;321:1770",
                                 "name": "Frame 51",
                                 "type": "FRAME",
                                 "box": {
                                   "x": 666,
-                                  "y": 635,
+                                  "y": 634,
                                   "w": 96,
-                                  "h": 65
+                                  "h": 67
                                 },
                                 "layout": {
                                   "mode": "VERTICAL",
@@ -4874,40 +4397,128 @@
                                 },
                                 "children": [
                                   {
-                                    "id": "I321:1805;321:1643",
-                                    "name": "title",
-                                    "type": "TEXT",
+                                    "id": "I321:1805;412:1488",
+                                    "name": "Frame 137",
+                                    "type": "FRAME",
                                     "box": {
                                       "x": 666,
-                                      "y": 635,
+                                      "y": 634,
                                       "w": 96,
-                                      "h": 14
+                                      "h": 16
                                     },
-                                    "text": "WTI 원유",
-                                    "font": {
-                                      "family": "Pretendard Variable",
-                                      "weight": 600,
-                                      "size": 13,
-                                      "lineHeight": 15.513671875,
-                                      "letterSpacing": 0,
-                                      "align": "LEFT",
-                                      "decoration": null
+                                    "layout": {
+                                      "mode": "HORIZONTAL",
+                                      "padding": {
+                                        "l": 0,
+                                        "r": 0,
+                                        "t": 0,
+                                        "b": 0
+                                      },
+                                      "gap": 5,
+                                      "counterAlign": null,
+                                      "primaryAlign": null
                                     },
-                                    "fills": [
+                                    "children": [
                                       {
-                                        "type": "SOLID",
-                                        "hex": "#003049",
-                                        "opacity": 1
+                                        "id": "I321:1805;321:1771",
+                                        "name": "title",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 666,
+                                          "y": 634,
+                                          "w": 58,
+                                          "h": 16
+                                        },
+                                        "text": "리튬 (탄산)",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 13,
+                                          "lineHeight": 15.513671875,
+                                          "letterSpacing": 0,
+                                          "align": "LEFT",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#003049",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "I321:1805;412:1478",
+                                        "name": "tooltip icon",
+                                        "type": "GROUP",
+                                        "box": {
+                                          "x": 729,
+                                          "y": 634,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "children": [
+                                          {
+                                            "id": "I321:1805;412:1479",
+                                            "name": "Ellipse 38",
+                                            "type": "ELLIPSE",
+                                            "box": {
+                                              "x": 729,
+                                              "y": 634,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#ffffff",
+                                                "opacity": 1
+                                              }
+                                            ],
+                                            "stroke": {
+                                              "hex": "#e9e9e9",
+                                              "weight": 1
+                                            }
+                                          },
+                                          {
+                                            "id": "I321:1805;412:1480",
+                                            "name": "i",
+                                            "type": "TEXT",
+                                            "box": {
+                                              "x": 729,
+                                              "y": 634,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "text": "i",
+                                            "font": {
+                                              "family": "Pretendard Variable",
+                                              "weight": 600,
+                                              "size": 10.5,
+                                              "lineHeight": 12.5302734375,
+                                              "letterSpacing": 0,
+                                              "align": "CENTER",
+                                              "decoration": null
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#737171",
+                                                "opacity": 1
+                                              }
+                                            ]
+                                          }
+                                        ]
                                       }
                                     ]
                                   },
                                   {
-                                    "id": "I321:1805;321:1699",
+                                    "id": "I321:1805;321:1772",
                                     "name": "text",
                                     "type": "FRAME",
                                     "box": {
                                       "x": 666,
-                                      "y": 663,
+                                      "y": 664,
                                       "w": 96,
                                       "h": 37
                                     },
@@ -4925,16 +4536,16 @@
                                     },
                                     "children": [
                                       {
-                                        "id": "I321:1805;321:1645",
-                                        "name": "$93.3/bbl",
+                                        "id": "I321:1805;321:1773",
+                                        "name": "¥167,500/T",
                                         "type": "TEXT",
                                         "box": {
                                           "x": 666,
-                                          "y": 663,
+                                          "y": 664,
                                           "w": 96,
                                           "h": 14
                                         },
-                                        "text": "$93.3/bbl",
+                                        "text": "¥167,500/T",
                                         "font": {
                                           "family": "Pretendard Variable",
                                           "weight": 600,
@@ -4952,25 +4563,33 @@
                                           }
                                         ],
                                         "characterStyleOverrides": [
-                                          1,
-                                          1,
-                                          1,
-                                          1,
-                                          1
+                                          2,
+                                          2,
+                                          2,
+                                          2,
+                                          2,
+                                          2,
+                                          2,
+                                          2,
+                                          3,
+                                          3
                                         ],
                                         "styleOverrideTable": {
-                                          "1": {
+                                          "2": {
                                             "size": 18
+                                          },
+                                          "3": {
+                                            "size": 13
                                           }
                                         }
                                       },
                                       {
-                                        "id": "I321:1805;321:1698",
+                                        "id": "I321:1805;321:1774",
                                         "name": "bottom-row",
                                         "type": "FRAME",
                                         "box": {
                                           "x": 666,
-                                          "y": 686,
+                                          "y": 687,
                                           "w": 96,
                                           "h": 14
                                         },
@@ -4988,12 +4607,12 @@
                                         },
                                         "children": [
                                           {
-                                            "id": "I321:1805;321:1647",
+                                            "id": "I321:1805;321:1775",
                                             "name": "Polygon 7",
                                             "type": "REGULAR_POLYGON",
                                             "box": {
                                               "x": 666,
-                                              "y": 689,
+                                              "y": 690,
                                               "w": 8,
                                               "h": 8
                                             },
@@ -5006,16 +4625,16 @@
                                             ]
                                           },
                                           {
-                                            "id": "I321:1805;321:1646",
-                                            "name": "+48.9% (1년)",
+                                            "id": "I321:1805;321:1776",
+                                            "name": "+134% (1년)",
                                             "type": "TEXT",
                                             "box": {
                                               "x": 676,
-                                              "y": 686,
+                                              "y": 687,
                                               "w": 97,
                                               "h": 14
                                             },
-                                            "text": "+48.9% (1년)",
+                                            "text": "+134% (1년)",
                                             "font": {
                                               "family": "Pretendard Variable",
                                               "weight": 600,
@@ -5044,30 +4663,1176 @@
                         ]
                       },
                       {
-                        "id": "274:794",
-                        "name": "title",
-                        "type": "TEXT",
+                        "id": "321:1856",
+                        "name": "bottom-row",
+                        "type": "FRAME",
                         "box": {
-                          "x": 257,
-                          "y": 586,
-                          "w": 379,
-                          "h": 14
+                          "x": 262,
+                          "y": 713,
+                          "w": 512,
+                          "h": 91
                         },
-                        "text": "주요 원자재 가격 현황 (2026년 4월 23일 기준)",
-                        "font": {
-                          "family": "Pretendard Variable",
-                          "weight": 600,
-                          "size": 15,
-                          "lineHeight": 17.900390625,
-                          "letterSpacing": 0,
-                          "align": "LEFT",
-                          "decoration": null
+                        "layout": {
+                          "mode": "HORIZONTAL",
+                          "padding": {
+                            "l": 0,
+                            "r": 0,
+                            "t": 0,
+                            "b": 0
+                          },
+                          "gap": 1,
+                          "counterAlign": "CENTER",
+                          "primaryAlign": null
                         },
-                        "fills": [
+                        "children": [
                           {
-                            "type": "SOLID",
-                            "hex": "#003049",
-                            "opacity": 1
+                            "id": "321:1841",
+                            "name": "Card/원자재/주요 가격",
+                            "type": "INSTANCE",
+                            "box": {
+                              "x": 262,
+                              "y": 713,
+                              "w": 127,
+                              "h": 91
+                            },
+                            "componentId": "321:1745",
+                            "componentName": "원자재=금, tooltip=off",
+                            "children": [
+                              {
+                                "id": "I321:1841;321:1746",
+                                "name": "Frame 51",
+                                "type": "FRAME",
+                                "box": {
+                                  "x": 282,
+                                  "y": 725,
+                                  "w": 96,
+                                  "h": 67
+                                },
+                                "layout": {
+                                  "mode": "VERTICAL",
+                                  "padding": {
+                                    "l": 0,
+                                    "r": 0,
+                                    "t": 0,
+                                    "b": 0
+                                  },
+                                  "gap": 14,
+                                  "counterAlign": null,
+                                  "primaryAlign": null
+                                },
+                                "children": [
+                                  {
+                                    "id": "I321:1841;412:1440",
+                                    "name": "Frame 134",
+                                    "type": "FRAME",
+                                    "box": {
+                                      "x": 282,
+                                      "y": 725,
+                                      "w": 96,
+                                      "h": 16
+                                    },
+                                    "layout": {
+                                      "mode": "HORIZONTAL",
+                                      "padding": {
+                                        "l": 0,
+                                        "r": 0,
+                                        "t": 0,
+                                        "b": 0
+                                      },
+                                      "gap": 6,
+                                      "counterAlign": "CENTER",
+                                      "primaryAlign": null
+                                    },
+                                    "children": [
+                                      {
+                                        "id": "I321:1841;321:1747",
+                                        "name": "title",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 282,
+                                          "y": 725,
+                                          "w": 53,
+                                          "h": 16
+                                        },
+                                        "text": "금 (Gold)",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 13,
+                                          "lineHeight": 15.513671875,
+                                          "letterSpacing": 0,
+                                          "align": "LEFT",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#003049",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "I321:1841;412:1430",
+                                        "name": "tooltip icon",
+                                        "type": "GROUP",
+                                        "box": {
+                                          "x": 341,
+                                          "y": 725,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "children": [
+                                          {
+                                            "id": "I321:1841;412:1431",
+                                            "name": "Ellipse 38",
+                                            "type": "ELLIPSE",
+                                            "box": {
+                                              "x": 341,
+                                              "y": 725,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#ffffff",
+                                                "opacity": 1
+                                              }
+                                            ],
+                                            "stroke": {
+                                              "hex": "#e9e9e9",
+                                              "weight": 1
+                                            }
+                                          },
+                                          {
+                                            "id": "I321:1841;412:1432",
+                                            "name": "i",
+                                            "type": "TEXT",
+                                            "box": {
+                                              "x": 341,
+                                              "y": 725,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "text": "i",
+                                            "font": {
+                                              "family": "Pretendard Variable",
+                                              "weight": 600,
+                                              "size": 10.5,
+                                              "lineHeight": 12.5302734375,
+                                              "letterSpacing": 0,
+                                              "align": "CENTER",
+                                              "decoration": null
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#737171",
+                                                "opacity": 1
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "I321:1841;321:1748",
+                                    "name": "text",
+                                    "type": "FRAME",
+                                    "box": {
+                                      "x": 282,
+                                      "y": 755,
+                                      "w": 96,
+                                      "h": 37
+                                    },
+                                    "layout": {
+                                      "mode": "VERTICAL",
+                                      "padding": {
+                                        "l": 0,
+                                        "r": 0,
+                                        "t": 0,
+                                        "b": 0
+                                      },
+                                      "gap": 9,
+                                      "counterAlign": null,
+                                      "primaryAlign": null
+                                    },
+                                    "children": [
+                                      {
+                                        "id": "I321:1841;321:1749",
+                                        "name": "$4,763/oz",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 282,
+                                          "y": 755,
+                                          "w": 96,
+                                          "h": 14
+                                        },
+                                        "text": "$4,763/oz",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 13,
+                                          "lineHeight": 15.513671875,
+                                          "letterSpacing": 0,
+                                          "align": "LEFT",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#003049",
+                                            "opacity": 1
+                                          }
+                                        ],
+                                        "characterStyleOverrides": [
+                                          2,
+                                          2,
+                                          2,
+                                          2,
+                                          2,
+                                          2,
+                                          3,
+                                          3,
+                                          3
+                                        ],
+                                        "styleOverrideTable": {
+                                          "2": {
+                                            "size": 18
+                                          },
+                                          "3": {
+                                            "size": 13
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "id": "I321:1841;321:1750",
+                                        "name": "bottom-row",
+                                        "type": "FRAME",
+                                        "box": {
+                                          "x": 282,
+                                          "y": 778,
+                                          "w": 96,
+                                          "h": 14
+                                        },
+                                        "layout": {
+                                          "mode": "HORIZONTAL",
+                                          "padding": {
+                                            "l": 0,
+                                            "r": 0,
+                                            "t": 0,
+                                            "b": 0
+                                          },
+                                          "gap": 2,
+                                          "counterAlign": "CENTER",
+                                          "primaryAlign": null
+                                        },
+                                        "children": [
+                                          {
+                                            "id": "I321:1841;321:1751",
+                                            "name": "Polygon 7",
+                                            "type": "REGULAR_POLYGON",
+                                            "box": {
+                                              "x": 282,
+                                              "y": 781,
+                                              "w": 8,
+                                              "h": 8
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#60c846",
+                                                "opacity": 1
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "id": "I321:1841;321:1752",
+                                            "name": "+40% (1년)",
+                                            "type": "TEXT",
+                                            "box": {
+                                              "x": 292,
+                                              "y": 778,
+                                              "w": 97,
+                                              "h": 14
+                                            },
+                                            "text": "+40% (1년)",
+                                            "font": {
+                                              "family": "Pretendard Variable",
+                                              "weight": 600,
+                                              "size": 10,
+                                              "lineHeight": 11.93359375,
+                                              "letterSpacing": 0,
+                                              "align": "LEFT",
+                                              "decoration": null
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#60c846",
+                                                "opacity": 1
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "321:1832",
+                            "name": "Card/원자재/주요 가격",
+                            "type": "INSTANCE",
+                            "box": {
+                              "x": 390,
+                              "y": 713,
+                              "w": 127,
+                              "h": 91
+                            },
+                            "componentId": "321:1753",
+                            "componentName": "원자재=은, tooltip=off",
+                            "children": [
+                              {
+                                "id": "I321:1832;321:1754",
+                                "name": "Frame 51",
+                                "type": "FRAME",
+                                "box": {
+                                  "x": 410,
+                                  "y": 725,
+                                  "w": 96,
+                                  "h": 67
+                                },
+                                "layout": {
+                                  "mode": "VERTICAL",
+                                  "padding": {
+                                    "l": 0,
+                                    "r": 0,
+                                    "t": 0,
+                                    "b": 0
+                                  },
+                                  "gap": 14,
+                                  "counterAlign": null,
+                                  "primaryAlign": null
+                                },
+                                "children": [
+                                  {
+                                    "id": "I321:1832;412:1456",
+                                    "name": "Frame 135",
+                                    "type": "FRAME",
+                                    "box": {
+                                      "x": 410,
+                                      "y": 725,
+                                      "w": 96,
+                                      "h": 16
+                                    },
+                                    "layout": {
+                                      "mode": "HORIZONTAL",
+                                      "padding": {
+                                        "l": 0,
+                                        "r": 0,
+                                        "t": 0,
+                                        "b": 0
+                                      },
+                                      "gap": 5,
+                                      "counterAlign": "CENTER",
+                                      "primaryAlign": null
+                                    },
+                                    "children": [
+                                      {
+                                        "id": "I321:1832;321:1755",
+                                        "name": "title",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 410,
+                                          "y": 725,
+                                          "w": 59,
+                                          "h": 16
+                                        },
+                                        "text": "은 (Silber)",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 13,
+                                          "lineHeight": 15.513671875,
+                                          "letterSpacing": 0,
+                                          "align": "LEFT",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#003049",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "I321:1832;412:1446",
+                                        "name": "tooltip icon",
+                                        "type": "GROUP",
+                                        "box": {
+                                          "x": 474,
+                                          "y": 725,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "children": [
+                                          {
+                                            "id": "I321:1832;412:1447",
+                                            "name": "Ellipse 38",
+                                            "type": "ELLIPSE",
+                                            "box": {
+                                              "x": 474,
+                                              "y": 725,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#ffffff",
+                                                "opacity": 1
+                                              }
+                                            ],
+                                            "stroke": {
+                                              "hex": "#e9e9e9",
+                                              "weight": 1
+                                            }
+                                          },
+                                          {
+                                            "id": "I321:1832;412:1448",
+                                            "name": "i",
+                                            "type": "TEXT",
+                                            "box": {
+                                              "x": 474,
+                                              "y": 725,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "text": "i",
+                                            "font": {
+                                              "family": "Pretendard Variable",
+                                              "weight": 600,
+                                              "size": 10.5,
+                                              "lineHeight": 12.5302734375,
+                                              "letterSpacing": 0,
+                                              "align": "CENTER",
+                                              "decoration": null
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#737171",
+                                                "opacity": 1
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "I321:1832;321:1756",
+                                    "name": "text",
+                                    "type": "FRAME",
+                                    "box": {
+                                      "x": 410,
+                                      "y": 755,
+                                      "w": 96,
+                                      "h": 37
+                                    },
+                                    "layout": {
+                                      "mode": "VERTICAL",
+                                      "padding": {
+                                        "l": 0,
+                                        "r": 0,
+                                        "t": 0,
+                                        "b": 0
+                                      },
+                                      "gap": 9,
+                                      "counterAlign": null,
+                                      "primaryAlign": null
+                                    },
+                                    "children": [
+                                      {
+                                        "id": "I321:1832;321:1757",
+                                        "name": "$91.65/oz",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 410,
+                                          "y": 755,
+                                          "w": 96,
+                                          "h": 14
+                                        },
+                                        "text": "$91.65/oz",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 13,
+                                          "lineHeight": 15.513671875,
+                                          "letterSpacing": 0,
+                                          "align": "LEFT",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#003049",
+                                            "opacity": 1
+                                          }
+                                        ],
+                                        "characterStyleOverrides": [
+                                          2,
+                                          2,
+                                          2,
+                                          2,
+                                          2,
+                                          2
+                                        ],
+                                        "styleOverrideTable": {
+                                          "2": {
+                                            "size": 18
+                                          }
+                                        }
+                                      },
+                                      {
+                                        "id": "I321:1832;321:1758",
+                                        "name": "bottom-row",
+                                        "type": "FRAME",
+                                        "box": {
+                                          "x": 410,
+                                          "y": 778,
+                                          "w": 96,
+                                          "h": 14
+                                        },
+                                        "layout": {
+                                          "mode": "HORIZONTAL",
+                                          "padding": {
+                                            "l": 0,
+                                            "r": 0,
+                                            "t": 0,
+                                            "b": 0
+                                          },
+                                          "gap": 2,
+                                          "counterAlign": "CENTER",
+                                          "primaryAlign": null
+                                        },
+                                        "children": [
+                                          {
+                                            "id": "I321:1832;321:1759",
+                                            "name": "Polygon 7",
+                                            "type": "REGULAR_POLYGON",
+                                            "box": {
+                                              "x": 410,
+                                              "y": 781,
+                                              "w": 8,
+                                              "h": 8
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#60c846",
+                                                "opacity": 1
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "id": "I321:1832;321:1760",
+                                            "name": "+5.15%",
+                                            "type": "TEXT",
+                                            "box": {
+                                              "x": 420,
+                                              "y": 778,
+                                              "w": 97,
+                                              "h": 14
+                                            },
+                                            "text": "+5.15%",
+                                            "font": {
+                                              "family": "Pretendard Variable",
+                                              "weight": 600,
+                                              "size": 10,
+                                              "lineHeight": 11.93359375,
+                                              "letterSpacing": 0,
+                                              "align": "LEFT",
+                                              "decoration": null
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#60c846",
+                                                "opacity": 1
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "321:1823",
+                            "name": "Card/원자재/주요 가격",
+                            "type": "INSTANCE",
+                            "box": {
+                              "x": 518,
+                              "y": 713,
+                              "w": 127,
+                              "h": 91
+                            },
+                            "componentId": "321:1761",
+                            "componentName": "원자재=소맥, tooltip=off",
+                            "children": [
+                              {
+                                "id": "I321:1823;321:1762",
+                                "name": "Frame 51",
+                                "type": "FRAME",
+                                "box": {
+                                  "x": 538,
+                                  "y": 725,
+                                  "w": 96,
+                                  "h": 67
+                                },
+                                "layout": {
+                                  "mode": "VERTICAL",
+                                  "padding": {
+                                    "l": 0,
+                                    "r": 0,
+                                    "t": 0,
+                                    "b": 0
+                                  },
+                                  "gap": 14,
+                                  "counterAlign": null,
+                                  "primaryAlign": null
+                                },
+                                "children": [
+                                  {
+                                    "id": "I321:1823;412:1472",
+                                    "name": "Frame 136",
+                                    "type": "FRAME",
+                                    "box": {
+                                      "x": 538,
+                                      "y": 725,
+                                      "w": 96,
+                                      "h": 16
+                                    },
+                                    "layout": {
+                                      "mode": "HORIZONTAL",
+                                      "padding": {
+                                        "l": 0,
+                                        "r": 0,
+                                        "t": 0,
+                                        "b": 0
+                                      },
+                                      "gap": 5,
+                                      "counterAlign": "CENTER",
+                                      "primaryAlign": null
+                                    },
+                                    "children": [
+                                      {
+                                        "id": "I321:1823;321:1763",
+                                        "name": "title",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 538,
+                                          "y": 725,
+                                          "w": 75,
+                                          "h": 16
+                                        },
+                                        "text": "소맥 (Wheat)",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 13,
+                                          "lineHeight": 15.513671875,
+                                          "letterSpacing": 0,
+                                          "align": "LEFT",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#003049",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "I321:1823;412:1462",
+                                        "name": "tooltip icon",
+                                        "type": "GROUP",
+                                        "box": {
+                                          "x": 618,
+                                          "y": 725,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "children": [
+                                          {
+                                            "id": "I321:1823;412:1463",
+                                            "name": "Ellipse 38",
+                                            "type": "ELLIPSE",
+                                            "box": {
+                                              "x": 618,
+                                              "y": 725,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#ffffff",
+                                                "opacity": 1
+                                              }
+                                            ],
+                                            "stroke": {
+                                              "hex": "#e9e9e9",
+                                              "weight": 1
+                                            }
+                                          },
+                                          {
+                                            "id": "I321:1823;412:1464",
+                                            "name": "i",
+                                            "type": "TEXT",
+                                            "box": {
+                                              "x": 618,
+                                              "y": 725,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "text": "i",
+                                            "font": {
+                                              "family": "Pretendard Variable",
+                                              "weight": 600,
+                                              "size": 10.5,
+                                              "lineHeight": 12.5302734375,
+                                              "letterSpacing": 0,
+                                              "align": "CENTER",
+                                              "decoration": null
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#737171",
+                                                "opacity": 1
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "I321:1823;321:1764",
+                                    "name": "text",
+                                    "type": "FRAME",
+                                    "box": {
+                                      "x": 538,
+                                      "y": 755,
+                                      "w": 96,
+                                      "h": 37
+                                    },
+                                    "layout": {
+                                      "mode": "VERTICAL",
+                                      "padding": {
+                                        "l": 0,
+                                        "r": 0,
+                                        "t": 0,
+                                        "b": 0
+                                      },
+                                      "gap": 9,
+                                      "counterAlign": null,
+                                      "primaryAlign": null
+                                    },
+                                    "children": [
+                                      {
+                                        "id": "I321:1823;321:1765",
+                                        "name": "안정세",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 538,
+                                          "y": 755,
+                                          "w": 96,
+                                          "h": 14
+                                        },
+                                        "text": "안정세",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 18,
+                                          "lineHeight": 21.48046875,
+                                          "letterSpacing": 0,
+                                          "align": "LEFT",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#003049",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "I321:1823;321:1766",
+                                        "name": "bottom-row",
+                                        "type": "FRAME",
+                                        "box": {
+                                          "x": 538,
+                                          "y": 778,
+                                          "w": 96,
+                                          "h": 14
+                                        },
+                                        "layout": {
+                                          "mode": "HORIZONTAL",
+                                          "padding": {
+                                            "l": 0,
+                                            "r": 0,
+                                            "t": 0,
+                                            "b": 0
+                                          },
+                                          "gap": 2,
+                                          "counterAlign": "CENTER",
+                                          "primaryAlign": null
+                                        },
+                                        "children": [
+                                          {
+                                            "id": "I321:1823;321:1689",
+                                            "name": "Line 36",
+                                            "type": "LINE",
+                                            "box": {
+                                              "x": 538,
+                                              "y": 785,
+                                              "w": 8,
+                                              "h": 0
+                                            },
+                                            "stroke": {
+                                              "hex": "#767676",
+                                              "weight": 1
+                                            }
+                                          },
+                                          {
+                                            "id": "I321:1823;321:1768",
+                                            "name": "공급 충분",
+                                            "type": "TEXT",
+                                            "box": {
+                                              "x": 548,
+                                              "y": 778,
+                                              "w": 97,
+                                              "h": 14
+                                            },
+                                            "text": "공급 충분",
+                                            "font": {
+                                              "family": "Pretendard Variable",
+                                              "weight": 600,
+                                              "size": 10,
+                                              "lineHeight": 11.93359375,
+                                              "letterSpacing": 0,
+                                              "align": "LEFT",
+                                              "decoration": null
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#767676",
+                                                "opacity": 1
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "321:1814",
+                            "name": "Card/원자재/주요 가격",
+                            "type": "INSTANCE",
+                            "box": {
+                              "x": 646,
+                              "y": 725,
+                              "w": 128,
+                              "h": 67
+                            },
+                            "componentId": "321:1777",
+                            "componentName": "원자재=대두, tooltip=off",
+                            "children": [
+                              {
+                                "id": "I321:1814;321:1778",
+                                "name": "Frame 51",
+                                "type": "FRAME",
+                                "box": {
+                                  "x": 663,
+                                  "y": 725,
+                                  "w": 96,
+                                  "h": 67
+                                },
+                                "layout": {
+                                  "mode": "VERTICAL",
+                                  "padding": {
+                                    "l": 0,
+                                    "r": 0,
+                                    "t": 0,
+                                    "b": 0
+                                  },
+                                  "gap": 14,
+                                  "counterAlign": null,
+                                  "primaryAlign": null
+                                },
+                                "children": [
+                                  {
+                                    "id": "I321:1814;412:1504",
+                                    "name": "Frame 138",
+                                    "type": "FRAME",
+                                    "box": {
+                                      "x": 663,
+                                      "y": 725,
+                                      "w": 96,
+                                      "h": 16
+                                    },
+                                    "layout": {
+                                      "mode": "HORIZONTAL",
+                                      "padding": {
+                                        "l": 0,
+                                        "r": 0,
+                                        "t": 0,
+                                        "b": 0
+                                      },
+                                      "gap": 5,
+                                      "counterAlign": null,
+                                      "primaryAlign": null
+                                    },
+                                    "children": [
+                                      {
+                                        "id": "I321:1814;321:1779",
+                                        "name": "title",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 663,
+                                          "y": 725,
+                                          "w": 88,
+                                          "h": 16
+                                        },
+                                        "text": "대두 (Soybean)",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 13,
+                                          "lineHeight": 15.513671875,
+                                          "letterSpacing": 0,
+                                          "align": "LEFT",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#003049",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "I321:1814;412:1494",
+                                        "name": "tooltip icon",
+                                        "type": "GROUP",
+                                        "box": {
+                                          "x": 756,
+                                          "y": 725,
+                                          "w": 16,
+                                          "h": 16
+                                        },
+                                        "children": [
+                                          {
+                                            "id": "I321:1814;412:1495",
+                                            "name": "Ellipse 38",
+                                            "type": "ELLIPSE",
+                                            "box": {
+                                              "x": 756,
+                                              "y": 725,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#ffffff",
+                                                "opacity": 1
+                                              }
+                                            ],
+                                            "stroke": {
+                                              "hex": "#e9e9e9",
+                                              "weight": 1
+                                            }
+                                          },
+                                          {
+                                            "id": "I321:1814;412:1496",
+                                            "name": "i",
+                                            "type": "TEXT",
+                                            "box": {
+                                              "x": 756,
+                                              "y": 725,
+                                              "w": 16,
+                                              "h": 16
+                                            },
+                                            "text": "i",
+                                            "font": {
+                                              "family": "Pretendard Variable",
+                                              "weight": 600,
+                                              "size": 10.5,
+                                              "lineHeight": 12.5302734375,
+                                              "letterSpacing": 0,
+                                              "align": "CENTER",
+                                              "decoration": null
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#737171",
+                                                "opacity": 1
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "I321:1814;321:1780",
+                                    "name": "text",
+                                    "type": "FRAME",
+                                    "box": {
+                                      "x": 663,
+                                      "y": 755,
+                                      "w": 96,
+                                      "h": 37
+                                    },
+                                    "layout": {
+                                      "mode": "VERTICAL",
+                                      "padding": {
+                                        "l": 0,
+                                        "r": 0,
+                                        "t": 0,
+                                        "b": 0
+                                      },
+                                      "gap": 9,
+                                      "counterAlign": null,
+                                      "primaryAlign": null
+                                    },
+                                    "children": [
+                                      {
+                                        "id": "I321:1814;321:1781",
+                                        "name": "상승 중",
+                                        "type": "TEXT",
+                                        "box": {
+                                          "x": 663,
+                                          "y": 755,
+                                          "w": 96,
+                                          "h": 14
+                                        },
+                                        "text": "상승 중",
+                                        "font": {
+                                          "family": "Pretendard Variable",
+                                          "weight": 600,
+                                          "size": 18,
+                                          "lineHeight": 21.48046875,
+                                          "letterSpacing": 0,
+                                          "align": "LEFT",
+                                          "decoration": null
+                                        },
+                                        "fills": [
+                                          {
+                                            "type": "SOLID",
+                                            "hex": "#003049",
+                                            "opacity": 1
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "I321:1814;321:1782",
+                                        "name": "bottom-row",
+                                        "type": "FRAME",
+                                        "box": {
+                                          "x": 663,
+                                          "y": 778,
+                                          "w": 96,
+                                          "h": 14
+                                        },
+                                        "layout": {
+                                          "mode": "HORIZONTAL",
+                                          "padding": {
+                                            "l": 0,
+                                            "r": 0,
+                                            "t": 0,
+                                            "b": 0
+                                          },
+                                          "gap": 2,
+                                          "counterAlign": "CENTER",
+                                          "primaryAlign": null
+                                        },
+                                        "children": [
+                                          {
+                                            "id": "I321:1814;321:1783",
+                                            "name": "Polygon 7",
+                                            "type": "REGULAR_POLYGON",
+                                            "box": {
+                                              "x": 663,
+                                              "y": 781,
+                                              "w": 8,
+                                              "h": 8
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#60c846",
+                                                "opacity": 1
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "id": "I321:1814;321:1784",
+                                            "name": "유가 연동",
+                                            "type": "TEXT",
+                                            "box": {
+                                              "x": 673,
+                                              "y": 778,
+                                              "w": 97,
+                                              "h": 14
+                                            },
+                                            "text": "유가 연동",
+                                            "font": {
+                                              "family": "Pretendard Variable",
+                                              "weight": 600,
+                                              "size": 10,
+                                              "lineHeight": 11.93359375,
+                                              "letterSpacing": 0,
+                                              "align": "LEFT",
+                                              "decoration": null
+                                            },
+                                            "fills": [
+                                              {
+                                                "type": "SOLID",
+                                                "hex": "#60c846",
+                                                "opacity": 1
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
                           }
                         ]
                       }
@@ -6033,7 +6798,7 @@
                         },
                         "cornerRadius": 10,
                         "componentId": "322:2034",
-                        "componentName": "카테고리=금",
+                        "componentName": "카테고리=금, tooltip=Default",
                         "children": [
                           {
                             "id": "I323:607;322:2035",
@@ -6147,13 +6912,13 @@
                                 },
                                 "children": [
                                   {
-                                    "id": "I323:607;322:2040",
-                                    "name": "Frame 58",
+                                    "id": "I323:607;412:1118",
+                                    "name": "Frame 124",
                                     "type": "FRAME",
                                     "box": {
                                       "x": 329,
                                       "y": 1619,
-                                      "w": 260,
+                                      "w": 262,
                                       "h": 18
                                     },
                                     "layout": {
@@ -6164,7 +6929,7 @@
                                         "t": 0,
                                         "b": 0
                                       },
-                                      "gap": 51,
+                                      "gap": 97,
                                       "counterAlign": "CENTER",
                                       "primaryAlign": null
                                     },
@@ -6176,7 +6941,7 @@
                                         "box": {
                                           "x": 329,
                                           "y": 1621,
-                                          "w": 127,
+                                          "w": 83,
                                           "h": 14
                                         },
                                         "text": "귀금속 (금·은)",
@@ -6200,49 +6965,44 @@
                                       {
                                         "id": "I323:607;322:2042",
                                         "name": "status",
-                                        "type": "GROUP",
+                                        "type": "FRAME",
                                         "box": {
-                                          "x": 507,
+                                          "x": 509,
                                           "y": 1619,
                                           "w": 82,
                                           "h": 18
                                         },
-                                        "cornerRadii": [
-                                          0,
-                                          0,
-                                          0,
-                                          0
-                                        ],
-                                        "children": [
+                                        "fills": [
                                           {
-                                            "id": "I323:607;322:2043",
-                                            "name": "Rectangle 124",
-                                            "type": "RECTANGLE",
-                                            "box": {
-                                              "x": 507,
-                                              "y": 1619,
-                                              "w": 82,
-                                              "h": 18
-                                            },
-                                            "fills": [
-                                              {
-                                                "type": "SOLID",
-                                                "hex": "#f0f6f2",
-                                                "opacity": 1
-                                              }
-                                            ],
-                                            "stroke": {
-                                              "hex": "#dcede2",
-                                              "weight": 1
-                                            },
-                                            "cornerRadius": 15
+                                            "type": "SOLID",
+                                            "hex": "#f0f6f2",
+                                            "opacity": 1
+                                          }
+                                        ],
+                                        "stroke": {
+                                          "hex": "#dcede2",
+                                          "weight": 1
+                                        },
+                                        "cornerRadius": 15,
+                                        "layout": {
+                                          "mode": "HORIZONTAL",
+                                          "padding": {
+                                            "l": 4,
+                                            "r": 8,
+                                            "t": 5,
+                                            "b": 5
                                           },
+                                          "gap": null,
+                                          "counterAlign": null,
+                                          "primaryAlign": "CENTER"
+                                        },
+                                        "children": [
                                           {
                                             "id": "I323:607;322:2044",
                                             "name": "Overweight",
                                             "type": "TEXT",
                                             "box": {
-                                              "x": 511,
+                                              "x": 513,
                                               "y": 1624,
                                               "w": 62,
                                               "h": 7
@@ -6270,7 +7030,7 @@
                                             "name": "Polygon 9",
                                             "type": "REGULAR_POLYGON",
                                             "box": {
-                                              "x": 573,
+                                              "x": 575,
                                               "y": 1624,
                                               "w": 8,
                                               "h": 8
@@ -6344,7 +7104,7 @@
                         },
                         "cornerRadius": 10,
                         "componentId": "323:364",
-                        "componentName": "카테고리=구리",
+                        "componentName": "카테고리=구리, tooltip=Default",
                         "children": [
                           {
                             "id": "I360:736;323:365",
@@ -6453,8 +7213,8 @@
                                 },
                                 "children": [
                                   {
-                                    "id": "I360:736;323:370",
-                                    "name": "Frame 58",
+                                    "id": "I360:736;412:1150",
+                                    "name": "Frame 126",
                                     "type": "FRAME",
                                     "box": {
                                       "x": 686,
@@ -6470,7 +7230,7 @@
                                         "t": 0,
                                         "b": 0
                                       },
-                                      "gap": 76,
+                                      "gap": 86,
                                       "counterAlign": "CENTER",
                                       "primaryAlign": null
                                     },
@@ -6482,7 +7242,7 @@
                                         "box": {
                                           "x": 686,
                                           "y": 1621,
-                                          "w": 127,
+                                          "w": 117,
                                           "h": 14
                                         },
                                         "text": "산업금속 & 에너지",
@@ -6642,7 +7402,7 @@
                         },
                         "cornerRadius": 10,
                         "componentId": "323:509",
-                        "componentName": "카테고리=농산물",
+                        "componentName": "카테고리=농산물, tooltip=Default",
                         "children": [
                           {
                             "id": "I323:608;323:510",
@@ -6754,8 +7514,8 @@
                                 },
                                 "children": [
                                   {
-                                    "id": "I323:608;323:515",
-                                    "name": "Frame 58",
+                                    "id": "I323:608;412:1184",
+                                    "name": "Frame 128",
                                     "type": "FRAME",
                                     "box": {
                                       "x": 1043,
@@ -6771,9 +7531,9 @@
                                         "t": 0,
                                         "b": 0
                                       },
-                                      "gap": 43,
+                                      "gap": 95,
                                       "counterAlign": "CENTER",
-                                      "primaryAlign": null
+                                      "primaryAlign": "CENTER"
                                     },
                                     "children": [
                                       {
@@ -6783,7 +7543,7 @@
                                         "box": {
                                           "x": 1043,
                                           "y": 1621,
-                                          "w": 127,
+                                          "w": 75,
                                           "h": 14
                                         },
                                         "text": "농산물 (곡물)",
@@ -7167,9 +7927,9 @@
                         "type": "FRAME",
                         "box": {
                           "x": 1190,
-                          "y": 1817,
+                          "y": 1848,
                           "w": 121,
-                          "h": 209
+                          "h": 148
                         },
                         "layout": {
                           "mode": "VERTICAL",
@@ -7190,9 +7950,9 @@
                             "type": "FRAME",
                             "box": {
                               "x": 1190,
-                              "y": 1817,
+                              "y": 1848,
                               "w": 106,
-                              "h": 81
+                              "h": 51
                             },
                             "layout": {
                               "mode": "VERTICAL",
@@ -7213,7 +7973,7 @@
                                 "type": "TEXT",
                                 "box": {
                                   "x": 1190,
-                                  "y": 1817,
+                                  "y": 1848,
                                   "w": 106,
                                   "h": 13
                                 },
@@ -7236,120 +7996,30 @@
                                 ]
                               },
                               {
-                                "id": "360:797",
-                                "name": "Frame 94",
-                                "type": "FRAME",
+                                "id": "360:778",
+                                "name": "$93.3/bbl ",
+                                "type": "TEXT",
                                 "box": {
                                   "x": 1190,
-                                  "y": 1855,
-                                  "w": 83,
-                                  "h": 43
+                                  "y": 1886,
+                                  "w": 106,
+                                  "h": 13
                                 },
-                                "layout": {
-                                  "mode": "VERTICAL",
-                                  "padding": {
-                                    "l": 0,
-                                    "r": 0,
-                                    "t": 0,
-                                    "b": 0
-                                  },
-                                  "gap": 10,
-                                  "counterAlign": null,
-                                  "primaryAlign": null
+                                "text": "$93.3/bbl ",
+                                "font": {
+                                  "family": "Pretendard Variable",
+                                  "weight": 600,
+                                  "size": 13,
+                                  "lineHeight": 15.513671875,
+                                  "letterSpacing": 0,
+                                  "align": "LEFT",
+                                  "decoration": null
                                 },
-                                "children": [
+                                "fills": [
                                   {
-                                    "id": "360:778",
-                                    "name": "$93.3/bbl ",
-                                    "type": "TEXT",
-                                    "box": {
-                                      "x": 1190,
-                                      "y": 1855,
-                                      "w": 83,
-                                      "h": 13
-                                    },
-                                    "text": "$93.3/bbl ",
-                                    "font": {
-                                      "family": "Pretendard Variable",
-                                      "weight": 600,
-                                      "size": 13,
-                                      "lineHeight": 15.513671875,
-                                      "letterSpacing": 0,
-                                      "align": "LEFT",
-                                      "decoration": null
-                                    },
-                                    "fills": [
-                                      {
-                                        "type": "SOLID",
-                                        "hex": "#003049",
-                                        "opacity": 1
-                                      }
-                                    ]
-                                  },
-                                  {
-                                    "id": "360:792",
-                                    "name": "Group 132",
-                                    "type": "GROUP",
-                                    "box": {
-                                      "x": 1190,
-                                      "y": 1878,
-                                      "w": 51,
-                                      "h": 20
-                                    },
-                                    "cornerRadius": 5,
-                                    "children": [
-                                      {
-                                        "id": "360:791",
-                                        "name": "Rectangle 132",
-                                        "type": "RECTANGLE",
-                                        "box": {
-                                          "x": 1190,
-                                          "y": 1878,
-                                          "w": 50,
-                                          "h": 20
-                                        },
-                                        "fills": [
-                                          {
-                                            "type": "SOLID",
-                                            "hex": "#f1ffe7",
-                                            "opacity": 1
-                                          }
-                                        ],
-                                        "stroke": {
-                                          "hex": "#34a84d",
-                                          "weight": 1
-                                        },
-                                        "cornerRadius": 5
-                                      },
-                                      {
-                                        "id": "360:780",
-                                        "name": "Long↑",
-                                        "type": "TEXT",
-                                        "box": {
-                                          "x": 1191,
-                                          "y": 1882,
-                                          "w": 50,
-                                          "h": 11
-                                        },
-                                        "text": "Long↑",
-                                        "font": {
-                                          "family": "Pretendard Variable",
-                                          "weight": 600,
-                                          "size": 12,
-                                          "lineHeight": 14.3203125,
-                                          "letterSpacing": 0,
-                                          "align": "CENTER",
-                                          "decoration": null
-                                        },
-                                        "fills": [
-                                          {
-                                            "type": "SOLID",
-                                            "hex": "#329864",
-                                            "opacity": 1
-                                          }
-                                        ]
-                                      }
-                                    ]
+                                    "type": "SOLID",
+                                    "hex": "#003049",
+                                    "opacity": 1
                                   }
                                 ]
                               }
@@ -7378,7 +8048,7 @@
                               "x": 1190,
                               "y": 1945,
                               "w": 121,
-                              "h": 81
+                              "h": 51
                             },
                             "layout": {
                               "mode": "VERTICAL",
@@ -7422,120 +8092,30 @@
                                 ]
                               },
                               {
-                                "id": "360:798",
-                                "name": "Frame 95",
-                                "type": "FRAME",
+                                "id": "360:787",
+                                "name": "$2.88/MMBtu ",
+                                "type": "TEXT",
                                 "box": {
                                   "x": 1190,
                                   "y": 1983,
                                   "w": 121,
-                                  "h": 43
+                                  "h": 13
                                 },
-                                "layout": {
-                                  "mode": "VERTICAL",
-                                  "padding": {
-                                    "l": 0,
-                                    "r": 0,
-                                    "t": 0,
-                                    "b": 0
-                                  },
-                                  "gap": 10,
-                                  "counterAlign": null,
-                                  "primaryAlign": null
+                                "text": "$2.88/MMBtu ",
+                                "font": {
+                                  "family": "Pretendard Variable",
+                                  "weight": 600,
+                                  "size": 13,
+                                  "lineHeight": 15.513671875,
+                                  "letterSpacing": 0,
+                                  "align": "LEFT",
+                                  "decoration": null
                                 },
-                                "children": [
+                                "fills": [
                                   {
-                                    "id": "360:787",
-                                    "name": "$2.88/MMBtu ",
-                                    "type": "TEXT",
-                                    "box": {
-                                      "x": 1190,
-                                      "y": 1983,
-                                      "w": 121,
-                                      "h": 13
-                                    },
-                                    "text": "$2.88/MMBtu ",
-                                    "font": {
-                                      "family": "Pretendard Variable",
-                                      "weight": 600,
-                                      "size": 13,
-                                      "lineHeight": 15.513671875,
-                                      "letterSpacing": 0,
-                                      "align": "LEFT",
-                                      "decoration": null
-                                    },
-                                    "fills": [
-                                      {
-                                        "type": "SOLID",
-                                        "hex": "#003049",
-                                        "opacity": 1
-                                      }
-                                    ]
-                                  },
-                                  {
-                                    "id": "360:793",
-                                    "name": "Group 133",
-                                    "type": "GROUP",
-                                    "box": {
-                                      "x": 1190,
-                                      "y": 2006,
-                                      "w": 53,
-                                      "h": 20
-                                    },
-                                    "cornerRadius": 5,
-                                    "children": [
-                                      {
-                                        "id": "360:794",
-                                        "name": "Rectangle 132",
-                                        "type": "RECTANGLE",
-                                        "box": {
-                                          "x": 1190,
-                                          "y": 2006,
-                                          "w": 52,
-                                          "h": 20
-                                        },
-                                        "fills": [
-                                          {
-                                            "type": "SOLID",
-                                            "hex": "#ffe8e8",
-                                            "opacity": 1
-                                          }
-                                        ],
-                                        "stroke": {
-                                          "hex": "#ffa6a6",
-                                          "weight": 1
-                                        },
-                                        "cornerRadius": 5
-                                      },
-                                      {
-                                        "id": "360:795",
-                                        "name": "Short↓",
-                                        "type": "TEXT",
-                                        "box": {
-                                          "x": 1191,
-                                          "y": 2010,
-                                          "w": 52,
-                                          "h": 11
-                                        },
-                                        "text": "Short↓",
-                                        "font": {
-                                          "family": "Pretendard Variable",
-                                          "weight": 600,
-                                          "size": 12,
-                                          "lineHeight": 14.3203125,
-                                          "letterSpacing": 0,
-                                          "align": "CENTER",
-                                          "decoration": null
-                                        },
-                                        "fills": [
-                                          {
-                                            "type": "SOLID",
-                                            "hex": "#db2d29",
-                                            "opacity": 1
-                                          }
-                                        ]
-                                      }
-                                    ]
+                                    "type": "SOLID",
+                                    "hex": "#003049",
+                                    "opacity": 1
                                   }
                                 ]
                               }
