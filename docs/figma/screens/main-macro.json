@@ -7,9 +7,9 @@
     "h": 2160
   },
   "stats": {
-    "textCount": 90,
-    "uniqueColorCount": 35,
-    "uniqueFontStyleCount": 15,
+    "textCount": 102,
+    "uniqueColorCount": 36,
+    "uniqueFontStyleCount": 16,
     "colors": [
       "#000000",
       "#003049",
@@ -18,6 +18,7 @@
       "#60c846",
       "#669bbc",
       "#6b6b6b",
+      "#737171",
       "#747474",
       "#780000",
       "#989898",
@@ -53,6 +54,7 @@
       "Pretendard Variable:500:12",
       "Pretendard Variable:500:14",
       "Pretendard Variable:500:15",
+      "Pretendard Variable:600:10.5",
       "Pretendard Variable:600:12",
       "Pretendard Variable:600:13",
       "Pretendard Variable:600:14",
@@ -587,6 +589,58 @@
       }
     },
     {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 370,
+        "y": 547,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 622,
+        "y": 547,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 1164,
+        "y": 547,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 877,
+        "y": 548,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
       "text": "48%",
       "size": 28,
       "weight": 600,
@@ -675,6 +729,110 @@
         "y": 1275,
         "w": 131,
         "h": 14
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 323,
+        "y": 1337,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 330,
+        "y": 1361,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 316,
+        "y": 1386,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 336,
+        "y": 1410,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 299,
+        "y": 1434,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 339,
+        "y": 1458,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 378,
+        "y": 1482,
+        "w": 16,
+        "h": 16
+      }
+    },
+    {
+      "text": "i",
+      "size": 10.5,
+      "weight": 600,
+      "family": "Pretendard Variable",
+      "fill": "#737171",
+      "box": {
+        "x": 344,
+        "y": 1506,
+        "w": 16,
+        "h": 16
       }
     },
     {
@@ -2497,6 +2655,34 @@
                     "cornerRadius": 10,
                     "children": [
                       {
+                        "id": "385:1499",
+                        "name": "title",
+                        "type": "TEXT",
+                        "box": {
+                          "x": 257,
+                          "y": 493,
+                          "w": 204,
+                          "h": 18
+                        },
+                        "text": "현재 국면 확률",
+                        "font": {
+                          "family": "Pretendard Variable",
+                          "weight": 600,
+                          "size": 16,
+                          "lineHeight": 19.09375,
+                          "letterSpacing": 0,
+                          "align": "LEFT",
+                          "decoration": null
+                        },
+                        "fills": [
+                          {
+                            "type": "SOLID",
+                            "hex": "#003049",
+                            "opacity": 1
+                          }
+                        ]
+                      },
+                      {
                         "id": "385:1491",
                         "name": "hard landing",
                         "type": "FRAME",
@@ -2662,6 +2848,85 @@
                                       }
                                     ],
                                     "cornerRadius": 10
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "426:1583",
+                            "name": "card/거시경제/tooltip",
+                            "type": "INSTANCE",
+                            "box": {
+                              "x": 228,
+                              "y": 495,
+                              "w": 299,
+                              "h": 68
+                            },
+                            "fills": [],
+                            "componentId": "426:1547",
+                            "componentName": "type=Long, tooltip=off",
+                            "children": [
+                              {
+                                "id": "I426:1583;426:1548",
+                                "name": "tooltip icon",
+                                "type": "GROUP",
+                                "box": {
+                                  "x": 370,
+                                  "y": 547,
+                                  "w": 16,
+                                  "h": 16
+                                },
+                                "children": [
+                                  {
+                                    "id": "I426:1583;426:1549",
+                                    "name": "Ellipse 38",
+                                    "type": "ELLIPSE",
+                                    "box": {
+                                      "x": 370,
+                                      "y": 547,
+                                      "w": 16,
+                                      "h": 16
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#ffffff",
+                                        "opacity": 1
+                                      }
+                                    ],
+                                    "stroke": {
+                                      "hex": "#e9e9e9",
+                                      "weight": 1
+                                    }
+                                  },
+                                  {
+                                    "id": "I426:1583;426:1550",
+                                    "name": "i",
+                                    "type": "TEXT",
+                                    "box": {
+                                      "x": 370,
+                                      "y": 547,
+                                      "w": 16,
+                                      "h": 16
+                                    },
+                                    "text": "i",
+                                    "font": {
+                                      "family": "Pretendard Variable",
+                                      "weight": 600,
+                                      "size": 10.5,
+                                      "lineHeight": 12.5302734375,
+                                      "letterSpacing": 0,
+                                      "align": "CENTER",
+                                      "decoration": null
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#737171",
+                                        "opacity": 1
+                                      }
+                                    ]
                                   }
                                 ]
                               }
@@ -2839,6 +3104,85 @@
                                 ]
                               }
                             ]
+                          },
+                          {
+                            "id": "426:1587",
+                            "name": "card/거시경제/tooltip",
+                            "type": "INSTANCE",
+                            "box": {
+                              "x": 492,
+                              "y": 495,
+                              "w": 276,
+                              "h": 68
+                            },
+                            "fills": [],
+                            "componentId": "426:1531",
+                            "componentName": "type=Default, tooltip=off",
+                            "children": [
+                              {
+                                "id": "I426:1587;426:1532",
+                                "name": "tooltip icon",
+                                "type": "GROUP",
+                                "box": {
+                                  "x": 622,
+                                  "y": 547,
+                                  "w": 16,
+                                  "h": 16
+                                },
+                                "children": [
+                                  {
+                                    "id": "I426:1587;426:1533",
+                                    "name": "Ellipse 38",
+                                    "type": "ELLIPSE",
+                                    "box": {
+                                      "x": 622,
+                                      "y": 547,
+                                      "w": 16,
+                                      "h": 16
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#ffffff",
+                                        "opacity": 1
+                                      }
+                                    ],
+                                    "stroke": {
+                                      "hex": "#e9e9e9",
+                                      "weight": 1
+                                    }
+                                  },
+                                  {
+                                    "id": "I426:1587;426:1534",
+                                    "name": "i",
+                                    "type": "TEXT",
+                                    "box": {
+                                      "x": 622,
+                                      "y": 547,
+                                      "w": 16,
+                                      "h": 16
+                                    },
+                                    "text": "i",
+                                    "font": {
+                                      "family": "Pretendard Variable",
+                                      "weight": 600,
+                                      "size": 10.5,
+                                      "lineHeight": 12.5302734375,
+                                      "letterSpacing": 0,
+                                      "align": "CENTER",
+                                      "decoration": null
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#737171",
+                                        "opacity": 1
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
                           }
                         ]
                       },
@@ -3008,6 +3352,85 @@
                                       }
                                     ],
                                     "cornerRadius": 10
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "426:1592",
+                            "name": "card/거시경제/tooltip",
+                            "type": "INSTANCE",
+                            "box": {
+                              "x": 735,
+                              "y": 496,
+                              "w": 299,
+                              "h": 68
+                            },
+                            "fills": [],
+                            "componentId": "426:1547",
+                            "componentName": "type=Long, tooltip=off",
+                            "children": [
+                              {
+                                "id": "I426:1592;426:1548",
+                                "name": "tooltip icon",
+                                "type": "GROUP",
+                                "box": {
+                                  "x": 877,
+                                  "y": 548,
+                                  "w": 16,
+                                  "h": 16
+                                },
+                                "children": [
+                                  {
+                                    "id": "I426:1592;426:1549",
+                                    "name": "Ellipse 38",
+                                    "type": "ELLIPSE",
+                                    "box": {
+                                      "x": 877,
+                                      "y": 548,
+                                      "w": 16,
+                                      "h": 16
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#ffffff",
+                                        "opacity": 1
+                                      }
+                                    ],
+                                    "stroke": {
+                                      "hex": "#e9e9e9",
+                                      "weight": 1
+                                    }
+                                  },
+                                  {
+                                    "id": "I426:1592;426:1550",
+                                    "name": "i",
+                                    "type": "TEXT",
+                                    "box": {
+                                      "x": 877,
+                                      "y": 548,
+                                      "w": 16,
+                                      "h": 16
+                                    },
+                                    "text": "i",
+                                    "font": {
+                                      "family": "Pretendard Variable",
+                                      "weight": 600,
+                                      "size": 10.5,
+                                      "lineHeight": 12.5302734375,
+                                      "letterSpacing": 0,
+                                      "align": "CENTER",
+                                      "decoration": null
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#737171",
+                                        "opacity": 1
+                                      }
+                                    ]
                                   }
                                 ]
                               }
@@ -3185,34 +3608,85 @@
                                 ]
                               }
                             ]
-                          }
-                        ]
-                      },
-                      {
-                        "id": "385:1499",
-                        "name": "title",
-                        "type": "TEXT",
-                        "box": {
-                          "x": 257,
-                          "y": 493,
-                          "w": 204,
-                          "h": 18
-                        },
-                        "text": "현재 국면 확률",
-                        "font": {
-                          "family": "Pretendard Variable",
-                          "weight": 600,
-                          "size": 16,
-                          "lineHeight": 19.09375,
-                          "letterSpacing": 0,
-                          "align": "LEFT",
-                          "decoration": null
-                        },
-                        "fills": [
+                          },
                           {
-                            "type": "SOLID",
-                            "hex": "#003049",
-                            "opacity": 1
+                            "id": "426:1597",
+                            "name": "card/거시경제/tooltip",
+                            "type": "INSTANCE",
+                            "box": {
+                              "x": 1034,
+                              "y": 495,
+                              "w": 276,
+                              "h": 68
+                            },
+                            "fills": [],
+                            "componentId": "426:1531",
+                            "componentName": "type=Default, tooltip=off",
+                            "children": [
+                              {
+                                "id": "I426:1597;426:1532",
+                                "name": "tooltip icon",
+                                "type": "GROUP",
+                                "box": {
+                                  "x": 1164,
+                                  "y": 547,
+                                  "w": 16,
+                                  "h": 16
+                                },
+                                "children": [
+                                  {
+                                    "id": "I426:1597;426:1533",
+                                    "name": "Ellipse 38",
+                                    "type": "ELLIPSE",
+                                    "box": {
+                                      "x": 1164,
+                                      "y": 547,
+                                      "w": 16,
+                                      "h": 16
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#ffffff",
+                                        "opacity": 1
+                                      }
+                                    ],
+                                    "stroke": {
+                                      "hex": "#e9e9e9",
+                                      "weight": 1
+                                    }
+                                  },
+                                  {
+                                    "id": "I426:1597;426:1534",
+                                    "name": "i",
+                                    "type": "TEXT",
+                                    "box": {
+                                      "x": 1164,
+                                      "y": 547,
+                                      "w": 16,
+                                      "h": 16
+                                    },
+                                    "text": "i",
+                                    "font": {
+                                      "family": "Pretendard Variable",
+                                      "weight": 600,
+                                      "size": 10.5,
+                                      "lineHeight": 12.5302734375,
+                                      "letterSpacing": 0,
+                                      "align": "CENTER",
+                                      "decoration": null
+                                    },
+                                    "fills": [
+                                      {
+                                        "type": "SOLID",
+                                        "hex": "#737171",
+                                        "opacity": 1
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
                           }
                         ]
                       }
@@ -3413,23 +3887,6 @@
                 "cornerRadius": 10,
                 "children": [
                   {
-                    "id": "385:1509",
-                    "name": "ChatGPT Image May 9, 2026, 01_04_21 PM 3",
-                    "type": "RECTANGLE",
-                    "box": {
-                      "x": 252,
-                      "y": 1304,
-                      "w": 1069,
-                      "h": 246
-                    },
-                    "fills": [
-                      {
-                        "type": "IMAGE",
-                        "scaleMode": "STRETCH"
-                      }
-                    ]
-                  },
-                  {
                     "id": "385:1510",
                     "name": "title",
                     "type": "TEXT",
@@ -3454,6 +3911,655 @@
                         "type": "SOLID",
                         "hex": "#003049",
                         "opacity": 1
+                      }
+                    ]
+                  },
+                  {
+                    "id": "385:1509",
+                    "name": "ChatGPT Image May 9, 2026, 01_04_21 PM 3",
+                    "type": "RECTANGLE",
+                    "box": {
+                      "x": 252,
+                      "y": 1304,
+                      "w": 1069,
+                      "h": 246
+                    },
+                    "fills": [
+                      {
+                        "type": "IMAGE",
+                        "scaleMode": "STRETCH"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "426:1660",
+                    "name": "card/거시경제/tooltip",
+                    "type": "INSTANCE",
+                    "box": {
+                      "x": 193,
+                      "y": 1285,
+                      "w": 276,
+                      "h": 68
+                    },
+                    "fills": [],
+                    "componentId": "426:1531",
+                    "componentName": "type=Default, tooltip=off",
+                    "children": [
+                      {
+                        "id": "I426:1660;426:1532",
+                        "name": "tooltip icon",
+                        "type": "GROUP",
+                        "box": {
+                          "x": 323,
+                          "y": 1337,
+                          "w": 16,
+                          "h": 16
+                        },
+                        "children": [
+                          {
+                            "id": "I426:1660;426:1533",
+                            "name": "Ellipse 38",
+                            "type": "ELLIPSE",
+                            "box": {
+                              "x": 323,
+                              "y": 1337,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#ffffff",
+                                "opacity": 1
+                              }
+                            ],
+                            "stroke": {
+                              "hex": "#e9e9e9",
+                              "weight": 1
+                            }
+                          },
+                          {
+                            "id": "I426:1660;426:1534",
+                            "name": "i",
+                            "type": "TEXT",
+                            "box": {
+                              "x": 323,
+                              "y": 1337,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "text": "i",
+                            "font": {
+                              "family": "Pretendard Variable",
+                              "weight": 600,
+                              "size": 10.5,
+                              "lineHeight": 12.5302734375,
+                              "letterSpacing": 0,
+                              "align": "CENTER",
+                              "decoration": null
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#737171",
+                                "opacity": 1
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "426:1664",
+                    "name": "card/거시경제/tooltip",
+                    "type": "INSTANCE",
+                    "box": {
+                      "x": 200,
+                      "y": 1309,
+                      "w": 276,
+                      "h": 68
+                    },
+                    "fills": [],
+                    "componentId": "426:1531",
+                    "componentName": "type=Default, tooltip=off",
+                    "children": [
+                      {
+                        "id": "I426:1664;426:1532",
+                        "name": "tooltip icon",
+                        "type": "GROUP",
+                        "box": {
+                          "x": 330,
+                          "y": 1361,
+                          "w": 16,
+                          "h": 16
+                        },
+                        "children": [
+                          {
+                            "id": "I426:1664;426:1533",
+                            "name": "Ellipse 38",
+                            "type": "ELLIPSE",
+                            "box": {
+                              "x": 330,
+                              "y": 1361,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#ffffff",
+                                "opacity": 1
+                              }
+                            ],
+                            "stroke": {
+                              "hex": "#e9e9e9",
+                              "weight": 1
+                            }
+                          },
+                          {
+                            "id": "I426:1664;426:1534",
+                            "name": "i",
+                            "type": "TEXT",
+                            "box": {
+                              "x": 330,
+                              "y": 1361,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "text": "i",
+                            "font": {
+                              "family": "Pretendard Variable",
+                              "weight": 600,
+                              "size": 10.5,
+                              "lineHeight": 12.5302734375,
+                              "letterSpacing": 0,
+                              "align": "CENTER",
+                              "decoration": null
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#737171",
+                                "opacity": 1
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "426:1669",
+                    "name": "card/거시경제/tooltip",
+                    "type": "INSTANCE",
+                    "box": {
+                      "x": 186,
+                      "y": 1334,
+                      "w": 276,
+                      "h": 68
+                    },
+                    "fills": [],
+                    "componentId": "426:1531",
+                    "componentName": "type=Default, tooltip=off",
+                    "children": [
+                      {
+                        "id": "I426:1669;426:1532",
+                        "name": "tooltip icon",
+                        "type": "GROUP",
+                        "box": {
+                          "x": 316,
+                          "y": 1386,
+                          "w": 16,
+                          "h": 16
+                        },
+                        "children": [
+                          {
+                            "id": "I426:1669;426:1533",
+                            "name": "Ellipse 38",
+                            "type": "ELLIPSE",
+                            "box": {
+                              "x": 316,
+                              "y": 1386,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#ffffff",
+                                "opacity": 1
+                              }
+                            ],
+                            "stroke": {
+                              "hex": "#e9e9e9",
+                              "weight": 1
+                            }
+                          },
+                          {
+                            "id": "I426:1669;426:1534",
+                            "name": "i",
+                            "type": "TEXT",
+                            "box": {
+                              "x": 316,
+                              "y": 1386,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "text": "i",
+                            "font": {
+                              "family": "Pretendard Variable",
+                              "weight": 600,
+                              "size": 10.5,
+                              "lineHeight": 12.5302734375,
+                              "letterSpacing": 0,
+                              "align": "CENTER",
+                              "decoration": null
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#737171",
+                                "opacity": 1
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "426:1674",
+                    "name": "card/거시경제/tooltip",
+                    "type": "INSTANCE",
+                    "box": {
+                      "x": 206,
+                      "y": 1358,
+                      "w": 276,
+                      "h": 68
+                    },
+                    "fills": [],
+                    "componentId": "426:1531",
+                    "componentName": "type=Default, tooltip=off",
+                    "children": [
+                      {
+                        "id": "I426:1674;426:1532",
+                        "name": "tooltip icon",
+                        "type": "GROUP",
+                        "box": {
+                          "x": 336,
+                          "y": 1410,
+                          "w": 16,
+                          "h": 16
+                        },
+                        "children": [
+                          {
+                            "id": "I426:1674;426:1533",
+                            "name": "Ellipse 38",
+                            "type": "ELLIPSE",
+                            "box": {
+                              "x": 336,
+                              "y": 1410,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#ffffff",
+                                "opacity": 1
+                              }
+                            ],
+                            "stroke": {
+                              "hex": "#e9e9e9",
+                              "weight": 1
+                            }
+                          },
+                          {
+                            "id": "I426:1674;426:1534",
+                            "name": "i",
+                            "type": "TEXT",
+                            "box": {
+                              "x": 336,
+                              "y": 1410,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "text": "i",
+                            "font": {
+                              "family": "Pretendard Variable",
+                              "weight": 600,
+                              "size": 10.5,
+                              "lineHeight": 12.5302734375,
+                              "letterSpacing": 0,
+                              "align": "CENTER",
+                              "decoration": null
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#737171",
+                                "opacity": 1
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "426:1679",
+                    "name": "card/거시경제/tooltip",
+                    "type": "INSTANCE",
+                    "box": {
+                      "x": 169,
+                      "y": 1382,
+                      "w": 276,
+                      "h": 68
+                    },
+                    "fills": [],
+                    "componentId": "426:1531",
+                    "componentName": "type=Default, tooltip=off",
+                    "children": [
+                      {
+                        "id": "I426:1679;426:1532",
+                        "name": "tooltip icon",
+                        "type": "GROUP",
+                        "box": {
+                          "x": 299,
+                          "y": 1434,
+                          "w": 16,
+                          "h": 16
+                        },
+                        "children": [
+                          {
+                            "id": "I426:1679;426:1533",
+                            "name": "Ellipse 38",
+                            "type": "ELLIPSE",
+                            "box": {
+                              "x": 299,
+                              "y": 1434,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#ffffff",
+                                "opacity": 1
+                              }
+                            ],
+                            "stroke": {
+                              "hex": "#e9e9e9",
+                              "weight": 1
+                            }
+                          },
+                          {
+                            "id": "I426:1679;426:1534",
+                            "name": "i",
+                            "type": "TEXT",
+                            "box": {
+                              "x": 299,
+                              "y": 1434,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "text": "i",
+                            "font": {
+                              "family": "Pretendard Variable",
+                              "weight": 600,
+                              "size": 10.5,
+                              "lineHeight": 12.5302734375,
+                              "letterSpacing": 0,
+                              "align": "CENTER",
+                              "decoration": null
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#737171",
+                                "opacity": 1
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "426:1689",
+                    "name": "card/거시경제/tooltip",
+                    "type": "INSTANCE",
+                    "box": {
+                      "x": 197,
+                      "y": 1406,
+                      "w": 299,
+                      "h": 68
+                    },
+                    "fills": [],
+                    "componentId": "426:1547",
+                    "componentName": "type=Long, tooltip=off",
+                    "children": [
+                      {
+                        "id": "I426:1689;426:1548",
+                        "name": "tooltip icon",
+                        "type": "GROUP",
+                        "box": {
+                          "x": 339,
+                          "y": 1458,
+                          "w": 16,
+                          "h": 16
+                        },
+                        "children": [
+                          {
+                            "id": "I426:1689;426:1549",
+                            "name": "Ellipse 38",
+                            "type": "ELLIPSE",
+                            "box": {
+                              "x": 339,
+                              "y": 1458,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#ffffff",
+                                "opacity": 1
+                              }
+                            ],
+                            "stroke": {
+                              "hex": "#e9e9e9",
+                              "weight": 1
+                            }
+                          },
+                          {
+                            "id": "I426:1689;426:1550",
+                            "name": "i",
+                            "type": "TEXT",
+                            "box": {
+                              "x": 339,
+                              "y": 1458,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "text": "i",
+                            "font": {
+                              "family": "Pretendard Variable",
+                              "weight": 600,
+                              "size": 10.5,
+                              "lineHeight": 12.5302734375,
+                              "letterSpacing": 0,
+                              "align": "CENTER",
+                              "decoration": null
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#737171",
+                                "opacity": 1
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "426:1694",
+                    "name": "card/거시경제/tooltip",
+                    "type": "INSTANCE",
+                    "box": {
+                      "x": 248,
+                      "y": 1430,
+                      "w": 276,
+                      "h": 68
+                    },
+                    "fills": [],
+                    "componentId": "426:1531",
+                    "componentName": "type=Default, tooltip=off",
+                    "children": [
+                      {
+                        "id": "I426:1694;426:1532",
+                        "name": "tooltip icon",
+                        "type": "GROUP",
+                        "box": {
+                          "x": 378,
+                          "y": 1482,
+                          "w": 16,
+                          "h": 16
+                        },
+                        "children": [
+                          {
+                            "id": "I426:1694;426:1533",
+                            "name": "Ellipse 38",
+                            "type": "ELLIPSE",
+                            "box": {
+                              "x": 378,
+                              "y": 1482,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#ffffff",
+                                "opacity": 1
+                              }
+                            ],
+                            "stroke": {
+                              "hex": "#e9e9e9",
+                              "weight": 1
+                            }
+                          },
+                          {
+                            "id": "I426:1694;426:1534",
+                            "name": "i",
+                            "type": "TEXT",
+                            "box": {
+                              "x": 378,
+                              "y": 1482,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "text": "i",
+                            "font": {
+                              "family": "Pretendard Variable",
+                              "weight": 600,
+                              "size": 10.5,
+                              "lineHeight": 12.5302734375,
+                              "letterSpacing": 0,
+                              "align": "CENTER",
+                              "decoration": null
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#737171",
+                                "opacity": 1
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "426:1684",
+                    "name": "card/거시경제/tooltip",
+                    "type": "INSTANCE",
+                    "box": {
+                      "x": 214,
+                      "y": 1454,
+                      "w": 276,
+                      "h": 68
+                    },
+                    "fills": [],
+                    "componentId": "426:1531",
+                    "componentName": "type=Default, tooltip=off",
+                    "children": [
+                      {
+                        "id": "I426:1684;426:1532",
+                        "name": "tooltip icon",
+                        "type": "GROUP",
+                        "box": {
+                          "x": 344,
+                          "y": 1506,
+                          "w": 16,
+                          "h": 16
+                        },
+                        "children": [
+                          {
+                            "id": "I426:1684;426:1533",
+                            "name": "Ellipse 38",
+                            "type": "ELLIPSE",
+                            "box": {
+                              "x": 344,
+                              "y": 1506,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#ffffff",
+                                "opacity": 1
+                              }
+                            ],
+                            "stroke": {
+                              "hex": "#e9e9e9",
+                              "weight": 1
+                            }
+                          },
+                          {
+                            "id": "I426:1684;426:1534",
+                            "name": "i",
+                            "type": "TEXT",
+                            "box": {
+                              "x": 344,
+                              "y": 1506,
+                              "w": 16,
+                              "h": 16
+                            },
+                            "text": "i",
+                            "font": {
+                              "family": "Pretendard Variable",
+                              "weight": 600,
+                              "size": 10.5,
+                              "lineHeight": 12.5302734375,
+                              "letterSpacing": 0,
+                              "align": "CENTER",
+                              "decoration": null
+                            },
+                            "fills": [
+                              {
+                                "type": "SOLID",
+                                "hex": "#737171",
+                                "opacity": 1
+                              }
+                            ]
+                          }
+                        ]
                       }
                     ]
                   }

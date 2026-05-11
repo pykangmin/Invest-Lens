@@ -27,6 +27,7 @@ import type {
   GlobalEnvironmentResponse,
   StockPriceTech,
 } from "../types/investment";
+import { InfoTooltip } from "../visualization/InfoTooltip";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
 
@@ -231,6 +232,7 @@ export function TechnicalDetail({
                   label={m.label}
                   score={m.available ? Math.round(m.score) : null}
                   max={m.max}
+                  metricKey={m.key}
                 />
               ))}
               <ContribTile
@@ -427,17 +429,35 @@ function MiniLineChart({
   );
 }
 
+// 시안 card/기술/기여도 tooltip variant 본문 (6 metric, 총합 제외)
+const METRIC_TOOLTIP: Record<string, string> = {
+  superTrend:
+    "변동성과 가격 흐름을 기반으로 현재 추세 방향을 보여주는 지표입니다. 상승·하락 추세 전환 시점을 파악할 때 사용합니다.",
+  movingAverage:
+    "일정 기간 주가 평균 흐름을 나타내는 지표입니다. 골든크로스는 상승 신호, 데드크로스는 하락 신호로 해석합니다.",
+  macd:
+    "단기와 장기 이동평균선의 차이를 활용한 추세 지표입니다. 선 교차와 0선 돌파를 주요 매매 신호로 봅니다.",
+  rsi: "주가의 과매수, 과매도 상태를 보여주는 지표입니다.",
+  vix:
+    "시장 변동성과 투자 심리를 나타내는 공포지수입니다. 일반적으로 높을수록 시장 불안이 크다고 해석합니다.",
+  volume:
+    "일정 기간 동안 거래된 주식 수량입니다. 일반적으로 거래량이 함께 증가할수록 현재 추세의 신뢰도가 높다고 해석합니다.",
+};
+
 function ContribTile({
   label,
   score,
   max,
   isTotal,
+  metricKey,
 }: {
   label: string;
   score: number | null;
   max: number;
   isTotal?: boolean;
+  metricKey?: string;
 }) {
+  const tooltipText = metricKey ? METRIC_TOOLTIP[metricKey] : undefined;
   return (
     <div
       style={{
@@ -447,7 +467,9 @@ function ContribTile({
     >
       <div style={S.contribTileHead}>
         <span style={S.contribTileLabel}>{label}</span>
-        {!isTotal && <span style={S.contribTileTooltip}>i</span>}
+        {!isTotal && tooltipText && (
+          <InfoTooltip text={tooltipText} mode="card" size={14} />
+        )}
       </div>
       <div style={S.contribTileScore}>
         {score == null ? "—" : `${score}/${max}`}
