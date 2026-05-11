@@ -277,3 +277,351 @@ export function maxDate(rows: CommodityPrice[]): string | null {
   }
   return max;
 }
+
+// ──────────────────────────────────────────────────────────────
+// §3-B 변동률 비교 — 가로 bar chart (YoY 큰 순 정렬)
+// ──────────────────────────────────────────────────────────────
+
+export interface BarChangeItem {
+  label: string;
+  symbol: string;
+  yoyPct: number; // %
+  color: string;
+}
+
+const BAR_META: Array<{ symbol: string; label: string; color: string }> = [
+  { symbol: "LIT", label: "리튬", color: "#43bb2e" },
+  { symbol: "NG=F", label: "천연가스", color: "#60c846" },
+  { symbol: "CL=F", label: "WTI 원유", color: "#c1121f" },
+  { symbol: "SI=F", label: "은", color: "#9a9a9a" },
+  { symbol: "GC=F", label: "금", color: "#e5af43" },
+  { symbol: "HG=F", label: "구리", color: "#fdb43a" },
+  { symbol: "ZS=F", label: "대두", color: "#3da12c" },
+  { symbol: "ZW=F", label: "소맥", color: "#9c6cc7" },
+];
+
+export function barChangeData(rows: CommodityPrice[]): BarChangeItem[] {
+  const m = bySymbol(rows);
+  return BAR_META.map((meta) => {
+    const arr = m.get(meta.symbol) ?? [];
+    const yoy = commodityYoy(arr);
+    return {
+      label: meta.label,
+      symbol: meta.symbol,
+      yoyPct: yoy != null ? yoy * 100 : 0,
+      color: meta.color,
+    };
+  }).sort((a, b) => b.yoyPct - a.yoyPct);
+}
+
+// ──────────────────────────────────────────────────────────────
+// §4-A 원자재 시장 지표 요약 — 7행 표
+// ──────────────────────────────────────────────────────────────
+
+export interface MarketIndicatorRow {
+  symbol: string;
+  label: string;
+  currentPrice: string;
+  yoyDisplay: string;
+  yoyColor: string;
+  volatility: string;
+  volatilityColor: string;
+  flow: string;
+  flowColor: string;
+  factor: string;
+}
+
+const TABLE_META: Array<{ symbol: string; label: string; factor: string }> = [
+  { symbol: "LIT", label: "리튬 (탄산)", factor: "" },
+  { symbol: "NG=F", label: "천연가스", factor: "" },
+  { symbol: "CL=F", label: "WTI 원유", factor: "" },
+  { symbol: "SI=F", label: "은 (Silver)", factor: "" },
+  { symbol: "GC=F", label: "금 (Gold)", factor: "" },
+  { symbol: "HG=F", label: "구리 (LME)", factor: "" },
+  { symbol: "ZS=F", label: "대두 (Soybean)", factor: "" },
+  { symbol: "ZW=F", label: "소맥 (Wheat)", factor: "" },
+];
+
+function annualVolatility(arr: CommodityPrice[], windowN = 60): number | null {
+  const asc = ascByDate(arr).slice(-windowN);
+  const vals = asc.map((r) => r.close).filter((v): v is number => v != null);
+  if (vals.length < 5) return null;
+  const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+  if (mean === 0) return null;
+  const variance = vals.reduce((a, b) => a + (b - mean) ** 2, 0) / vals.length;
+  return Math.sqrt(variance) / mean;
+}
+
+export function marketIndicatorsTable(rows: CommodityPrice[]): MarketIndicatorRow[] {
+  const m = bySymbol(rows);
+  return TABLE_META.map((meta) => {
+    const arr = m.get(meta.symbol) ?? [];
+    const stat = symbolStat(rows, meta.symbol);
+    const parts = (() => {
+      if (stat.latest == null) return { value: "—", unit: "" };
+      const disp = unitFor(meta.symbol);
+      const conv = disp.multiplier ? stat.latest * disp.multiplier : stat.latest;
+      const formatted =
+        conv >= 1000
+          ? conv.toLocaleString(undefined, { maximumFractionDigits: 0 })
+          : conv.toFixed(2);
+      return { value: `$${formatted}`, unit: disp.unit };
+    })();
+    const yoy = stat.yoy;
+    const yoyDisplay = yoy != null ? `${yoy > 0 ? "+" : ""}${(yoy * 100).toFixed(1)}%` : "—";
+    const yoyColor = yoy != null && yoy > 0 ? "#43bb2e" : yoy != null && yoy < 0 ? "#c1121f" : "#737474";
+    const vol = annualVolatility(arr);
+    const volLabel =
+      vol == null ? "—" : vol >= 0.10 ? "매우 높음" : vol >= 0.05 ? "높음" : vol >= 0.03 ? "중간" : "낮음";
+    const volColor =
+      vol == null ? "#737474" : vol >= 0.10 ? "#c1121f" : vol >= 0.05 ? "#fdb43a" : "#43bb2e";
+    const flow = (() => {
+      if (yoy == null) return "보합";
+      if (yoy > 0.30) return "급등세";
+      if (yoy > 0.10) return "상승";
+      if (yoy > -0.05) return "안정";
+      return "하락";
+    })();
+    const flowColor = yoy != null && yoy > 0.10 ? "#43bb2e" : yoy != null && yoy < -0.05 ? "#c1121f" : "#737474";
+    return {
+      symbol: meta.symbol,
+      label: meta.label,
+      currentPrice: parts.value + (parts.unit ? "/" + parts.unit : ""),
+      yoyDisplay,
+      yoyColor,
+      volatility: volLabel,
+      volatilityColor: volColor,
+      flow,
+      flowColor,
+      factor: meta.factor,
+    };
+  });
+}
+
+function unitFor(symbol: string): { unit: string; multiplier?: number } {
+  const dict: Record<string, { unit: string; multiplier?: number }> = {
+    "CL=F": { unit: "bbl" },
+    "NG=F": { unit: "MMBtu" },
+    "HG=F": { unit: "T", multiplier: 2204.62 },
+    LIT: { unit: "주" },
+    "GC=F": { unit: "oz" },
+    "SI=F": { unit: "oz" },
+    "ZW=F": { unit: "bu" },
+    "ZS=F": { unit: "bu" },
+    "ZC=F": { unit: "bu" },
+  };
+  return dict[symbol] ?? { unit: "" };
+}
+
+// ──────────────────────────────────────────────────────────────
+// §4-B 변동성-수익률 매트릭스 — scatter plot
+// ──────────────────────────────────────────────────────────────
+
+export interface ScatterPoint {
+  label: string;
+  symbol: string;
+  x: number; // 시장 변동성 (%)
+  y: number; // 연간 변동률 (%)
+  color: string; // BAR_META 와 매칭 (symbol 별)
+}
+
+export function scatterData(rows: CommodityPrice[]): ScatterPoint[] {
+  const m = bySymbol(rows);
+  return BAR_META.map((meta) => {
+    const arr = m.get(meta.symbol) ?? [];
+    const vol = annualVolatility(arr, 60);
+    const yoy = commodityYoy(arr);
+    return {
+      label: meta.label,
+      symbol: meta.symbol,
+      x: vol != null ? vol * 100 : 0,
+      y: yoy != null ? yoy * 100 : 0,
+      color: meta.color,
+    };
+  });
+}
+
+// ──────────────────────────────────────────────────────────────
+// §5 카테고리별 가격 추이 — 3 multi-line chart (12개월)
+// ──────────────────────────────────────────────────────────────
+
+export interface SectorLinePoint {
+  date: string;
+  values: Record<string, number | null>; // symbol → close
+}
+
+export interface SectorChart {
+  title: string;
+  sub: string;
+  series: Array<{ symbol: string; label: string; color: string; unit: string }>;
+  points: SectorLinePoint[];
+}
+
+function monthlyHistory(rows: CommodityPrice[], months = 12): CommodityPrice[] {
+  // 마지막 13개월에서 월별 1개씩 (월말 기준)
+  const asc = ascByDate(rows);
+  const byMonth = new Map<string, CommodityPrice>();
+  for (const r of asc) {
+    const key = r.date.slice(0, 7); // YYYY-MM
+    byMonth.set(key, r); // 같은 월의 마지막 row 가 남음
+  }
+  const sortedKeys = [...byMonth.keys()].sort();
+  return sortedKeys.slice(-months - 1).map((k) => byMonth.get(k)!);
+}
+
+function buildSectorChart(
+  rows: CommodityPrice[],
+  meta: SectorChart,
+): SectorChart {
+  // 각 series 의 월별 close 매핑
+  const m = bySymbol(rows);
+  const allKeys: string[] = [];
+  const data: Record<string, Map<string, number | null>> = {};
+  for (const s of meta.series) {
+    const arr = m.get(s.symbol) ?? [];
+    const monthly = monthlyHistory(arr, 12);
+    const map = new Map<string, number | null>();
+    for (const p of monthly) {
+      map.set(p.date.slice(0, 7), p.close ?? null);
+    }
+    data[s.symbol] = map;
+    for (const k of map.keys()) if (!allKeys.includes(k)) allKeys.push(k);
+  }
+  allKeys.sort();
+  const last13 = allKeys.slice(-13);
+  const points = last13.map((k) => ({
+    date: k,
+    values: Object.fromEntries(meta.series.map((s) => [s.symbol, data[s.symbol]?.get(k) ?? null])),
+  }));
+  return { ...meta, points };
+}
+
+export function sectorTrends(rows: CommodityPrice[]): SectorChart[] {
+  return [
+    buildSectorChart(rows, {
+      title: "에너지 섹터 흐름",
+      sub: "WTI 원유 및 천연가스 가격 월별 변동 추이",
+      series: [
+        { symbol: "CL=F", label: "WTI 원유 ($/bbl)", color: "#c1121f", unit: "/bbl" },
+        { symbol: "NG=F", label: "천연가스 ($/MMBtu)", color: "#4a7aff", unit: "/MMBtu" },
+      ],
+      points: [],
+    }),
+    buildSectorChart(rows, {
+      title: "산업금속 섹터 흐름",
+      sub: "구리 및 리튬 가격 월별 변동 추이",
+      series: [
+        { symbol: "HG=F", label: "구리 (LME, $/T)", color: "#fdb43a", unit: "/T" },
+        { symbol: "LIT", label: "리튬 (탄산, ¥/T)", color: "#43bb2e", unit: "/주" },
+      ],
+      points: [],
+    }),
+    buildSectorChart(rows, {
+      title: "귀금속 섹터 흐름 (금 & 은)",
+      sub: "금과 은의 월별 시세 변동 추이",
+      series: [
+        { symbol: "GC=F", label: "금 ($/oz)", color: "#e5af43", unit: "/oz" },
+        { symbol: "SI=F", label: "은 ($/oz)", color: "#9a9a9a", unit: "/oz" },
+      ],
+      points: [],
+    }),
+  ];
+}
+
+// ──────────────────────────────────────────────────────────────
+// §7-A 자산군 정규화 사이클 — Base=100 line chart (분기, 5년)
+// ──────────────────────────────────────────────────────────────
+
+export interface NormalizedCycleSeries {
+  symbol: string;
+  label: string;
+  color: string;
+  dashed?: boolean;
+  points: Array<{ date: string; index: number | null }>;
+}
+
+const NORM_META: Array<{ symbol: string; label: string; color: string; dashed?: boolean }> = [
+  { symbol: "GC=F", label: "금", color: "#fdb43a" },
+  { symbol: "CL=F", label: "WTI", color: "#c1121f" },
+  { symbol: "HG=F", label: "구리", color: "#43bb2e" },
+  { symbol: "ZW=F", label: "밀", color: "#f5c2e7", dashed: true },
+];
+
+function quarterlyHistory(rows: CommodityPrice[], quarters = 20): CommodityPrice[] {
+  const asc = ascByDate(rows);
+  const byQuarter = new Map<string, CommodityPrice>();
+  for (const r of asc) {
+    const m = parseInt(r.date.slice(5, 7), 10);
+    const q = Math.min(4, Math.max(1, Math.ceil(m / 3)));
+    const key = `${r.date.slice(0, 4)}-Q${q}`;
+    byQuarter.set(key, r);
+  }
+  const sortedKeys = [...byQuarter.keys()].sort();
+  return sortedKeys.slice(-quarters).map((k) => byQuarter.get(k)!);
+}
+
+export function normalizedCycleSeries(
+  rows: CommodityPrice[],
+): NormalizedCycleSeries[] {
+  const m = bySymbol(rows);
+  return NORM_META.map((meta) => {
+    const arr = m.get(meta.symbol) ?? [];
+    const qs = quarterlyHistory(arr, 20);
+    if (qs.length === 0) {
+      return { ...meta, points: [] };
+    }
+    const base = qs[0]?.close ?? null;
+    const points = qs.map((p) => {
+      const m2 = parseInt(p.date.slice(5, 7), 10);
+      const q = Math.min(4, Math.max(1, Math.ceil(m2 / 3)));
+      return {
+        date: `'${p.date.slice(2, 4)}Q${q}`,
+        index: base != null && p.close != null && base !== 0 ? (p.close / base) * 100 : null,
+      };
+    });
+    return { ...meta, points };
+  });
+}
+
+// ──────────────────────────────────────────────────────────────
+// §7-B 에너지 WTI vs 천연가스 — dual-axis line
+// ──────────────────────────────────────────────────────────────
+
+export interface DualAxisPoint {
+  date: string;
+  wti: number | null;
+  ng: number | null;
+}
+
+export function wtiNgSeries(rows: CommodityPrice[]): DualAxisPoint[] {
+  const m = bySymbol(rows);
+  const wti = m.get("CL=F") ?? [];
+  const ng = m.get("NG=F") ?? [];
+  const wtiQ = quarterlyHistory(wti, 20);
+  const ngQ = quarterlyHistory(ng, 20);
+  const wtiMap = new Map<string, number>();
+  for (const r of wtiQ) {
+    const m2 = parseInt(r.date.slice(5, 7), 10);
+    const q = Math.min(4, Math.max(1, Math.ceil(m2 / 3)));
+    wtiMap.set(`${r.date.slice(0, 4)}-Q${q}`, r.close);
+  }
+  const ngMap = new Map<string, number>();
+  for (const r of ngQ) {
+    const m2 = parseInt(r.date.slice(5, 7), 10);
+    const q = Math.min(4, Math.max(1, Math.ceil(m2 / 3)));
+    ngMap.set(`${r.date.slice(0, 4)}-Q${q}`, r.close);
+  }
+  const allKeys: string[] = [];
+  for (const k of wtiMap.keys()) if (!allKeys.includes(k)) allKeys.push(k);
+  for (const k of ngMap.keys()) if (!allKeys.includes(k)) allKeys.push(k);
+  allKeys.sort();
+  return allKeys.map((k) => {
+    const yr = k.slice(2, 4);
+    const q = k.slice(-2);
+    return {
+      date: `'${yr}${q}`,
+      wti: wtiMap.get(k) ?? null,
+      ng: ngMap.get(k) ?? null,
+    };
+  });
+}

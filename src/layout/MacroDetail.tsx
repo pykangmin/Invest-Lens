@@ -24,10 +24,16 @@ import {
   buildRScore,
   buildWarningCards,
   confidenceToPct,
+  girTrendSeries,
+  macroIndicatorsTable,
   regimeFromDominant,
   regimeProbCards,
+  regimeTrendSeries,
   type GirScore,
+  type GirTrendPoint,
+  type MacroIndicatorRow,
   type RegimeProbCard,
+  type RegimeTrendPoint,
   type WarningCardSpec,
 } from "../analysis/macroNarrative";
 import {
@@ -159,6 +165,17 @@ export function MacroDetail({
       data.ismSvc.history,
       data.m2.history,
     );
+    const regimeTrend = regimeTrendSeries(data.regime.history);
+    const girTrend = girTrendSeries(data.regime.history);
+    const indicatorsTable = macroIndicatorsTable(
+      data.ismMan.history,
+      data.ismSvc.history,
+      data.cpi.history,
+      data.unrate.history,
+      data.fedfunds.history,
+      data.hyspread.history,
+      data.m2.history,
+    );
     return {
       dominant,
       confidencePct,
@@ -167,6 +184,9 @@ export function MacroDetail({
       iScore,
       rScore,
       warnings,
+      regimeTrend,
+      girTrend,
+      indicatorsTable,
     };
   }, [data]);
 
@@ -225,19 +245,19 @@ export function MacroDetail({
             </div>
           </section>
 
-          {/* §3 국면 확률 추이 (12개월) — graph placeholder */}
-          <SectionBoxFull title="국면 확률 추이 (12개월)" height={240}>
-            <GraphPlaceholder hint="regime 확률 4-series line chart" />
+          {/* §3 국면 확률 추이 (12개월) */}
+          <SectionBoxFull title="국면 확률 추이 (12개월)" height={260}>
+            <RegimeTrendChart points={analysis.regimeTrend} />
           </SectionBoxFull>
 
-          {/* §4 G·I·R 점수 추이 (12개월) — graph placeholder */}
-          <SectionBoxFull title=" G · I · R 점수 추이 (12개월)" height={230}>
-            <GraphPlaceholder hint="G/I/R 3-series line chart" />
+          {/* §4 G·I·R 점수 추이 */}
+          <SectionBoxFull title=" G · I · R 점수 추이 (24개월)" height={230}>
+            <GirTrendChartFull points={analysis.girTrend} />
           </SectionBoxFull>
 
-          {/* §5 거시지표 세부 수치 — graph placeholder */}
-          <SectionBoxFull title="거시지표 세부 수치" height={260}>
-            <GraphPlaceholder hint="VIX·DXY·10Y·HY 등 세부 수치 표 / 차트" />
+          {/* §5 거시지표 세부 수치 */}
+          <SectionBoxFull title="거시지표 세부 수치" height={280}>
+            <MacroIndicatorsTable rows={analysis.indicatorsTable} />
           </SectionBoxFull>
 
           {/* §6 점수 기여도 분석 (1101×262, 3 카드) */}
@@ -394,6 +414,312 @@ function ContribCard({ score }: { score: GirScore }) {
         })}
       </div>
     </div>
+  );
+}
+
+// §3 4-series regime trend line chart
+function RegimeTrendChart({ points }: { points: RegimeTrendPoint[] }) {
+  const [hovered, setHovered] = useState<string | null>(null);
+  const W = 1040;
+  const H = 220;
+  const padL = 40;
+  const padR = 60;
+  const padT = 16;
+  const padB = 26;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const yMax = 100;
+  const yTicks = [0, 20, 40, 60, 80, 100];
+  const stepX = points.length > 1 ? innerW / (points.length - 1) : 0;
+  const xOf = (i: number) => padL + i * stepX;
+  const yOf = (v: number) => padT + innerH - (v / yMax) * innerH;
+  const series: Array<{ key: "hard" | "no" | "recovery" | "soft"; color: string; label: string }> = [
+    { key: "hard", color: "#c1121f", label: "Hard Landing" },
+    { key: "no", color: "#4a7aff", label: "No Landing" },
+    { key: "recovery", color: "#fdb43a", label: "Recovery" },
+    { key: "soft", color: "#60c846", label: "Soft Landing" },
+  ];
+  // hover 된 series 를 마지막에 그려 위로 올림
+  const chipOrder = hovered
+    ? [...series.filter((s) => s.key !== hovered), ...series.filter((s) => s.key === hovered)]
+    : series;
+  const buildPath = (key: "hard" | "no" | "recovery" | "soft") => {
+    const segs: string[] = [];
+    points.forEach((p, i) => {
+      const v = p[key];
+      if (v == null) return;
+      segs.push(`${segs.length === 0 ? "M" : "L"} ${xOf(i).toFixed(1)} ${yOf(v).toFixed(1)}`);
+    });
+    return segs.join(" ");
+  };
+  return (
+    <div style={CFM.wrap}>
+      <div style={CFM.legendRow}>
+        {series.map((s) => (
+          <span key={s.key} style={CFM.legendItem}>
+            <span style={{ ...CFM.legendDot, background: s.color }} />
+            <span style={{ ...CFM.legendText, color: s.color }}>{s.label}</span>
+          </span>
+        ))}
+      </div>
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+        {yTicks.map((t) => {
+          const y = yOf(t);
+          return (
+            <g key={t}>
+              {t > 0 && <line x1={padL} x2={W - padR} y1={y} y2={y} stroke="#ececec" strokeWidth={1} />}
+              <text x={padL - 6} y={y} fontSize={10} fill="#737474" textAnchor="end" dominantBaseline="middle">
+                {t}%
+              </text>
+            </g>
+          );
+        })}
+        <line x1={padL} y1={padT} x2={padL} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+        <line x1={padL} y1={padT + innerH} x2={W - padR} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+        {series.map((s) => (
+          <path key={s.key} d={buildPath(s.key)} stroke={s.color} strokeWidth={1.6} fill="none" strokeLinejoin="round" strokeLinecap="round" />
+        ))}
+        {/* dot 각 데이터 포인트 */}
+        {series.map((s) =>
+          points.map((p, i) => {
+            const v = p[s.key];
+            if (v == null) return null;
+            return (
+              <circle
+                key={`${s.key}-d-${i}`}
+                cx={xOf(i)}
+                cy={yOf(v)}
+                r={2.5}
+                fill={s.color}
+              />
+            );
+          }),
+        )}
+        {chipOrder.map((s) => {
+          const last = points[points.length - 1];
+          if (!last) return null;
+          const v = last[s.key];
+          if (v == null) return null;
+          const x = xOf(points.length - 1) + 6;
+          const y = yOf(v);
+          const isHover = hovered === s.key;
+          return (
+            <g
+              key={`chip-${s.key}`}
+              onMouseEnter={() => setHovered(s.key)}
+              onMouseLeave={() => setHovered(null)}
+              style={{ cursor: "pointer" }}
+            >
+              <rect
+                x={x}
+                y={y - 9}
+                width={42}
+                height={18}
+                rx={4}
+                fill={s.color}
+                stroke={isHover ? "#003049" : "none"}
+                strokeWidth={isHover ? 1.5 : 0}
+              />
+              <text x={x + 21} y={y} fontSize={11} fill="#fff" textAnchor="middle" dominantBaseline="middle" fontWeight={700}>
+                {Math.round(v)}%
+              </text>
+            </g>
+          );
+        })}
+        {points.map((p, i) =>
+          i % 2 === 0 ? (
+            <text key={`xl-${i}`} x={xOf(i)} y={H - 8} fontSize={10} fill="#737474" textAnchor="middle" fontFamily="var(--font-numeric)">
+              {p.date.slice(0, 7)}
+            </text>
+          ) : null,
+        )}
+      </svg>
+    </div>
+  );
+}
+
+// §4 G·I·R 3-series line chart
+function GirTrendChartFull({ points }: { points: GirTrendPoint[] }) {
+  const [hovered, setHovered] = useState<string | null>(null);
+  const W = 1040;
+  const H = 200;
+  const padL = 40;
+  const padR = 60;
+  const padT = 12;
+  const padB = 26;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const yMin = -1;
+  const yMax = 1;
+  const yTicks = [-1, -0.5, 0, 0.5, 1];
+  const stepX = points.length > 1 ? innerW / (points.length - 1) : 0;
+  const xOf = (i: number) => padL + i * stepX;
+  const yOf = (v: number) => padT + innerH - ((v - yMin) / (yMax - yMin)) * innerH;
+  const series: Array<{ key: "G" | "I" | "R"; color: string; label: string }> = [
+    { key: "G", color: "#4a7aff", label: "성장 (G)" },
+    { key: "I", color: "#fdb43a", label: "인플레 (I)" },
+    { key: "R", color: "#c1121f", label: "리스크 (R)" },
+  ];
+  const chipOrder = hovered
+    ? [...series.filter((s) => s.key !== hovered), ...series.filter((s) => s.key === hovered)]
+    : series;
+  const buildPath = (key: "G" | "I" | "R") => {
+    const segs: string[] = [];
+    points.forEach((p, i) => {
+      const v = p[key];
+      if (v == null) return;
+      segs.push(`${segs.length === 0 ? "M" : "L"} ${xOf(i).toFixed(1)} ${yOf(v).toFixed(1)}`);
+    });
+    return segs.join(" ");
+  };
+  return (
+    <div style={CFM.wrap}>
+      <div style={CFM.legendRow}>
+        {series.map((s) => (
+          <span key={s.key} style={CFM.legendItem}>
+            <span style={{ ...CFM.legendDot, background: s.color }} />
+            <span style={{ ...CFM.legendText, color: s.color }}>{s.label}</span>
+          </span>
+        ))}
+      </div>
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+        {yTicks.map((t) => {
+          const y = yOf(t);
+          const isZero = t === 0;
+          const isHalf = Math.abs(t) === 0.5;
+          return (
+            <g key={t}>
+              <line x1={padL} x2={W - padR} y1={y} y2={y} stroke={isZero ? "#9a9a9a" : "#ececec"} strokeWidth={isZero ? 1.2 : 1} strokeDasharray={isHalf ? "4 3" : undefined} />
+              <text x={padL - 6} y={y} fontSize={10} fill="#737474" textAnchor="end" dominantBaseline="middle">
+                {t.toFixed(1)}
+              </text>
+            </g>
+          );
+        })}
+        <line x1={padL} y1={padT} x2={padL} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+        {series.map((s) => (
+          <path key={s.key} d={buildPath(s.key)} stroke={s.color} strokeWidth={1.6} fill="none" strokeLinejoin="round" strokeLinecap="round" />
+        ))}
+        {series.map((s) =>
+          points.map((p, i) => {
+            const v = p[s.key];
+            if (v == null) return null;
+            return (
+              <circle
+                key={`${s.key}-d-${i}`}
+                cx={xOf(i)}
+                cy={yOf(v)}
+                r={2.5}
+                fill={s.color}
+              />
+            );
+          }),
+        )}
+        {chipOrder.map((s) => {
+          const last = points[points.length - 1];
+          if (!last) return null;
+          const v = last[s.key];
+          if (v == null) return null;
+          const x = xOf(points.length - 1) + 6;
+          const y = yOf(v);
+          const isHover = hovered === s.key;
+          return (
+            <g
+              key={`chip-${s.key}`}
+              onMouseEnter={() => setHovered(s.key)}
+              onMouseLeave={() => setHovered(null)}
+              style={{ cursor: "pointer" }}
+            >
+              <rect
+                x={x}
+                y={y - 9}
+                width={42}
+                height={18}
+                rx={4}
+                fill={s.color}
+                stroke={isHover ? "#003049" : "none"}
+                strokeWidth={isHover ? 1.5 : 0}
+              />
+              <text x={x + 21} y={y} fontSize={11} fill="#fff" textAnchor="middle" dominantBaseline="middle" fontWeight={700}>
+                {(v >= 0 ? "+" : "") + v.toFixed(2)}
+              </text>
+            </g>
+          );
+        })}
+        {points.map((p, i) =>
+          i % 3 === 0 ? (
+            <text key={`xl-${i}`} x={xOf(i)} y={H - 8} fontSize={10} fill="#737474" textAnchor="middle" fontFamily="var(--font-numeric)">
+              {p.date.slice(0, 7)}
+            </text>
+          ) : null,
+        )}
+      </svg>
+    </div>
+  );
+}
+
+// §5 거시지표 세부 수치 표
+function MacroIndicatorsTable({ rows }: { rows: MacroIndicatorRow[] }) {
+  return (
+    <div style={MIT.wrap}>
+      <div style={{ ...MIT.row, ...MIT.head }}>
+        <span style={{ ...MIT.cell, ...MIT.colLabel }}>지표</span>
+        <span style={MIT.cell}>현재 수치</span>
+        <span style={MIT.cell}>전월 수치</span>
+        <span style={MIT.cell}>변동</span>
+        <span style={MIT.cell}>추이</span>
+        <span style={MIT.cell}>기준선</span>
+        <span style={MIT.cell}>장기 평균</span>
+        <span style={MIT.cell}>영향</span>
+        <span style={MIT.cell}>메세지</span>
+        <span style={MIT.cell}>시그널</span>
+      </div>
+      {rows.map((r) => (
+        <div key={r.label} style={MIT.row}>
+          <span style={{ ...MIT.cell, ...MIT.colLabel }}>{r.label}</span>
+          <span style={MIT.cell}>{r.current}</span>
+          <span style={MIT.cell}>{r.previous}</span>
+          <span style={{ ...MIT.cell, color: r.deltaColor, fontWeight: 700 }}>{r.delta}</span>
+          <span style={MIT.cell}>
+            <TrendSpark values={r.trend} color={r.deltaColor} />
+          </span>
+          <span style={MIT.cell}>{r.baseline}</span>
+          <span style={MIT.cell}>{r.longAvg}</span>
+          <span style={{ ...MIT.cell, color: r.influenceColor, fontWeight: 700 }}>{r.influence}</span>
+          <span style={MIT.cell}>{r.message}</span>
+          <span style={MIT.cell}>
+            <span style={{ ...MIT.signalChip, color: r.signalColor, background: r.signalColor === "#43bb2e" ? "#e4ffdf" : "#ffe4e4" }}>
+              {r.signal}
+            </span>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function TrendSpark({ values, color }: { values: number[]; color: string }) {
+  const W = 60;
+  const H = 20;
+  if (values.length < 2) return <span style={{ color: "#9a9a9a" }}>—</span>;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = max - min || 1;
+  const stepX = W / (values.length - 1);
+  const pts = values.map((v, i) => ({
+    x: i * stepX,
+    y: H - 2 - ((v - min) / span) * (H - 4),
+  }));
+  const d = pts
+    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
+    .join(" ");
+  return (
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
+      <path d={d} stroke={color} strokeWidth={1.2} fill="none" />
+      {pts.map((p, i) => (
+        <circle key={i} cx={p.x} cy={p.y} r={1.4} fill={color} />
+      ))}
+    </svg>
   );
 }
 
@@ -816,5 +1142,79 @@ const S: Record<string, CSSProperties> = {
     fontWeight: 600,
     color: MUTED,
     lineHeight: 1.45,
+  },
+};
+
+// §3·§4 chart frame
+const CFM: Record<string, CSSProperties> = {
+  wrap: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 10,
+    flex: 1,
+  },
+  legendRow: {
+    display: "flex",
+    gap: 16,
+    alignItems: "center",
+  },
+  legendItem: {
+    display: "flex",
+    alignItems: "center",
+    gap: 5,
+  },
+  legendDot: {
+    width: 8,
+    height: 8,
+    borderRadius: "50%",
+    flexShrink: 0,
+  },
+  legendText: {
+    fontSize: 12,
+    fontWeight: 700,
+    fontFamily: "var(--font-numeric)",
+  },
+};
+
+// §5 거시지표 표
+const MIT: Record<string, CSSProperties> = {
+  wrap: {
+    display: "flex",
+    flexDirection: "column",
+    flex: 1,
+    fontSize: 12,
+  },
+  row: {
+    display: "grid",
+    gridTemplateColumns: "minmax(120px, 1.4fr) repeat(3, 1fr) 70px 0.6fr 0.8fr 0.7fr 0.9fr 0.7fr",
+    alignItems: "center",
+    padding: "8px 6px",
+    borderBottom: "1px solid #ececec",
+    gap: 6,
+  },
+  head: {
+    fontWeight: 700,
+    color: NAVY,
+    background: "#fafbfc",
+    borderTop: "1px solid #ececec",
+  },
+  cell: {
+    fontSize: 12,
+    color: NAVY,
+    fontFamily: "var(--font-numeric)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+  colLabel: {
+    fontFamily: "inherit",
+    fontWeight: 600,
+  },
+  signalChip: {
+    fontSize: 11,
+    fontWeight: 700,
+    padding: "2px 8px",
+    borderRadius: 4,
+    fontFamily: "var(--font-numeric)",
   },
 };

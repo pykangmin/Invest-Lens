@@ -25,6 +25,7 @@ import {
 import type {
   CompanySnapshot,
   GlobalEnvironmentResponse,
+  StockPriceTech,
 } from "../types/investment";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
@@ -213,9 +214,9 @@ export function TechnicalDetail({
             </section>
           </div>
 
-          {/* §2 종합 점수 추이 — graph placeholder */}
+          {/* §2 종합 점수 추이 */}
           <SectionBoxFull title="종합 점수 추이" height={255}>
-            <GraphPlaceholder hint="60일 종합 점수 line chart" />
+            <ScoreTrendChart history={analysis.scoreHistory} />
           </SectionBoxFull>
 
           {/* §3 지표별 가이드 */}
@@ -258,12 +259,12 @@ export function TechnicalDetail({
             </div>
           </section>
 
-          {/* §4 평균이동선 차트 — graph placeholder */}
+          {/* §4 평균이동선 차트 */}
           <SectionBoxFull
             title="평균이동선 차트 (주가 · MA20 · MA50 · MA200)"
-            height={313}
+            height={320}
           >
-            <GraphPlaceholder hint="Close + MA20 + MA50 + MA200 multi-line chart" />
+            <PriceMaChart history={data.snapshot.technicalHistory} />
           </SectionBoxFull>
         </>
       )}
@@ -489,6 +490,323 @@ function TableRow({ metric }: { metric: TechnicalMetricScore }) {
       </span>
     </div>
   );
+}
+
+// §2 종합 점수 추이 — 단일 시리즈 line + dot + 점 값 라벨 + 평균선
+function ScoreTrendChart({ history }: { history: Array<{ date: string; score: number }> }) {
+  const W = 1040;
+  const H = 240;
+  const padL = 40;
+  const padR = 80; // 평균 라벨 자리
+  const padT = 20;
+  const padB = 30;
+  const innerW = W - padL - padR;
+  const innerH = H - padT - padB;
+  const pts = history.slice(-20);
+  const yMax = 100;
+  const yTicks = [0, 20, 40, 60, 80, 100];
+  // 양쪽 한 칸 여백: (pts.length + 1) 단위 + 시작점은 padL + stepX
+  const stepX = pts.length > 0 ? innerW / (pts.length + 1) : 0;
+  const xOf = (i: number) => padL + (i + 1) * stepX;
+  const yOf = (v: number) => padT + innerH - (v / yMax) * innerH;
+  const lineColor = "#43bb2e";
+  if (pts.length < 2) {
+    return <div style={{ color: "#9a9a9a", padding: 20 }}>표본 부족</div>;
+  }
+  // 시장 평균 — 보이는 기간 × 전체 ticker 평균 (현재 DB 사전계산 없음, mock)
+  // TODO: /api/market-score-avg?days=20 신규 endpoint 또는 사전 계산 컬럼 필요
+  const avg = 50;
+  const d = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${xOf(i).toFixed(1)} ${yOf(p.score).toFixed(1)}`).join(" ");
+  return (
+    <svg
+      width="100%"
+      height="100%"
+      viewBox={`0 0 ${W} ${H}`}
+      preserveAspectRatio="xMidYMid meet"
+      style={{ display: "block" }}
+    >
+      {yTicks.map((t) => {
+        const y = yOf(t);
+        return (
+          <g key={t}>
+            {t > 0 && <line x1={padL} x2={W - padR} y1={y} y2={y} stroke="#ececec" strokeWidth={1} />}
+            <text x={padL - 6} y={y} fontSize={10} fill="#737474" textAnchor="end" dominantBaseline="middle">
+              {t}
+            </text>
+          </g>
+        );
+      })}
+      <line x1={padL} y1={padT} x2={padL} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+      <line x1={padL} y1={padT + innerH} x2={W - padR} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+      {/* 평균선 (빨간 dashed) + 우측 라벨 */}
+      <line
+        x1={padL}
+        x2={W - padR}
+        y1={yOf(avg)}
+        y2={yOf(avg)}
+        stroke="#e06069"
+        strokeWidth={1.2}
+        strokeDasharray="6 4"
+      />
+      <text
+        x={W - padR + 6}
+        y={yOf(avg)}
+        fontSize={11}
+        fill="#e06069"
+        dominantBaseline="middle"
+        fontWeight={700}
+      >
+        시장 평균 {avg.toFixed(1)}
+      </text>
+      <path d={d} stroke={lineColor} strokeWidth={1.8} fill="none" strokeLinejoin="round" strokeLinecap="round" />
+      {pts.map((p, i) => (
+        <g key={i}>
+          <circle cx={xOf(i)} cy={yOf(p.score)} r={3.5} fill={lineColor} />
+          <text
+            x={xOf(i)}
+            y={yOf(p.score) - 10}
+            fontSize={12}
+            fill="#003049"
+            textAnchor="middle"
+            fontWeight={700}
+          >
+            {Math.round(p.score)}
+          </text>
+        </g>
+      ))}
+      {pts.map((p, i) =>
+        i % 2 === 0 ? (
+          <text key={`xl-${i}`} x={xOf(i)} y={H - 8} fontSize={9} fill="#737474" textAnchor="middle">
+            {p.date.slice(5)}
+          </text>
+        ) : null,
+      )}
+    </svg>
+  );
+}
+
+// §4 평균이동선 차트 — MA20/MA50/MA200 3 series + 거래량 막대 하단
+function PriceMaChart({ history }: { history: StockPriceTech[] }) {
+  const [hovered, setHovered] = useState<string | null>(null);
+  const W = 1040;
+  const H = 360;
+  const padL = 8;
+  const padR = 60; // 우측 chip 자리
+  const padT = 36; // 범례
+  const chartH = 180;
+  const xLabelH = 50; // X 라벨 자리 + 상하 간격
+  const volH = 60;
+  const innerW = W - padL - padR;
+  // 최근 60일 (close 기준 ASC)
+  const asc = [...history].reverse().slice(-60);
+  // ma20 클라이언트 SMA20 계산 (DB ma_20 컬럼이 close=null row 에만 채워져 있음)
+  const closes = asc.map((t) => t.close);
+  const sma20: Array<number | null> = closes.map((_, i) => {
+    if (i < 19) return null;
+    const window = closes.slice(i - 19, i + 1).filter((v): v is number => v != null);
+    if (window.length < 15) return null;
+    return window.reduce((a, b) => a + b, 0) / window.length;
+  });
+  // line 데이터
+  type LineKey = "ma20" | "ma50" | "ma200";
+  const lines: Array<{ key: LineKey; label: string; color: string; getVal: (t: StockPriceTech, i: number) => number | null }> = [
+    { key: "ma20", label: "MA20", color: "#c1121f", getVal: (_t, i) => sma20[i] ?? null },
+    { key: "ma50", label: "MA50", color: "#fdb43a", getVal: (t) => t.ma50 ?? null },
+    { key: "ma200", label: "MA200", color: "#43bb2e", getVal: (t) => t.ma200 ?? null },
+  ];
+  // Y 범위
+  const allVals: number[] = [];
+  asc.forEach((t, i) => {
+    for (const s of lines) {
+      const v = s.getVal(t, i);
+      if (v != null) allVals.push(v);
+    }
+  });
+  const dataMin = allVals.length > 0 ? Math.min(...allVals) : 0;
+  const dataMax = allVals.length > 0 ? Math.max(...allVals) : 100;
+  const range = dataMax - dataMin || 1;
+  const yMin = dataMin - range * 0.05;
+  const yMax = dataMax + range * 0.05;
+  const stepX = asc.length > 1 ? innerW / (asc.length - 1) : 0;
+  const xOf = (i: number) => padL + i * stepX;
+  const yOf = (v: number) => padT + chartH - ((v - yMin) / (yMax - yMin)) * chartH;
+  // Y tick — 5 단위 기본, 범위 크면 10/20 으로
+  const yRangeSpan = yMax - yMin;
+  const tickStep = yRangeSpan > 200 ? 25 : yRangeSpan > 100 ? 10 : 5;
+  const yTicks: number[] = [];
+  const firstTick = Math.ceil(yMin / tickStep) * tickStep;
+  for (let t = firstTick; t <= yMax; t += tickStep) yTicks.push(Number(t.toFixed(2)));
+  // 거래량 영역 Y 시작
+  const volStartY = padT + chartH + xLabelH;
+  const volMax = Math.max(0, ...asc.map((t) => t.volume ?? 0));
+  const yVol = (v: number) => volStartY + (volMax > 0 ? (1 - v / volMax) * volH : volH);
+  // 우측 chip 데이터 (각 series 최신값)
+  const chips = lines
+    .map((s) => {
+      const lastIdx = asc.length - 1;
+      // 최신부터 역방향 valid 값 찾기
+      for (let i = lastIdx; i >= 0; i--) {
+        const v = s.getVal(asc[i]!, i);
+        if (v != null) return { ...s, value: v, valueY: yOf(v) };
+      }
+      return null;
+    })
+    .filter((c): c is { key: LineKey; label: string; color: string; getVal: typeof lines[0]["getVal"]; value: number; valueY: number } => c != null);
+  const chipOrder = hovered
+    ? [...chips.filter((c) => c.key !== hovered), ...chips.filter((c) => c.key === hovered)]
+    : chips;
+  return (
+    <svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+      {/* 범례 상단 좌측 */}
+      {lines.map((s, i) => (
+        <g key={s.key} transform={`translate(${padL + 30 + i * 80}, 12)`}>
+          <line x1={0} y1={4} x2={14} y2={4} stroke={s.color} strokeWidth={2} />
+          <text x={18} y={4} fontSize={11} fill={s.color} dominantBaseline="middle" fontWeight={700}>
+            {s.label}
+          </text>
+        </g>
+      ))}
+      {/* Y tick (우측 라벨) */}
+      {yTicks.map((t) => {
+        const y = yOf(t);
+        return (
+          <g key={t}>
+            <line x1={padL} x2={W - padR} y1={y} y2={y} stroke="#ececec" strokeWidth={1} />
+            <text x={W - padR + 4} y={y} fontSize={10} fill="#737474" textAnchor="start" dominantBaseline="middle">
+              {t.toFixed(2)}
+            </text>
+          </g>
+        );
+      })}
+      {/* 가격 차트 X axis line */}
+      <line x1={padL} y1={padT + chartH} x2={W - padR} y2={padT + chartH} stroke="#b8b8b8" strokeWidth={1} />
+      {/* MA lines */}
+      {lines.map((s) => {
+        const pts: Array<{ x: number; y: number }> = [];
+        asc.forEach((t, i) => {
+          const v = s.getVal(t, i);
+          if (v == null) return;
+          pts.push({ x: xOf(i), y: yOf(v) });
+        });
+        if (pts.length < 2) return null;
+        const d = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+        return (
+          <path
+            key={s.key}
+            d={d}
+            stroke={s.color}
+            strokeWidth={1.6}
+            fill="none"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            opacity={hovered && hovered !== s.key ? 0.3 : 1}
+          />
+        );
+      })}
+      {/* X 라벨 — 두 그래프 사이 */}
+      {asc.map((t, i) => {
+        const step = Math.max(1, Math.floor(asc.length / 5));
+        if (i % step !== 0) return null;
+        return (
+          <text
+            key={`xl-${i}`}
+            x={xOf(i)}
+            y={padT + chartH + 14}
+            fontSize={10}
+            fill="#737474"
+            textAnchor="middle"
+          >
+            {t.date.slice(5)}
+          </text>
+        );
+      })}
+      {/* 거래량 영역 axis */}
+      <line x1={padL} y1={volStartY + volH} x2={W - padR} y2={volStartY + volH} stroke="#b8b8b8" strokeWidth={1} />
+      {/* 거래량 막대 */}
+      {asc.map((t, i) => {
+        const vol = t.volume ?? 0;
+        if (vol <= 0) return null;
+        const y = yVol(vol);
+        const barH = volStartY + volH - y;
+        return (
+          <rect
+            key={`v-${i}`}
+            x={xOf(i) - stepX * 0.35}
+            y={y}
+            width={Math.max(1, stepX * 0.7)}
+            height={Math.max(0.5, barH)}
+            fill="#c9c9c9"
+          />
+        );
+      })}
+      {/* 거래량 라벨 — 히스토그램 위 */}
+      <text x={padL + 4} y={volStartY - 8} fontSize={13} fill="#737474" fontWeight={700}>
+        거래량
+      </text>
+      {(() => {
+        const latestVol = asc[asc.length - 1]?.volume;
+        if (latestVol == null) return null;
+        const fmt =
+          latestVol >= 1e12
+            ? `${(latestVol / 1e12).toFixed(2)}조`
+            : latestVol >= 1e8
+              ? `${(latestVol / 1e8).toFixed(2)}억`
+              : latestVol >= 1e4
+                ? `${Math.round(latestVol / 1e4).toLocaleString()}만`
+                : latestVol.toLocaleString();
+        return (
+          <text x={padL + 60} y={volStartY - 8} fontSize={13} fill="#43bb2e" fontWeight={700}>
+            {fmt}
+          </text>
+        );
+      })()}
+      {/* 우측 chip 박스 — 각 series 최신값, hover 시 z-order 위 */}
+      {chipOrder.map((c) => {
+        const isHover = hovered === c.key;
+        return (
+          <g
+            key={`chip-${c.key}`}
+            onMouseEnter={() => setHovered(c.key)}
+            onMouseLeave={() => setHovered(null)}
+            style={{ cursor: "pointer" }}
+          >
+            <rect
+              x={W - padR + 4}
+              y={c.valueY - 10}
+              width={50}
+              height={20}
+              rx={3}
+              fill={c.color}
+              stroke={isHover ? "#003049" : "none"}
+              strokeWidth={isHover ? 1.5 : 0}
+            />
+            <text
+              x={W - padR + 29}
+              y={c.valueY}
+              fontSize={11}
+              fill="#fff"
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontWeight={700}
+            >
+              {c.value.toFixed(2)}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// 깔끔한 round step
+function roundNice(v: number): number {
+  if (v <= 0) return 1;
+  const mag = Math.pow(10, Math.floor(Math.log10(v)));
+  const norm = v / mag;
+  if (norm <= 1) return mag;
+  if (norm <= 2) return 2 * mag;
+  if (norm <= 5) return 5 * mag;
+  return 10 * mag;
 }
 
 function SectionBoxFull({
