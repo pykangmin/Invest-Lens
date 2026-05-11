@@ -69,6 +69,54 @@ function interpolateFundamentalsHistory(history: StockFundamentals[]): StockFund
   return history;
 }
 
+const FUNDAMENTAL_FILL_FIELDS = [
+  "market_cap",
+  "per",
+  "pbr",
+  "roe",
+  "net_profit_margin",
+  "debt_to_equity",
+  "revenue_growth",
+  "eps_growth",
+  "ev_ebitda",
+  "fcf_yield",
+  "fcf_margin",
+  "ccc",
+  "gross_margin_yoy",
+  "pbr_z_score",
+  "forward_per_z_score",
+] as const;
+
+type FundamentalFillField = (typeof FUNDAMENTAL_FILL_FIELDS)[number];
+
+function toTime(value: string | Date): number {
+  return value instanceof Date ? value.getTime() : new Date(`${value}T00:00:00.000Z`).getTime();
+}
+
+function hasAnyFundamentalMetric(row: StockFundamentalsRow): boolean {
+  return FUNDAMENTAL_FILL_FIELDS.some((field) => row[field] !== null);
+}
+
+function fillFundamentalsHistory(rows: StockFundamentalsRow[]): StockFundamentalsRow[] {
+  const carry: Partial<Record<FundamentalFillField, number>> = {};
+  const filledAsc = [...rows]
+    .sort((a, b) => toTime(a.date) - toTime(b.date))
+    .map((row) => {
+      const filled: StockFundamentalsRow = { ...row };
+      for (const field of FUNDAMENTAL_FILL_FIELDS) {
+        if (filled[field] === null && carry[field] !== undefined) {
+          filled[field] = carry[field]!;
+        }
+        if (filled[field] !== null) {
+          carry[field] = filled[field]!;
+        }
+      }
+      return filled;
+    });
+
+  return filledAsc.sort((a, b) => toTime(b.date) - toTime(a.date));
+}
+
 export default async function handler(
   req: ApiRequest,
   res: ApiResponse,
