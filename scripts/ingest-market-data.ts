@@ -3,10 +3,11 @@ import { resolve } from "node:path";
 import pg from "pg";
 import {
   fetchYahooDaily,
+  type YahooDailyPoint,
   fxRateFromYahoo,
   marketIndexFromYahoo,
 } from "../api/_lib/marketData";
-import type { FxRatePoint, MarketIndexPoint } from "../src/types/investment";
+import type { CommodityPrice, FxRatePoint, MarketIndexPoint } from "../src/types/investment";
 
 const { Client, types } = pg;
 
@@ -37,6 +38,19 @@ const FX_SERIES = [
   { yahooSymbol: "GBPUSD=X", pair: "GBP/USD", baseCurrency: "GBP", quoteCurrency: "USD" },
   { yahooSymbol: "EURKRW=X", pair: "EUR/KRW", baseCurrency: "EUR", quoteCurrency: "KRW" },
   { yahooSymbol: "JPYKRW=X", pair: "JPY/KRW", baseCurrency: "JPY", quoteCurrency: "KRW" },
+] as const;
+
+const COMMODITY_SERIES = [
+  { yahooSymbol: "CL=F", symbol: "CL=F", category: "에너지", unit: "USD/bbl" },
+  { yahooSymbol: "NG=F", symbol: "NG=F", category: "에너지", unit: "USD/MMBtu" },
+  { yahooSymbol: "GC=F", symbol: "GC=F", category: "귀금속", unit: "USD/oz" },
+  { yahooSymbol: "SI=F", symbol: "SI=F", category: "귀금속", unit: "USD/oz" },
+  { yahooSymbol: "HG=F", symbol: "HG=F", category: "금속", unit: "USD/lb" },
+  { yahooSymbol: "ZW=F", symbol: "ZW=F", category: "농산물", unit: "USd/bu" },
+  { yahooSymbol: "ZC=F", symbol: "ZC=F", category: "농산물", unit: "USd/bu" },
+  { yahooSymbol: "ZS=F", symbol: "ZS=F", category: "농산물", unit: "USd/bu" },
+  { yahooSymbol: "LIT", symbol: "LIT", category: "금속", unit: "ETF price" },
+  { yahooSymbol: "REMX", symbol: "REMX", category: "금속", unit: "ETF price" },
 ] as const;
 
 types.setTypeParser(20, (value) => Number(value));
@@ -123,6 +137,27 @@ async function ensureTables(client: pg.Client): Promise<void> {
   );
 }
 
+function commodityFromYahoo(
+  symbol: string,
+  category: string,
+  unit: string,
+  rows: YahooDailyPoint[],
+  limit: number,
+): CommodityPrice[] {
+  return rows.slice(0, limit).map((row) => ({
+    id: 0,
+    symbol,
+    date: row.date,
+    close: row.close,
+    open: row.open,
+    high: row.high,
+    low: row.low,
+    volume: row.volume,
+    category,
+    unit,
+  }));
+}
+
 async function upsertMarketIndex(
   client: pg.Client,
   rows: MarketIndexPoint[],
@@ -202,10 +237,43 @@ async function upsertFxRates(client: pg.Client, rows: FxRatePoint[]): Promise<vo
   }
 }
 
+async function upsertCommodities(client: pg.Client, rows: CommodityPrice[]): Promise<void> {
+  for (const row of rows) {
+    await client.query(
+      `
+        INSERT INTO public.commodity_prices
+          (symbol, date, close, open, high, low, volume, category, unit)
+        VALUES
+          ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        ON CONFLICT (symbol, date)
+        DO UPDATE SET
+          close = EXCLUDED.close,
+          open = EXCLUDED.open,
+          high = EXCLUDED.high,
+          low = EXCLUDED.low,
+          volume = EXCLUDED.volume,
+          category = EXCLUDED.category,
+          unit = EXCLUDED.unit
+      `,
+      [
+        row.symbol,
+        row.date,
+        row.close,
+        row.open,
+        row.high,
+        row.low,
+        row.volume,
+        row.category,
+        row.unit,
+      ],
+    );
+  }
+}
+
 loadEnvFile(".env.local");
 
-const range = option("--range", "2y");
-const limit = Number.parseInt(option("--limit", "600"), 10);
+const range = option("--range", "5y");
+const limit = Number.parseInt(option("--limit", "1500"), 10);
 const dryRun = flag("--dry-run");
 
 const marketResults = await Promise.all(
@@ -231,9 +299,22 @@ const fxResults = await Promise.all(
     ),
   })),
 );
+const commodityResults = await Promise.all(
+  COMMODITY_SERIES.map(async (series) => ({
+    series,
+    rows: commodityFromYahoo(
+      series.symbol,
+      series.category,
+      series.unit,
+      await fetchYahooDaily(series.yahooSymbol, range),
+      limit,
+    ),
+  })),
+);
 
 const marketRows = marketResults.flatMap((result) => result.rows);
 const fxRows = fxResults.flatMap((result) => result.rows);
+const commodityRows = commodityResults.flatMap((result) => result.rows);
 
 if (dryRun) {
   console.log(
@@ -248,6 +329,11 @@ if (dryRun) {
         })),
         fx: fxResults.map((result) => ({
           pair: result.series.pair,
+          rows: result.rows.length,
+          latest: result.rows[0] ?? null,
+        })),
+        commodities: commodityResults.map((result) => ({
+          symbol: result.series.symbol,
           rows: result.rows.length,
           latest: result.rows[0] ?? null,
         })),
@@ -269,6 +355,7 @@ if (dryRun) {
     await ensureTables(client);
     await upsertMarketIndex(client, marketRows);
     await upsertFxRates(client, fxRows);
+    await upsertCommodities(client, commodityRows);
     await client.query("COMMIT");
     console.log(
       JSON.stringify(
@@ -281,11 +368,16 @@ if (dryRun) {
             latest: result.rows[0] ?? null,
           })),
           fx: fxResults.map((result) => ({
-            pair: result.series.pair,
-            rows: result.rows.length,
-            latest: result.rows[0] ?? null,
-          })),
-        },
+          pair: result.series.pair,
+          rows: result.rows.length,
+          latest: result.rows[0] ?? null,
+        })),
+        commodities: commodityResults.map((result) => ({
+          symbol: result.series.symbol,
+          rows: result.rows.length,
+          latest: result.rows[0] ?? null,
+        })),
+      },
         null,
         2,
       ),

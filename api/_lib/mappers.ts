@@ -44,6 +44,7 @@ export interface StockPriceTechRow {
   volume: number | null;
   rsi_14: number | null;
   macd: number | null;
+  ma_20: number | null;
   ma_50: number | null;
   ma_200: number | null;
 }
@@ -139,6 +140,7 @@ export function mapTechnical(row: StockPriceTechRow): StockPriceTech {
     volume: row.volume,
     rsi14: row.rsi_14,
     macd: row.macd,
+    ma20: row.ma_20,
     ma50: row.ma_50,
     ma200: row.ma_200,
   };

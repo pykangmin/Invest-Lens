@@ -56,7 +56,7 @@ export default async function handler(
 
   try {
     const symbol = normalizeIndexSymbol(getQueryString(req, "symbol", DEFAULT_SYMBOL));
-    const historyLimit = getQueryInt(req, "historyLimit", 252, 1, 1_000);
+    const historyLimit = getQueryInt(req, "historyLimit", 252, 1, 2_000);
     const dbHistory = await loadFromDb(symbol, historyLimit);
 
     let payload: MarketIndexResponse;
@@ -68,7 +68,7 @@ export default async function handler(
         source: "db",
       };
     } else {
-      const raw = await fetchYahooDaily(symbol, "2y");
+      const raw = await fetchYahooDaily(symbol, "5y");
       const history = marketIndexFromYahoo(symbol, displayName(symbol), raw, historyLimit);
       payload = {
         symbol,

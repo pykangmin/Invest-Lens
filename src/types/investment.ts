@@ -35,6 +35,7 @@ export interface StockPriceTech {
   volume: number | null;
   rsi14: number | null;
   macd: number | null;
+  ma20: number | null;
   ma50: number | null;
   ma200: number | null;
 }

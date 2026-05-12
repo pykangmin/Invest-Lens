@@ -70,7 +70,7 @@ export default async function handler(
 
   try {
     const { pair, baseCurrency, quoteCurrency, yahooSymbol } = pairFromQuery(req);
-    const historyLimit = getQueryInt(req, "historyLimit", 252, 1, 1_000);
+    const historyLimit = getQueryInt(req, "historyLimit", 252, 1, 2_000);
     const dbHistory = await loadFromDb(pair, historyLimit);
 
     let payload: FxRateResponse;
@@ -82,7 +82,7 @@ export default async function handler(
         source: "db",
       };
     } else {
-      const raw = await fetchYahooDaily(yahooSymbol, "2y");
+      const raw = await fetchYahooDaily(yahooSymbol, "5y");
       const history = fxRateFromYahoo(
         pair,
         baseCurrency,

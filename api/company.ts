@@ -19,7 +19,7 @@ import {
 } from "./_lib/mappers.js";
 import type { CompanySnapshot } from "../src/types/investment.js";
 
-const FUNDAMENTAL_FILL_FIELDS = [
+const FUNDAMENTAL_AVAILABLE_FIELDS = [
   "market_cap",
   "per",
   "pbr",
@@ -37,23 +37,36 @@ const FUNDAMENTAL_FILL_FIELDS = [
   "forward_per_z_score",
 ] as const;
 
-type FundamentalFillField = (typeof FUNDAMENTAL_FILL_FIELDS)[number];
+const FUNDAMENTAL_CARRY_FILL_FIELDS = [
+  "market_cap",
+  "per",
+  "pbr",
+  "roe",
+  "net_profit_margin",
+  "debt_to_equity",
+  "ev_ebitda",
+  "fcf_yield",
+  "fcf_margin",
+  "ccc",
+] as const;
+
+type FundamentalCarryFillField = (typeof FUNDAMENTAL_CARRY_FILL_FIELDS)[number];
 
 function toTime(value: string | Date): number {
   return value instanceof Date ? value.getTime() : new Date(`${value}T00:00:00.000Z`).getTime();
 }
 
 function hasAnyFundamentalMetric(row: StockFundamentalsRow): boolean {
-  return FUNDAMENTAL_FILL_FIELDS.some((field) => row[field] !== null);
+  return FUNDAMENTAL_AVAILABLE_FIELDS.some((field) => row[field] !== null);
 }
 
 function fillFundamentalsHistory(rows: StockFundamentalsRow[]): StockFundamentalsRow[] {
-  const carry: Partial<Record<FundamentalFillField, number>> = {};
+  const carry: Partial<Record<FundamentalCarryFillField, number>> = {};
   const filledAsc = [...rows]
     .sort((a, b) => toTime(a.date) - toTime(b.date))
     .map((row) => {
       const filled: StockFundamentalsRow = { ...row };
-      for (const field of FUNDAMENTAL_FILL_FIELDS) {
+      for (const field of FUNDAMENTAL_CARRY_FILL_FIELDS) {
         if (filled[field] === null && carry[field] !== undefined) {
           filled[field] = carry[field]!;
         }
