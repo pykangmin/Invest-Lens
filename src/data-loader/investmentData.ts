@@ -73,15 +73,16 @@ export async function loadPeers(
 }
 
 // 2026-05 — 전 종목 일별 기술 점수 평균 (technical_score_market_avg).
+// Hobby plan 12 함수 제한 → /api/aggregates 통합 endpoint 의 kind 분기.
 export async function loadMarketScoreAvg(days = 60): Promise<MarketScoreAvgResponse> {
-  const params = new URLSearchParams({ days: String(days) });
-  return fetchApiData<MarketScoreAvgResponse>(`/api/market-score-avg?${params}`);
+  const params = new URLSearchParams({ kind: "marketScore", days: String(days) });
+  return fetchApiData<MarketScoreAvgResponse>(`/api/aggregates?${params}`);
 }
 
 // 2026-05 — sector × metric 평균/분위 (stock_fundamental_sector_stats).
 export async function loadSectorAvg(sector: string): Promise<SectorAvgResponse> {
-  const params = new URLSearchParams({ sector });
-  return fetchApiData<SectorAvgResponse>(`/api/sector-avg?${params}`);
+  const params = new URLSearchParams({ kind: "sector", sector });
+  return fetchApiData<SectorAvgResponse>(`/api/aggregates?${params}`);
 }
 
 export async function loadCommodities(
