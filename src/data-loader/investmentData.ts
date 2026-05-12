@@ -6,7 +6,9 @@ import type {
   DbHealthResponse,
   GlobalEnvironmentResponse,
   MacroRegimeResponse,
+  MarketScoreAvgResponse,
   PeersResponse,
+  SectorAvgResponse,
 } from "../types/investment";
 import { fetchApiData } from "./apiClient";
 
@@ -68,6 +70,18 @@ export async function loadPeers(
     limit: String(limit),
   });
   return fetchApiData<PeersResponse>(`/api/peers?${params}`);
+}
+
+// 2026-05 — 전 종목 일별 기술 점수 평균 (technical_score_market_avg).
+export async function loadMarketScoreAvg(days = 60): Promise<MarketScoreAvgResponse> {
+  const params = new URLSearchParams({ days: String(days) });
+  return fetchApiData<MarketScoreAvgResponse>(`/api/market-score-avg?${params}`);
+}
+
+// 2026-05 — sector × metric 평균/분위 (stock_fundamental_sector_stats).
+export async function loadSectorAvg(sector: string): Promise<SectorAvgResponse> {
+  const params = new URLSearchParams({ sector });
+  return fetchApiData<SectorAvgResponse>(`/api/sector-avg?${params}`);
 }
 
 export async function loadCommodities(
@@ -162,7 +176,8 @@ export async function loadDashboardEnvironment(): Promise<DashboardEnvironment> 
       loadGlobalEnvironment({ symbol: "^VIX", historyLimit: 120 }),
       loadGlobalEnvironment({ symbol: "DGS10", historyLimit: 120 }),
       loadGlobalEnvironment({ symbol: "BAMLH0A0HYM2", historyLimit: 120 }),
-      loadCommodities(undefined, 120),
+      // commodityYoy(252일 필요) 산출을 위해 300일 로드 — 디테일 페이지와 동일.
+      loadCommodities(undefined, 300),
     ]);
   return {
     macroRegime,

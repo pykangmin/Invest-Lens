@@ -21,10 +21,12 @@ import {
 import {
   loadCompanySnapshot,
   loadGlobalEnvironment,
+  loadMarketScoreAvg,
 } from "../data-loader/investmentData";
 import type {
   CompanySnapshot,
   GlobalEnvironmentResponse,
+  MarketScoreAvgResponse,
   StockPriceTech,
 } from "../types/investment";
 import { InfoTooltip } from "../visualization/InfoTooltip";
@@ -34,6 +36,7 @@ import { EmptyState } from "./detail";
 interface DetailState {
   snapshot: CompanySnapshot;
   vix: GlobalEnvironmentResponse;
+  marketScoreAvg: MarketScoreAvgResponse;
 }
 
 export interface TechnicalDetailProps {
@@ -144,9 +147,10 @@ export function TechnicalDetail({
     Promise.all([
       loadCompanySnapshot(ticker, 252),
       loadGlobalEnvironment({ symbol: "^VIX", historyLimit: 120 }),
+      loadMarketScoreAvg(60),
     ])
-      .then(([snapshot, vix]) => {
-        if (alive) setData({ snapshot, vix });
+      .then(([snapshot, vix, marketScoreAvg]) => {
+        if (alive) setData({ snapshot, vix, marketScoreAvg });
       })
       .catch((e: unknown) => {
         if (alive) setError(e instanceof Error ? e.message : String(e));
@@ -217,7 +221,10 @@ export function TechnicalDetail({
 
           {/* §2 종합 점수 추이 */}
           <SectionBoxFull title="종합 점수 추이" height={255}>
-            <ScoreTrendChart history={analysis.scoreHistory} />
+            <ScoreTrendChart
+              history={analysis.scoreHistory}
+              marketAvgHistory={data.marketScoreAvg.history}
+            />
           </SectionBoxFull>
 
           {/* §3 지표별 가이드 */}
@@ -514,8 +521,14 @@ function TableRow({ metric }: { metric: TechnicalMetricScore }) {
   );
 }
 
-// §2 종합 점수 추이 — 단일 시리즈 line + dot + 점 값 라벨 + 평균선
-function ScoreTrendChart({ history }: { history: Array<{ date: string; score: number }> }) {
+// §2 종합 점수 추이 — 단일 시리즈 line + dot + 점 값 라벨 + 시장 평균선
+function ScoreTrendChart({
+  history,
+  marketAvgHistory,
+}: {
+  history: Array<{ date: string; score: number }>;
+  marketAvgHistory: Array<{ date: string; avgScore: number }>;
+}) {
   const W = 1040;
   const H = 240;
   const padL = 40;
@@ -535,9 +548,14 @@ function ScoreTrendChart({ history }: { history: Array<{ date: string; score: nu
   if (pts.length < 2) {
     return <div style={{ color: "#9a9a9a", padding: 20 }}>표본 부족</div>;
   }
-  // 시장 평균 — 보이는 기간 × 전체 ticker 평균 (현재 DB 사전계산 없음, mock)
-  // TODO: /api/market-score-avg?days=20 신규 endpoint 또는 사전 계산 컬럼 필요
-  const avg = 50;
+  // 시장 평균 — 가시 기간(20일) DB 평균 점수 평균. (DB: technical_score_market_avg)
+  const visibleDates = new Set(pts.map((p) => p.date));
+  const avgInWindow = marketAvgHistory.filter((m) => visibleDates.has(m.date));
+  const avgPool = avgInWindow.length > 0 ? avgInWindow : marketAvgHistory.slice(0, 20);
+  const avg =
+    avgPool.length > 0
+      ? avgPool.reduce((a, b) => a + b.avgScore, 0) / avgPool.length
+      : 50;
   const d = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${xOf(i).toFixed(1)} ${yOf(p.score).toFixed(1)}`).join(" ");
   return (
     <svg
@@ -621,26 +639,18 @@ function PriceMaChart({ history }: { history: StockPriceTech[] }) {
   const innerW = W - padL - padR;
   // 최근 60일 (close 기준 ASC)
   const asc = [...history].reverse().slice(-60);
-  // ma20 클라이언트 SMA20 계산 (DB ma_20 컬럼이 close=null row 에만 채워져 있음)
-  const closes = asc.map((t) => t.close);
-  const sma20: Array<number | null> = closes.map((_, i) => {
-    if (i < 19) return null;
-    const window = closes.slice(i - 19, i + 1).filter((v): v is number => v != null);
-    if (window.length < 15) return null;
-    return window.reduce((a, b) => a + b, 0) / window.length;
-  });
-  // line 데이터
+  // 2026-05 DB 보강: ma_20 이 close row 와 같이 채워짐 → DB 값 직접 사용
   type LineKey = "ma20" | "ma50" | "ma200";
-  const lines: Array<{ key: LineKey; label: string; color: string; getVal: (t: StockPriceTech, i: number) => number | null }> = [
-    { key: "ma20", label: "MA20", color: "#c1121f", getVal: (_t, i) => sma20[i] ?? null },
+  const lines: Array<{ key: LineKey; label: string; color: string; getVal: (t: StockPriceTech) => number | null }> = [
+    { key: "ma20", label: "MA20", color: "#c1121f", getVal: (t) => t.ma20 ?? null },
     { key: "ma50", label: "MA50", color: "#fdb43a", getVal: (t) => t.ma50 ?? null },
     { key: "ma200", label: "MA200", color: "#43bb2e", getVal: (t) => t.ma200 ?? null },
   ];
   // Y 범위
   const allVals: number[] = [];
-  asc.forEach((t, i) => {
+  asc.forEach((t) => {
     for (const s of lines) {
-      const v = s.getVal(t, i);
+      const v = s.getVal(t);
       if (v != null) allVals.push(v);
     }
   });
@@ -668,7 +678,7 @@ function PriceMaChart({ history }: { history: StockPriceTech[] }) {
       const lastIdx = asc.length - 1;
       // 최신부터 역방향 valid 값 찾기
       for (let i = lastIdx; i >= 0; i--) {
-        const v = s.getVal(asc[i]!, i);
+        const v = s.getVal(asc[i]!);
         if (v != null) return { ...s, value: v, valueY: yOf(v) };
       }
       return null;
@@ -706,7 +716,7 @@ function PriceMaChart({ history }: { history: StockPriceTech[] }) {
       {lines.map((s) => {
         const pts: Array<{ x: number; y: number }> = [];
         asc.forEach((t, i) => {
-          const v = s.getVal(t, i);
+          const v = s.getVal(t);
           if (v == null) return;
           pts.push({ x: xOf(i), y: yOf(v) });
         });

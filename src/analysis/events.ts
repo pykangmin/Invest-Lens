@@ -10,7 +10,7 @@ function fmtTime(date: string): string {
   return `${wd} 09:30 ET`;
 }
 
-export function buildEvents(snapshot: CompanySnapshot): AnalysisEvent[] {
+export function buildEvents(snapshot: CompanySnapshot, limit = 6): AnalysisEvent[] {
   const events: AnalysisEvent[] = [];
   const ticker = snapshot.company.ticker;
 
@@ -102,5 +102,5 @@ export function buildEvents(snapshot: CompanySnapshot): AnalysisEvent[] {
 
   events.sort((a, b) => (a.date < b.date ? 1 : -1));
   void MONTHS; // 향후 EventList 가 사용
-  return events.slice(0, 6);
+  return events.slice(0, limit);
 }

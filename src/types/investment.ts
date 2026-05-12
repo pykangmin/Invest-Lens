@@ -23,6 +23,8 @@ export interface StockFundamentals {
   fcfMargin: number | null;
   ccc: number | null;
   grossMarginYoy: number | null;
+  // 2026-05 추가 — Gross Margin 절대값 (예: 0.49 = 49%)
+  grossMargin: number | null;
   pbrZScore: number | null;
   forwardPerZScore: number | null;
 }
@@ -134,6 +136,34 @@ export interface PeersResponse {
   ticker: string;
   sector: string | null;
   peers: PeerCompany[];
+}
+
+// 2026-05 — /api/market-score-avg 전 종목 일별 기술 점수 평균.
+export interface MarketScoreAvgPoint {
+  date: string;
+  sampleSize: number;
+  avgScore: number;
+  p10Score: number | null;
+  p90Score: number | null;
+}
+export interface MarketScoreAvgResponse {
+  history: MarketScoreAvgPoint[];   // DESC (최신 [0])
+}
+
+// 2026-05 — /api/sector-avg sector × metric 평균/분위 (latest 일자).
+export interface SectorAvgMetric {
+  metric: string;
+  sampleSize: number;
+  avg: number | null;
+  median: number | null;
+  p10: number | null;
+  p90: number | null;
+  winsorizedAvg: number | null;
+}
+export interface SectorAvgResponse {
+  sector: string;
+  date: string;
+  metrics: SectorAvgMetric[];
 }
 
 export interface DbTableHealth {

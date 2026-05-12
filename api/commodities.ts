@@ -14,7 +14,7 @@ export default async function handler(
 
   try {
     const symbol = getQueryString(req, "symbol").trim();
-    const historyLimit = getQueryInt(req, "historyLimit", 180, 1, 500);
+    const historyLimit = getQueryInt(req, "historyLimit", 180, 1, 2000);
 
     const [latest, history] = await Promise.all([
       query<CommodityPriceRow>(
