@@ -49,11 +49,23 @@ export default async function handler(
       SELECT 'global_environment', count(*)::bigint, min(date), max(date)
       FROM public.global_environment
       UNION ALL
+      SELECT 'market_index_prices', count(*)::bigint, min(date), max(date)
+      FROM public.market_index_prices
+      UNION ALL
+      SELECT 'fx_rates', count(*)::bigint, min(date), max(date)
+      FROM public.fx_rates
+      UNION ALL
       SELECT 'commodity_prices', count(*)::bigint, min(date), max(date)
       FROM public.commodity_prices
       UNION ALL
       SELECT 'macro_regime_scores', count(*)::bigint, min(date), max(date)
       FROM public.macro_regime_scores
+      UNION ALL
+      SELECT 'technical_score_market_avg', count(*)::bigint, min(date), max(date)
+      FROM public.technical_score_market_avg
+      UNION ALL
+      SELECT 'stock_fundamental_sector_stats', count(*)::bigint, min(date), max(date)
+      FROM public.stock_fundamental_sector_stats
       ORDER BY table_name
     `);
 

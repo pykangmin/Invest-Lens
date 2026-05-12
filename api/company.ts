@@ -25,6 +25,7 @@ const FUNDAMENTAL_AVAILABLE_FIELDS = [
   "pbr",
   "roe",
   "net_profit_margin",
+  "gross_margin",
   "debt_to_equity",
   "revenue_growth",
   "eps_growth",
@@ -116,7 +117,12 @@ export default async function handler(
           SELECT *
           FROM public.stock_fundamentals
           WHERE ticker = $1
-            AND (per IS NOT NULL OR roe IS NOT NULL OR market_cap IS NOT NULL)
+            AND (
+              per IS NOT NULL
+              OR roe IS NOT NULL
+              OR market_cap IS NOT NULL
+              OR gross_margin IS NOT NULL
+            )
           ORDER BY date DESC
           LIMIT 1
         `,

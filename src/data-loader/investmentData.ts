@@ -1,13 +1,18 @@
 import { assertTicker, normalizeSearchQuery } from "../schema/api";
 import type {
   CommoditiesResponse,
+  CommodityMetricsResponse,
   CompanyMaster,
   CompanySnapshot,
   DbHealthResponse,
+  FundamentalSectorStatsResponse,
   FxRateResponse,
   GlobalEnvironmentResponse,
+  InsightCardsResponse,
+  InsightSection,
   MacroRegimeResponse,
   MarketIndexResponse,
+  TechnicalMarketAverageResponse,
 } from "../types/investment";
 import { fetchApiData } from "./apiClient";
 
@@ -95,6 +100,68 @@ export async function loadCommodities(
   }
 
   return fetchApiData<CommoditiesResponse>(`/api/commodities?${params}`);
+}
+
+export async function loadCommodityMetrics(
+  options: { symbol?: string; lookbackDays?: number } = {},
+): Promise<CommodityMetricsResponse> {
+  const params = new URLSearchParams({
+    lookbackDays: String(options.lookbackDays ?? 252),
+  });
+
+  if (options.symbol) {
+    params.set("symbol", options.symbol);
+  }
+
+  return fetchApiData<CommodityMetricsResponse>(`/api/commodity-metrics?${params}`);
+}
+
+export async function loadTechnicalMarketAverage(
+  limit = 30,
+): Promise<TechnicalMarketAverageResponse> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  return fetchApiData<TechnicalMarketAverageResponse>(
+    `/api/technical-market-average?${params}`,
+  );
+}
+
+export async function loadFundamentalSectorStats(
+  options: {
+    sector?: string;
+    metric?: string;
+    date?: string;
+    limit?: number;
+  } = {},
+): Promise<FundamentalSectorStatsResponse> {
+  const params = new URLSearchParams({ limit: String(options.limit ?? 200) });
+
+  if (options.sector) {
+    params.set("sector", options.sector);
+  }
+
+  if (options.metric) {
+    params.set("metric", options.metric);
+  }
+
+  if (options.date) {
+    params.set("date", options.date);
+  }
+
+  return fetchApiData<FundamentalSectorStatsResponse>(
+    `/api/fundamental-sector-stats?${params}`,
+  );
+}
+
+export async function loadInsightCards(
+  ticker: string,
+  section: InsightSection | "all" = "all",
+): Promise<InsightCardsResponse> {
+  const params = new URLSearchParams({
+    ticker: assertTicker(ticker),
+    section,
+  });
+
+  return fetchApiData<InsightCardsResponse>(`/api/insights?${params}`);
 }
 
 export interface DashboardEnvironment {

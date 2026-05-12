@@ -15,6 +15,7 @@ export interface StockFundamentals {
   pbr: number | null;
   roe: number | null;
   netProfitMargin: number | null;
+  grossMargin: number | null;
   debtToEquity: number | null;
   revenueGrowth: number | null;
   epsGrowth: number | null;
@@ -99,6 +100,85 @@ export interface MacroRegimeScore {
   dominantRegime: string | null;
   confidence: string | null;
   createdAt: string | null;
+}
+
+export interface FundamentalSectorStat {
+  date: string;
+  sector: string;
+  metric: string;
+  sampleSize: number;
+  avgValue: number | null;
+  medianValue: number | null;
+  p10Value: number | null;
+  p90Value: number | null;
+  winsorizedAvg: number | null;
+  updatedAt: string | null;
+}
+
+export interface FundamentalSectorStatsResponse {
+  latestDate: string | null;
+  sector: string | null;
+  metric: string | null;
+  items: FundamentalSectorStat[];
+}
+
+export interface TechnicalMarketAveragePoint {
+  date: string;
+  sampleSize: number;
+  avgScore: number;
+  p10Score: number | null;
+  p90Score: number | null;
+  source: string;
+  updatedAt: string | null;
+}
+
+export interface TechnicalMarketAverageResponse {
+  latest: TechnicalMarketAveragePoint | null;
+  history: TechnicalMarketAveragePoint[];
+}
+
+export interface CommodityMetricPoint {
+  symbol: string;
+  category: string | null;
+  unit: string | null;
+  latestDate: string;
+  latestClose: number;
+  startDate: string;
+  startClose: number;
+  returnPct: number | null;
+  annualizedVolatilityPct: number | null;
+  averageVolume: number | null;
+  sampleSize: number;
+  bubbleSize: number;
+}
+
+export interface CommodityMetricsResponse {
+  lookbackDays: number;
+  items: CommodityMetricPoint[];
+}
+
+export type InsightSection =
+  | "fundamental"
+  | "technical"
+  | "macro"
+  | "commodity";
+
+export type InsightSeverity = "positive" | "neutral" | "warning" | "risk";
+
+export interface InsightCard {
+  id: string;
+  section: InsightSection;
+  title: string;
+  body: string;
+  severity: InsightSeverity;
+  drivers: string[];
+  asOfDate: string | null;
+}
+
+export interface InsightCardsResponse {
+  ticker: string;
+  generatedAt: string;
+  cards: InsightCard[];
 }
 
 export interface CompanySnapshot {

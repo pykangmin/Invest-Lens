@@ -2,9 +2,11 @@ import type {
   CommodityPrice,
   CompanyMaster,
   GlobalEnvironmentPoint,
+  FundamentalSectorStat,
   MacroRegimeScore,
   StockFundamentals,
   StockPriceTech,
+  TechnicalMarketAveragePoint,
 } from "../../src/types/investment.js";
 
 export interface CompanyMasterRow {
@@ -24,6 +26,7 @@ export interface StockFundamentalsRow {
   pbr: number | null;
   roe: number | null;
   net_profit_margin: number | null;
+  gross_margin: number | null;
   debt_to_equity: number | null;
   revenue_growth: number | null;
   eps_growth: number | null;
@@ -82,6 +85,29 @@ export interface MacroRegimeScoreRow {
   created_at: string | Date | null;
 }
 
+export interface FundamentalSectorStatRow {
+  date: string | Date;
+  sector: string;
+  metric: string;
+  sample_size: number;
+  avg_value: number | null;
+  median_value: number | null;
+  p10_value: number | null;
+  p90_value: number | null;
+  winsorized_avg: number | null;
+  updated_at: string | Date | null;
+}
+
+export interface TechnicalMarketAverageRow {
+  date: string | Date;
+  sample_size: number;
+  avg_score: number;
+  p10_score: number | null;
+  p90_score: number | null;
+  source: string | null;
+  updated_at: string | Date | null;
+}
+
 function toDateString(value: string | Date): string {
   if (value instanceof Date) {
     return value.toISOString().slice(0, 10);
@@ -118,6 +144,7 @@ export function mapFundamentals(row: StockFundamentalsRow): StockFundamentals {
     pbr: row.pbr,
     roe: row.roe,
     netProfitMargin: row.net_profit_margin,
+    grossMargin: row.gross_margin,
     debtToEquity: row.debt_to_equity,
     revenueGrowth: row.revenue_growth,
     epsGrowth: row.eps_growth,
@@ -184,5 +211,36 @@ export function mapMacroRegime(row: MacroRegimeScoreRow): MacroRegimeScore {
     dominantRegime: row.dominant_regime,
     confidence: row.confidence,
     createdAt: toIsoString(row.created_at),
+  };
+}
+
+export function mapFundamentalSectorStat(
+  row: FundamentalSectorStatRow,
+): FundamentalSectorStat {
+  return {
+    date: toDateString(row.date),
+    sector: row.sector,
+    metric: row.metric,
+    sampleSize: row.sample_size,
+    avgValue: row.avg_value,
+    medianValue: row.median_value,
+    p10Value: row.p10_value,
+    p90Value: row.p90_value,
+    winsorizedAvg: row.winsorized_avg,
+    updatedAt: toIsoString(row.updated_at),
+  };
+}
+
+export function mapTechnicalMarketAverage(
+  row: TechnicalMarketAverageRow,
+): TechnicalMarketAveragePoint {
+  return {
+    date: toDateString(row.date),
+    sampleSize: row.sample_size,
+    avgScore: row.avg_score,
+    p10Score: row.p10_score,
+    p90Score: row.p90_score,
+    source: row.source ?? "stock_price_tech+market_index_prices",
+    updatedAt: toIsoString(row.updated_at),
   };
 }
