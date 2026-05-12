@@ -44,12 +44,14 @@ import {
   loadCompanySnapshot,
   loadGlobalEnvironment,
   loadPeers,
+  loadSectorAvg,
 } from "../data-loader/investmentData";
 import type {
   CompanySnapshot,
   GlobalEnvironmentResponse,
   PeerCompany,
   PeersResponse,
+  SectorAvgResponse,
   StockFundamentals,
 } from "../types/investment";
 import { InfoTooltip } from "../visualization/InfoTooltip";
@@ -145,8 +147,13 @@ function buildHeroCards(
       f?.revenueGrowth != null ? fmtPct(f.revenueGrowth, 0, true) : "—",
       growthVsInflationLabel(f?.revenueGrowth ?? null, cpiYoy),
     ),
-    // Gross Margin 절대값은 DB 없음 → 큰 숫자 비움 (MOCK).
-    card("gross", "Gross Margin", "—", marginDefenseLabel(f?.grossMarginYoy ?? null)),
+    // 2026-05 DB 보강: stock_fundamentals.gross_margin 컬럼 추가 → 절대값 표시
+    card(
+      "gross",
+      "Gross Margin",
+      f?.grossMargin != null ? fmtPct(f.grossMargin) : "—",
+      marginDefenseLabel(f?.grossMarginYoy ?? null),
+    ),
     card(
       "ev",
       "EV/EBITDA",
@@ -178,6 +185,7 @@ export function FundamentalDetail({
 }: FundamentalDetailProps) {
   const [data, setData] = useState<CompanySnapshot | null>(null);
   const [peers, setPeers] = useState<PeersResponse | null>(null);
+  const [sectorAvg, setSectorAvg] = useState<SectorAvgResponse | null>(null);
   const [cpi, setCpi] = useState<GlobalEnvironmentResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -185,10 +193,18 @@ export function FundamentalDetail({
     let alive = true;
     setData(null);
     setPeers(null);
+    setSectorAvg(null);
     setError(null);
     loadCompanySnapshot(ticker, 24)
       .then((s) => {
         if (alive) setData(s);
+        // company snapshot 의 sector 로 sector 평균 조회
+        const sec = s.company.sector;
+        if (sec) {
+          loadSectorAvg(sec)
+            .then((sa) => { if (alive) setSectorAvg(sa); })
+            .catch(() => { /* sector-avg 실패 비치명 — peers fallback */ });
+        }
       })
       .catch((e: unknown) => {
         if (alive) setError(e instanceof Error ? e.message : String(e));
@@ -244,7 +260,7 @@ export function FundamentalDetail({
     const growthChart = growthChartData(data.fundamentalsHistory);
     const growthInds = growthIndicators(data.fundamentalsHistory);
     const valuationInds = valuationIndicators(data.fundamentalsHistory);
-    const radar = valuationRadarData(data.latestFundamentals, peerList);
+    const radar = valuationRadarData(data.latestFundamentals, peerList, sectorAvg?.metrics ?? null);
     return {
       sections,
       totalScore,
@@ -260,7 +276,7 @@ export function FundamentalDetail({
       valuationInds,
       radar,
     };
-  }, [data, peers, cpi, ticker]);
+  }, [data, peers, sectorAvg, cpi, ticker]);
 
   const updatedAt = data?.latestFundamentals?.date ?? undefined;
 
@@ -850,12 +866,32 @@ function GrowthSection({
   chart: GrowthChartData;
   indicators: CashflowIndicator[];
 }) {
+  // 데이터 적재된 분기 수. 1 이하면 sparse 안내 칩 표시.
+  const validCount = chart.bars.filter((b) => b.revenue != null).length;
+  const showSparseNotice = validCount > 0 && validCount < chart.bars.length;
   return (
     <div style={CF.wrap}>
       <div style={CF.chartHead}>
         <span style={CF.chartTitle}>
           성장성 지표 <span style={CF.chartTitleUnit}>(%)</span>
         </span>
+        {showSparseNotice && (
+          <span
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              color: "#7f7f7f",
+              background: "#f4f4f4",
+              border: "1px solid #ececec",
+              padding: "2px 6px",
+              borderRadius: 4,
+              marginLeft: 8,
+            }}
+            title="DB 에 성장성(YoY) 값이 최근 분기만 적재되어 다른 분기는 N/A 로 표시됩니다."
+          >
+            최근 분기만 적재됨
+          </span>
+        )}
       </div>
       <GrowthBarChart bars={chart.bars} />
       <div style={CF.indicators}>
@@ -947,11 +983,40 @@ function GrowthBarChart({ bars }: { bars: GrowthChartData["bars"] }) {
       {/* Y axis 좌측 라인 */}
       <line x1={padL} y1={padT} x2={padL} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
 
-      {/* Bars (0 baseline 기준 위/아래) */}
+      {/* Bars (0 baseline 기준 위/아래). null 분기는 dashed 빈 슬롯 + N/A. */}
       {bars.map((b, i) => {
-        if (b.revenue == null) return null;
         const groupCenter = padL + (i + 0.5) * groupW;
         const barX = groupCenter - barW / 2;
+        if (b.revenue == null) {
+          // 데이터 없는 분기 — 0 라인 위쪽으로 작은 dashed 빈 슬롯 + "N/A"
+          const slotH = 12;
+          const slotY = yZero - slotH;
+          return (
+            <g key={i}>
+              <rect
+                x={barX}
+                y={slotY}
+                width={barW}
+                height={slotH}
+                rx={2}
+                fill="none"
+                stroke="#d5d5d5"
+                strokeWidth={1}
+                strokeDasharray="3 3"
+              />
+              <text
+                x={groupCenter}
+                y={slotY - 4}
+                fontSize={8}
+                fill="#a3a3a3"
+                textAnchor="middle"
+                fontFamily="var(--font-numeric)"
+              >
+                N/A
+              </text>
+            </g>
+          );
+        }
         const valueY = yOf(b.revenue);
         const top = b.revenue >= 0 ? valueY : yZero;
         const height = Math.max(1, Math.abs(valueY - yZero));

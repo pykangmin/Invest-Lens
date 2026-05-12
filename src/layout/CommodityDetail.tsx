@@ -215,7 +215,8 @@ export function CommodityDetail({
     setError(null);
     Promise.all([
       loadCompanySnapshot(ticker, 24),
-      loadCommodities(undefined, 300),
+      // 자산군 정규화 사이클(2021 Q2 baseline) + WTI vs NG 5년치 시계열 커버용
+      loadCommodities(undefined, 1300),
     ])
       .then(([s, c]) => {
         if (alive) {

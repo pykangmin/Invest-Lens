@@ -32,6 +32,7 @@ export interface StockFundamentalsRow {
   fcf_margin: number | null;
   ccc: number | null;
   gross_margin_yoy: number | null;
+  gross_margin: number | null;
   pbr_z_score: number | null;
   forward_per_z_score: number | null;
 }
@@ -130,6 +131,7 @@ export function mapFundamentals(row: StockFundamentalsRow): StockFundamentals {
     fcfMargin: row.fcf_margin,
     ccc: row.ccc,
     grossMarginYoy: row.gross_margin_yoy,
+    grossMargin: row.gross_margin,
     pbrZScore: row.pbr_z_score,
     forwardPerZScore: row.forward_per_z_score,
   };

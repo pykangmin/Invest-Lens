@@ -2,7 +2,7 @@
 // 5-card sub 정성 라벨 산출. fundamentalGauge 의 INFO/CAUTION/WARNING 만으론
 // 부족한 detail 페이지 한정 텍스트 매핑을 모은다.
 
-import type { StockFundamentals, PeerCompany } from "../types/investment";
+import type { PeerCompany, SectorAvgMetric, StockFundamentals } from "../types/investment";
 import { normalize } from "./severity";
 
 // ──────────────────────────────────────────────────────────────
@@ -659,9 +659,12 @@ function radarValues(
   ];
 }
 
+// 2026-05 — sectorStats 우선 사용 (stock_fundamental_sector_stats DB 사전 계산).
+// peers 는 fallback 으로 유지 (sectorStats 부재 또는 일부 metric 결측 시 보완).
 export function valuationRadarData(
   f: StockFundamentals | null,
   peers: PeerCompany[] | null,
+  sectorStats?: SectorAvgMetric[] | null,
 ): RadarData {
   const axes = [
     "FCF 수익률",
@@ -685,36 +688,61 @@ export function valuationRadarData(
       )
     : empty;
 
-  // peers 평균 — PeerCompany 가 가진 metric (per/pbr/roe/netProfitMargin) 만 활용
-  // 나머지는 stub 0 (사용자에게 표시 시 추후 보강 필요).
-  if (!peers || peers.length === 0) {
-    return { axes, values, sectorAvg: empty };
+  // 우선순위: sectorStats (DB 사전 계산) → peers 평균 → 0
+  let avgFcfYield: number | null = null;
+  let avgFcfMargin: number | null = null;
+  let avgGmYoy: number | null = null;
+  let avgRoe: number | null = null;
+  let avgEvEbitda: number | null = null;
+  let avgPbr: number | null = null;
+  let avgRevG: number | null = null;
+
+  if (sectorStats && sectorStats.length > 0) {
+    const byMetric = new Map<string, SectorAvgMetric>();
+    for (const m of sectorStats) byMetric.set(m.metric, m);
+    // 이상치 영향 줄이기 위해 winsorizedAvg 우선, 없으면 median, 없으면 avg
+    const pick = (metric: string): number | null => {
+      const m = byMetric.get(metric);
+      if (!m) return null;
+      return m.winsorizedAvg ?? m.median ?? m.avg;
+    };
+    avgFcfYield = pick("fcf_yield");
+    avgFcfMargin = pick("fcf_margin");
+    avgGmYoy = pick("gross_margin_yoy") ?? pick("gross_margin");
+    avgRoe = pick("roe");
+    avgEvEbitda = pick("ev_ebitda");
+    avgPbr = pick("pbr");
+    avgRevG = pick("revenue_growth");
   }
-  const peerOnly = peers.filter((p) => !p.isSelf);
-  if (peerOnly.length === 0) {
-    return { axes, values, sectorAvg: empty };
+
+  // peers fallback (sectorStats 부재 시)
+  if (peers && peers.length > 0) {
+    const peerOnly = peers.filter((p) => !p.isSelf);
+    if (peerOnly.length > 0) {
+      const avgOf = (key: keyof PeerCompany): number | null => {
+        const xs = peerOnly
+          .map((p) => p[key])
+          .filter((v): v is number => typeof v === "number");
+        if (xs.length === 0) return null;
+        return xs.reduce((a, b) => a + b, 0) / xs.length;
+      };
+      avgRoe = avgRoe ?? avgOf("roe");
+      avgFcfMargin = avgFcfMargin ?? avgOf("netProfitMargin"); // 대용
+      avgEvEbitda = avgEvEbitda ?? avgOf("per"); // 대용
+      avgPbr = avgPbr ?? avgOf("pbr");
+      avgFcfYield = avgFcfYield ?? avgOf("fcfYield");
+      avgRevG = avgRevG ?? avgOf("revenueGrowth");
+    }
   }
-  const avg = (key: keyof PeerCompany): number | null => {
-    const xs = peerOnly
-      .map((p) => p[key])
-      .filter((v): v is number => typeof v === "number");
-    if (xs.length === 0) return null;
-    return xs.reduce((a, b) => a + b, 0) / xs.length;
-  };
-  const avgRoe = avg("roe");
-  const avgNpm = avg("netProfitMargin");
-  const avgPer = avg("per");
-  const avgPbr = avg("pbr");
-  // FCF Yield/Margin, Gross Margin YoY, EV/EBITDA, revenueGrowth 는 peer DB 에 없음
-  // PER 을 EV/EBITDA 대용으로 사용 (둘 다 valuation multiple), npm 으로 FCF Margin 대용
+
   const sectorAvg = radarValues(
-    null, // FCF Yield (peer 없음)
-    avgNpm, // FCF Margin ← netProfitMargin 대용
-    null, // GM 방어 (peer 없음)
+    avgFcfYield,
+    avgFcfMargin,
+    avgGmYoy,
     avgRoe,
-    avgPer, // EV/EBITDA ← PER 대용
+    avgEvEbitda,
     avgPbr,
-    null, // 성장성 (peer 없음)
+    avgRevG,
   );
   return { axes, values, sectorAvg };
 }
