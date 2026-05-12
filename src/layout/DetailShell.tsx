@@ -17,7 +17,6 @@ export interface DetailShellProps {
   active: DetailSection;
   pageTitle: string;
   pageSubtitle?: string;
-  updatedAt?: string;
   onBackToHome: () => void;
   onBackToOverview: () => void;
   onNavigateSection: (section: DetailSection) => void;
@@ -50,7 +49,6 @@ export function DetailShell({
   active,
   pageTitle,
   pageSubtitle,
-  updatedAt,
   onBackToHome,
   onBackToOverview,
   onNavigateSection,
@@ -102,14 +100,11 @@ export function DetailShell({
 
         <main style={S.mainArea}>
           <div style={S.contentInner}>
-            {/* 메인 콘텐츠 좌상단: GOOGLE > 원자재 영향  /  우상단: 데이터 업데이트 */}
+            {/* 메인 콘텐츠 좌상단: GOOGLE > 원자재 영향 */}
             <div style={S.crumbRow}>
               <span style={S.crumbPath}>
                 {ticker} &gt; {SECTION_BREADCRUMB[active]}
               </span>
-              {updatedAt && (
-                <span style={S.crumbUpdate}>데이터 업데이트: {updatedAt}</span>
-              )}
             </div>
 
             <div style={S.titleBlock}>
@@ -213,11 +208,6 @@ const S: Record<string, CSSProperties> = {
     fontSize: "var(--font-size-sm)",
     color: "var(--color-text-muted)",
     fontWeight: 600,
-  },
-  crumbUpdate: {
-    marginLeft: "auto",
-    fontSize: "var(--font-size-xs)",
-    color: "var(--color-text-faint)",
   },
 
   navItem: {

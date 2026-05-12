@@ -22,6 +22,8 @@ import {
   loadCompanySnapshot,
   loadGlobalEnvironment,
   loadMarketScoreAvg,
+  loadStockOhlc,
+  type StockOhlcResponse,
 } from "../data-loader/investmentData";
 import type {
   CompanySnapshot,
@@ -37,6 +39,7 @@ interface DetailState {
   snapshot: CompanySnapshot;
   vix: GlobalEnvironmentResponse;
   marketScoreAvg: MarketScoreAvgResponse;
+  ohlc: StockOhlcResponse | null;
 }
 
 export interface TechnicalDetailProps {
@@ -99,6 +102,18 @@ function metricDelta(
   return "±0";
 }
 
+// 같은 산출이지만 정수 반환 — 칩 필터(변동 없는 항목 제외) + 색 분기에 사용.
+function metricDeltaNum(
+  metric: TechnicalMetricScore,
+  windowDays = 7,
+): number {
+  if (!metric.available || metric.series.length < windowDays + 1) return 0;
+  const last = metric.series[metric.series.length - 1];
+  const prev = metric.series[metric.series.length - 1 - windowDays];
+  if (last == null || prev == null) return 0;
+  return Math.round(last - prev);
+}
+
 // 1A.2~1A.4 도넛 색상
 function scoreColor(score: number): string {
   if (score >= 65) return "#60c846";
@@ -148,9 +163,14 @@ export function TechnicalDetail({
       loadCompanySnapshot(ticker, 252),
       loadGlobalEnvironment({ symbol: "^VIX", historyLimit: 120 }),
       loadMarketScoreAvg(60),
+      // Yahoo 1h 시계열 → 클라이언트에서 12h 버킷 집계 (관측 주기 1d 의 절반).
+      loadStockOhlc(ticker, "6mo", "1h").catch((e: unknown) => {
+        console.warn("[technical] OHLC fetch failed:", e);
+        return null;
+      }),
     ])
-      .then(([snapshot, vix, marketScoreAvg]) => {
-        if (alive) setData({ snapshot, vix, marketScoreAvg });
+      .then(([snapshot, vix, marketScoreAvg, ohlc]) => {
+        if (alive) setData({ snapshot, vix, marketScoreAvg, ohlc });
       })
       .catch((e: unknown) => {
         if (alive) setError(e instanceof Error ? e.message : String(e));
@@ -170,18 +190,12 @@ export function TechnicalDetail({
     );
   }, [data]);
 
-  const updatedAt = useMemo(
-    () => data?.snapshot.technicalHistory[0]?.date ?? undefined,
-    [data],
-  );
-
   return (
     <DetailShell
       ticker={ticker}
       active="technical"
       pageTitle="기술적 지표 스코어카드"
       pageSubtitle="다양한 기술적 지표와 차트 패턴을 종합 분석하여 투자 인사이트를 제공합니다."
-      updatedAt={updatedAt ? `${updatedAt} (ET)` : undefined}
       onBackToHome={onBackToHome}
       onBackToOverview={onBackToOverview}
       onNavigateSection={onNavigateSection}
@@ -201,11 +215,14 @@ export function TechnicalDetail({
                 <div style={S.scoreBoxRight}>
                   <PrevDayDelta analysis={analysis} />
                   <div style={S.contribBlock}>
-                    <div style={S.contribTitle}>상승 기여</div>
+                    <div style={S.contribTitle}>상승/하락 기여</div>
                     <div style={S.contribChipGrid}>
-                      {analysis.metrics.map((m) => (
-                        <ContribChip key={m.key} metric={m} />
-                      ))}
+                      {analysis.metrics
+                        .map((m) => ({ m, diff: metricDeltaNum(m, 7) }))
+                        .filter(({ diff }) => diff !== 0)
+                        .map(({ m, diff }) => (
+                          <ContribChip key={m.key} metric={m} diff={diff} />
+                        ))}
                     </div>
                   </div>
                 </div>
@@ -268,12 +285,15 @@ export function TechnicalDetail({
             </div>
           </section>
 
-          {/* §4 평균이동선 차트 */}
+          {/* §4 평균이동선 차트 — 12h 캔들(주가) + MA20/MA50/MA200 라인 오버레이 */}
           <SectionBoxFull
             title="평균이동선 차트 (주가 · MA20 · MA50 · MA200)"
             height={320}
           >
-            <PriceMaChart history={data.snapshot.technicalHistory} />
+            <PriceMaChart
+              history={data.snapshot.technicalHistory}
+              ohlc={aggregateTo12h(data.ohlc?.history ?? [])}
+            />
           </SectionBoxFull>
         </>
       )}
@@ -323,9 +343,17 @@ function PrevDayDelta({ analysis }: { analysis: TechnicalAnalysisV4 }) {
   );
 }
 
-function ContribChip({ metric }: { metric: TechnicalMetricScore }) {
-  const delta = metricDelta(metric, 7);
-  return <span style={S.contribChip}>{metric.label}{delta}</span>;
+function ContribChip({ metric, diff }: { metric: TechnicalMetricScore; diff: number }) {
+  const up = diff > 0;
+  const text = up ? `+${diff}` : `${diff}`;
+  const chipStyle = up
+    ? { background: UP_BG, color: UP_DARK }
+    : { background: DOWN_BG, color: DOWN_DARK };
+  return (
+    <span style={{ ...S.contribChip, ...chipStyle }}>
+      {metric.label}{text}
+    </span>
+  );
 }
 
 function SignalCard({ analysis }: { analysis: TechnicalAnalysisV4 }) {
@@ -625,8 +653,63 @@ function ScoreTrendChart({
   );
 }
 
-// §4 평균이동선 차트 — MA20/MA50/MA200 3 series + 거래량 막대 하단
-function PriceMaChart({ history }: { history: StockPriceTech[] }) {
+// §4 평균이동선 차트 — OHLC 캔들 + MA20/MA50/MA200 라인 오버레이 + 거래량 막대.
+// OHLC 는 Yahoo Finance 직통(stock_price_tech 에 OHLC 부재). MA 는 DB 의 ma_20/50/200.
+// 1h Yahoo 응답을 클라이언트에서 12h 버킷으로 집계 — 관측 주기 1d 의 절반.
+// MA 는 일 단위 → date prefix (yyyy-mm-dd) 로 룩업.
+import type { StockOhlcPoint } from "../data-loader/investmentData";
+
+const UP_BLUE = "#4073ff";
+const DOWN_RED = "#c1121f";
+
+// 1h Yahoo OHLC (DESC) → 12h 버킷 (DESC). 거래일별 오전/오후 2 버킷.
+// 각 버킷 open=첫 시간 open, close=마지막 시간 close, high=max, low=min, volume=sum.
+function aggregateTo12h(hourly: StockOhlcPoint[]): StockOhlcPoint[] {
+  if (hourly.length === 0) return [];
+  // ASC 정렬 (집계 편의)
+  const asc = [...hourly].sort((a, b) => (a.date < b.date ? -1 : 1));
+  // 거래일(yyyy-mm-dd) 별 그룹
+  const byDay = new Map<string, StockOhlcPoint[]>();
+  for (const h of asc) {
+    const day = h.date.slice(0, 10);
+    const arr = byDay.get(day) ?? [];
+    arr.push(h);
+    byDay.set(day, arr);
+  }
+  const result: StockOhlcPoint[] = [];
+  for (const [day, hours] of byDay) {
+    if (hours.length === 0) continue;
+    const mid = Math.ceil(hours.length / 2);
+    const halves: Array<{ rows: StockOhlcPoint[]; tag: "AM" | "PM" }> = [
+      { rows: hours.slice(0, mid), tag: "AM" },
+      { rows: hours.slice(mid), tag: "PM" },
+    ];
+    for (const { rows, tag } of halves) {
+      if (rows.length === 0) continue;
+      const highs = rows.map((r) => r.high).filter((v): v is number => v != null);
+      const lows = rows.map((r) => r.low).filter((v): v is number => v != null);
+      const vols = rows.map((r) => r.volume).filter((v): v is number => v != null);
+      result.push({
+        // 정렬용 — 오전 09:30 / 오후 13:00 UTC 라벨. MA 룩업은 prefix slice 0..10 사용.
+        date: `${day}T${tag === "AM" ? "09:30:00Z" : "13:00:00Z"}`,
+        open: rows[0]!.open,
+        close: rows[rows.length - 1]!.close,
+        high: highs.length > 0 ? Math.max(...highs) : null,
+        low: lows.length > 0 ? Math.min(...lows) : null,
+        volume: vols.length > 0 ? vols.reduce((a, b) => a + b, 0) : null,
+      });
+    }
+  }
+  return result.reverse(); // DESC 로 반환
+}
+
+function PriceMaChart({
+  history,
+  ohlc,
+}: {
+  history: StockPriceTech[];
+  ohlc: StockOhlcPoint[];
+}) {
   const [hovered, setHovered] = useState<string | null>(null);
   const W = 1040;
   const H = 360;
@@ -637,59 +720,132 @@ function PriceMaChart({ history }: { history: StockPriceTech[] }) {
   const xLabelH = 50; // X 라벨 자리 + 상하 간격
   const volH = 60;
   const innerW = W - padL - padR;
-  // 최근 60일 (close 기준 ASC)
-  const asc = [...history].reverse().slice(-60);
-  // 2026-05 DB 보강: ma_20 이 close row 와 같이 채워짐 → DB 값 직접 사용
+
+  // MA 룩업 — yyyy-mm-dd 키로 DB technicalHistory 매칭 (12h 버킷도 같은 키)
+  const techByDate = new Map<string, StockPriceTech>();
+  for (const t of history) techByDate.set(t.date, t);
+
+  // OHLC asc (Yahoo 응답은 DESC). 12h 버킷이므로 240개 (120 거래일 × 2).
+  // DB MA 가 존재하는 거래일의 버킷만 한정 → 캔들·MA 라인 X 양 끝 동조.
+  const ohlcAsc = [...ohlc]
+    .reverse()
+    .filter((p) => techByDate.has(p.date.slice(0, 10)))
+    .slice(-240);
+
+  // OHLC fallback: Yahoo 응답이 비었으면 DB technicalHistory close 로 폴백 (단일 색 라인)
+  const useOhlc = ohlcAsc.length > 0;
+  const ascDates = useOhlc
+    ? ohlcAsc.map((p) => p.date)
+    : [...history].reverse().slice(-60).map((t) => t.date);
+
   type LineKey = "ma20" | "ma50" | "ma200";
   const lines: Array<{ key: LineKey; label: string; color: string; getVal: (t: StockPriceTech) => number | null }> = [
-    { key: "ma20", label: "MA20", color: "#c1121f", getVal: (t) => t.ma20 ?? null },
+    { key: "ma20", label: "MA20", color: "#43bb2e", getVal: (t) => t.ma20 ?? null },
     { key: "ma50", label: "MA50", color: "#fdb43a", getVal: (t) => t.ma50 ?? null },
-    { key: "ma200", label: "MA200", color: "#43bb2e", getVal: (t) => t.ma200 ?? null },
+    { key: "ma200", label: "MA200", color: "#9c6cc7", getVal: (t) => t.ma200 ?? null },
   ];
-  // Y 범위
+
+  // Y 범위 — OHLC high/low + MA 전체
   const allVals: number[] = [];
-  asc.forEach((t) => {
+  if (useOhlc) {
+    for (const p of ohlcAsc) {
+      if (p.high != null) allVals.push(p.high);
+      if (p.low != null) allVals.push(p.low);
+      allVals.push(p.close);
+    }
+  } else {
+    for (const t of history) if (t.close != null) allVals.push(t.close);
+  }
+  for (const d of ascDates) {
+    const t = techByDate.get(d.slice(0, 10));
+    if (!t) continue;
     for (const s of lines) {
       const v = s.getVal(t);
       if (v != null) allVals.push(v);
     }
-  });
+  }
   const dataMin = allVals.length > 0 ? Math.min(...allVals) : 0;
   const dataMax = allVals.length > 0 ? Math.max(...allVals) : 100;
   const range = dataMax - dataMin || 1;
   const yMin = dataMin - range * 0.05;
   const yMax = dataMax + range * 0.05;
-  const stepX = asc.length > 1 ? innerW / (asc.length - 1) : 0;
-  const xOf = (i: number) => padL + i * stepX;
+  // 양 끝 한 칸씩 여백 — 캔들이 좌우 경계에 붙지 않도록 N+1 분할 + 1 칸 안쪽 시프트
+  const stepX = ascDates.length > 0 ? innerW / (ascDates.length + 1) : 0;
+  const xOf = (i: number) => padL + (i + 1) * stepX;
   const yOf = (v: number) => padT + chartH - ((v - yMin) / (yMax - yMin)) * chartH;
-  // Y tick — 5 단위 기본, 범위 크면 10/20 으로
   const yRangeSpan = yMax - yMin;
   const tickStep = yRangeSpan > 200 ? 25 : yRangeSpan > 100 ? 10 : 5;
   const yTicks: number[] = [];
   const firstTick = Math.ceil(yMin / tickStep) * tickStep;
   for (let t = firstTick; t <= yMax; t += tickStep) yTicks.push(Number(t.toFixed(2)));
-  // 거래량 영역 Y 시작
+
+  // 거래량
   const volStartY = padT + chartH + xLabelH;
-  const volMax = Math.max(0, ...asc.map((t) => t.volume ?? 0));
+  const volSource: Array<{ vol: number; up: boolean }> = useOhlc
+    ? ohlcAsc.map((p) => ({
+        vol: p.volume ?? 0,
+        up: (p.open == null ? true : p.close >= p.open),
+      }))
+    : ascDates.map((d) => {
+        const t = techByDate.get(d.slice(0, 10));
+        return { vol: t?.volume ?? 0, up: true };
+      });
+  const volMax = Math.max(0, ...volSource.map((v) => v.vol));
   const yVol = (v: number) => volStartY + (volMax > 0 ? (1 - v / volMax) * volH : volH);
-  // 우측 chip 데이터 (각 series 최신값)
-  const chips = lines
-    .map((s) => {
-      const lastIdx = asc.length - 1;
-      // 최신부터 역방향 valid 값 찾기
-      for (let i = lastIdx; i >= 0; i--) {
-        const v = s.getVal(asc[i]!);
-        if (v != null) return { ...s, value: v, valueY: yOf(v) };
+
+  // 우측 chip — 현재 가격(파랑) + 각 MA 최신값. 규격은 모두 동일(50×20, 11pt)
+  type Chip = { key: string; label: string; color: string; value: number; valueY: number };
+  const chips: Chip[] = [];
+  if (useOhlc) {
+    const last = ohlcAsc[ohlcAsc.length - 1]!;
+    chips.push({
+      key: "price",
+      label: "현재가",
+      color: UP_BLUE,
+      value: last.close,
+      valueY: yOf(last.close),
+    });
+  } else {
+    const lastClose = history[0]?.close;
+    if (lastClose != null) {
+      chips.push({
+        key: "price",
+        label: "현재가",
+        color: UP_BLUE,
+        value: lastClose,
+        valueY: yOf(lastClose),
+      });
+    }
+  }
+  for (const s of lines) {
+    // 최신부터 역방향 valid 값 찾기
+    for (let i = ascDates.length - 1; i >= 0; i--) {
+      const t = techByDate.get(ascDates[i]!.slice(0, 10));
+      if (!t) continue;
+      const v = s.getVal(t);
+      if (v != null) {
+        chips.push({ key: s.key, label: s.label, color: s.color, value: v, valueY: yOf(v) });
+        break;
       }
-      return null;
-    })
-    .filter((c): c is { key: LineKey; label: string; color: string; getVal: typeof lines[0]["getVal"]; value: number; valueY: number } => c != null);
+    }
+  }
   const chipOrder = hovered
     ? [...chips.filter((c) => c.key !== hovered), ...chips.filter((c) => c.key === hovered)]
     : chips;
+
+  // 캔들 폭 — stepX 의 70% (gap 30%)
+  const candleW = Math.max(1.5, stepX * 0.7);
+
   return (
-    <svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
-      {/* 범례 상단 좌측 */}
+    <svg
+      width="100%"
+      height="100%"
+      viewBox={`0 0 ${W} ${H}`}
+      preserveAspectRatio="xMidYMid meet"
+      style={{ display: "block" }}
+      onMouseLeave={() => setHovered(null)}
+    >
+      {/* 범례 — MA 3종만 */}
       {lines.map((s, i) => (
         <g key={s.key} transform={`translate(${padL + 30 + i * 80}, 12)`}>
           <line x1={0} y1={4} x2={14} y2={4} stroke={s.color} strokeWidth={2} />
@@ -698,6 +854,7 @@ function PriceMaChart({ history }: { history: StockPriceTech[] }) {
           </text>
         </g>
       ))}
+
       {/* Y tick (우측 라벨) */}
       {yTicks.map((t) => {
         const y = yOf(t);
@@ -710,12 +867,52 @@ function PriceMaChart({ history }: { history: StockPriceTech[] }) {
           </g>
         );
       })}
+
       {/* 가격 차트 X axis line */}
       <line x1={padL} y1={padT + chartH} x2={W - padR} y2={padT + chartH} stroke="#b8b8b8" strokeWidth={1} />
-      {/* MA lines */}
+
+      {/* 캔들 (OHLC 있을 때) — wick + body. 시각 표현만, 이벤트는 별도 레이어. */}
+      <g opacity={hovered && hovered !== "price" ? 0.2 : 0.55}>
+        {useOhlc && ohlcAsc.map((p, i) => {
+          if (p.open == null || p.high == null || p.low == null) {
+            return <circle key={`c-${i}`} cx={xOf(i)} cy={yOf(p.close)} r={1.5} fill="#737474" />;
+          }
+          const up = p.close >= p.open;
+          const color = up ? UP_BLUE : DOWN_RED;
+          const cx = xOf(i);
+          const yH = yOf(p.high);
+          const yL = yOf(p.low);
+          const yO = yOf(p.open);
+          const yC = yOf(p.close);
+          const bodyTop = Math.min(yO, yC);
+          const bodyH = Math.max(0.8, Math.abs(yO - yC));
+          return (
+            <g key={`c-${i}`}>
+              <line x1={cx} y1={yH} x2={cx} y2={yL} stroke={color} strokeWidth={1} />
+              <rect x={cx - candleW / 2} y={bodyTop} width={candleW} height={bodyH} fill={color} />
+            </g>
+          );
+        })}
+      </g>
+      {/* OHLC 없을 때 — close 라인(파랑) 폴백 */}
+      {!useOhlc && (() => {
+        const ascHist = [...history].reverse().slice(-60);
+        const pts: Array<{ x: number; y: number }> = [];
+        ascHist.forEach((t, i) => {
+          if (t.close == null) return;
+          pts.push({ x: xOf(i), y: yOf(t.close) });
+        });
+        if (pts.length < 2) return null;
+        const d = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
+        return <path d={d} stroke="#4073ff" strokeWidth={1.8} fill="none" strokeLinejoin="round" />;
+      })()}
+
+      {/* MA lines 시각 표현 — 이벤트 없음 (히트는 별도 레이어) */}
       {lines.map((s) => {
         const pts: Array<{ x: number; y: number }> = [];
-        asc.forEach((t, i) => {
+        ascDates.forEach((d, i) => {
+          const t = techByDate.get(d.slice(0, 10));
+          if (!t) return;
           const v = s.getVal(t);
           if (v == null) return;
           pts.push({ x: xOf(i), y: yOf(v) });
@@ -724,7 +921,7 @@ function PriceMaChart({ history }: { history: StockPriceTech[] }) {
         const d = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
         return (
           <path
-            key={s.key}
+            key={`ma-${s.key}`}
             d={d}
             stroke={s.color}
             strokeWidth={1.6}
@@ -732,52 +929,98 @@ function PriceMaChart({ history }: { history: StockPriceTech[] }) {
             strokeLinejoin="round"
             strokeLinecap="round"
             opacity={hovered && hovered !== s.key ? 0.3 : 1}
+            pointerEvents="none"
           />
         );
       })}
-      {/* X 라벨 — 두 그래프 사이 */}
-      {asc.map((t, i) => {
-        const step = Math.max(1, Math.floor(asc.length / 5));
-        if (i % step !== 0) return null;
+
+      {/* 이벤트 레이어 1 — 차트 배경 rect (캔들 영역 hover = price) */}
+      <rect
+        x={padL}
+        y={padT}
+        width={W - padL - padR}
+        height={chartH}
+        fill="transparent"
+        pointerEvents="all"
+        onMouseOver={() => setHovered("price")}
+        style={{ cursor: "pointer" }}
+      />
+
+      {/* 이벤트 레이어 2 — MA 히트 path (배경 rect 위. stroke 영역 안에서만 catch, 그 외엔 배경으로 pass) */}
+      {lines.map((s) => {
+        const pts: Array<{ x: number; y: number }> = [];
+        ascDates.forEach((d, i) => {
+          const t = techByDate.get(d.slice(0, 10));
+          if (!t) return;
+          const v = s.getVal(t);
+          if (v == null) return;
+          pts.push({ x: xOf(i), y: yOf(v) });
+        });
+        if (pts.length < 2) return null;
+        const d = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
         return (
-          <text
-            key={`xl-${i}`}
-            x={xOf(i)}
-            y={padT + chartH + 14}
-            fontSize={10}
-            fill="#737474"
-            textAnchor="middle"
-          >
-            {t.date.slice(5)}
-          </text>
+          <path
+            key={`mahit-${s.key}`}
+            d={d}
+            stroke="transparent"
+            strokeWidth={12}
+            fill="none"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            pointerEvents="stroke"
+            onMouseOver={() => setHovered(s.key)}
+            style={{ cursor: "pointer" }}
+          />
         );
       })}
+
+      {/* X 라벨 — 두 그래프 사이. 12h 버킷이라 같은 날짜가 2번 나오므로 거래일 단위로만 표시 */}
+      {(() => {
+        // ascDates 에서 일자 변화 지점만 추리고 ~5 등분
+        const dayChangeIdxs: number[] = [];
+        let lastDay = "";
+        ascDates.forEach((d, i) => {
+          const day = d.slice(0, 10);
+          if (day !== lastDay) {
+            dayChangeIdxs.push(i);
+            lastDay = day;
+          }
+        });
+        const step = Math.max(1, Math.floor(dayChangeIdxs.length / 5));
+        return dayChangeIdxs
+          .filter((_, k) => k % step === 0)
+          .map((i) => (
+            <text key={`xl-${i}`} x={xOf(i)} y={padT + chartH + 14} fontSize={10} fill="#737474" textAnchor="middle">
+              {ascDates[i]!.slice(5, 10)}
+            </text>
+          ));
+      })()}
+
       {/* 거래량 영역 axis */}
       <line x1={padL} y1={volStartY + volH} x2={W - padR} y2={volStartY + volH} stroke="#b8b8b8" strokeWidth={1} />
-      {/* 거래량 막대 */}
-      {asc.map((t, i) => {
-        const vol = t.volume ?? 0;
-        if (vol <= 0) return null;
-        const y = yVol(vol);
+      {/* 거래량 막대 — 캔들 색과 동조 */}
+      {volSource.map((v, i) => {
+        if (v.vol <= 0) return null;
+        const y = yVol(v.vol);
         const barH = volStartY + volH - y;
         return (
           <rect
             key={`v-${i}`}
-            x={xOf(i) - stepX * 0.35}
+            x={xOf(i) - candleW / 2}
             y={y}
-            width={Math.max(1, stepX * 0.7)}
+            width={candleW}
             height={Math.max(0.5, barH)}
-            fill="#c9c9c9"
+            fill={useOhlc ? (v.up ? UP_BLUE : DOWN_RED) : "#c9c9c9"}
+            opacity={0.55}
           />
         );
       })}
-      {/* 거래량 라벨 — 히스토그램 위 */}
       <text x={padL + 4} y={volStartY - 8} fontSize={13} fill="#737474" fontWeight={700}>
         거래량
       </text>
       {(() => {
-        const latestVol = asc[asc.length - 1]?.volume;
-        if (latestVol == null) return null;
+        const latestVol = volSource[volSource.length - 1]?.vol;
+        if (!latestVol) return null;
         const fmt =
           latestVol >= 1e12
             ? `${(latestVol / 1e12).toFixed(2)}조`
@@ -792,7 +1035,8 @@ function PriceMaChart({ history }: { history: StockPriceTech[] }) {
           </text>
         );
       })()}
-      {/* 우측 chip 박스 — 각 series 최신값, hover 시 z-order 위 */}
+
+      {/* 우측 chip — 현재가 + MA 최신값. 모두 동일 규격 50×20 / 11pt */}
       {chipOrder.map((c) => {
         const isHover = hovered === c.key;
         return (
@@ -873,6 +1117,8 @@ const MUTED = "#4e4e4e";
 const FAINT = "#737171";
 const UP_DARK = "#43bb2e";
 const UP_BG = "#e4ffdf";
+const DOWN_DARK = "#c1121f";
+const DOWN_BG = "#ffe4e4";
 const TICK_GRAY = "#b8b8b8";
 const SIGNAL_BG = "#f8f8f8";
 const TILE_BG = "#fafbfc";
@@ -959,8 +1205,6 @@ const S: Record<string, CSSProperties> = {
     justifyContent: "start",
   },
   contribChip: {
-    background: UP_BG,
-    color: UP_DARK,
     fontSize: 13,
     fontWeight: 500,
     padding: "2px 8px",

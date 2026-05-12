@@ -15,6 +15,13 @@
 
 import { Fragment, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { analyze } from "../analysis";
+import {
+  commodityImpactScore,
+  costImpactLabel,
+  outlookLabel,
+  supplyStabilityLabel,
+  verdictFromImpactScore,
+} from "../analysis/commodityNarrative";
 import { buildEvents } from "../analysis/events";
 import { sectionScores, totalFromSections } from "../analysis/fundamentalNarrative";
 import { regimeProbs } from "../analysis/macroDetail";
@@ -173,6 +180,25 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
     return buildFundamentalVizData(data.snapshot.latestFundamentals);
   }, [data]);
 
+  // 원자재 호버 시 차트 영역에 표시할 데이터 (verdict + 비용/공급/전망)
+  const commodityViz = useMemo<CommodityVizData | null>(() => {
+    if (!data) return null;
+    const rows = data.env.commodities.history;
+    if (rows.length === 0) return null;
+    const impact = commodityImpactScore(rows);
+    const verdict = verdictFromImpactScore(impact.score);
+    const cost = costImpactLabel(impact.energyYoy);
+    const supply = supplyStabilityLabel(rows);
+    const outlook = outlookLabel(rows);
+    return {
+      verdictLabel: verdict.label,
+      verdictColor: verdict.color,
+      cost: { label: cost.label, color: cost.color },
+      supply: { label: supply.label, color: supply.color },
+      outlook: { label: outlook.label, color: outlook.color },
+    };
+  }, [data]);
+
   return (
     <div style={S.page}>
       <Header onBack={onBack} onSelectTicker={onSelectTicker} />
@@ -196,6 +222,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
               technical={analysis.gauges.technical}
               macroDominantPct={dominantRegimePct(data.env.macroRegime.latest)}
               fundamentalViz={fundamentalViz}
+              commodityViz={commodityViz}
               onNavigateSection={onNavigateSection}
             />
             <EventsFxRow
@@ -308,6 +335,7 @@ function GaugeChartRow({
   technical,
   macroDominantPct,
   fundamentalViz,
+  commodityViz,
   onNavigateSection,
 }: {
   fundamental: GaugeScore;
@@ -316,6 +344,7 @@ function GaugeChartRow({
   technical: GaugeScore;
   macroDominantPct: number | null;
   fundamentalViz: FundamentalVizData | null;
+  commodityViz: CommodityVizData | null;
   onNavigateSection?: (s: DetailSection) => void;
 }) {
   const [hovered, setHovered] = useState<GaugeKey | null>(null);
@@ -344,7 +373,9 @@ function GaugeChartRow({
         <GaugeCard
           title="원자재 영향"
           gauge={commodity}
-          mode="donut"
+          // 사용자 요청 — 스코어/도넛 대신 카드 내부에 3 행 신호등 미니 그래프 (비용/공급/전망)
+          mode="trafficLight"
+          commodityMini={commodityViz}
           onClick={() => onNavigateSection?.("commodity")}
           onHoverEnter={enter("commodity")}
           onHoverLeave={leave}
@@ -358,12 +389,16 @@ function GaugeChartRow({
           onHoverLeave={leave}
         />
       </aside>
-      <ChartPanel hovered={hovered} fundamentalViz={fundamentalViz} />
+      <ChartPanel
+        hovered={hovered}
+        fundamentalViz={fundamentalViz}
+        commodityViz={commodityViz}
+      />
     </section>
   );
 }
 
-type GaugeMode = "donut" | "regime" | "halfGauge";
+type GaugeMode = "donut" | "regime" | "halfGauge" | "none" | "trafficLight";
 
 // 디테일 §1-B 신호 등급과 동일한 4 segment 정의
 const SIGNAL_SEGMENTS: Array<{ label: string; start: number; end: number; color: string }> = [
@@ -372,14 +407,6 @@ const SIGNAL_SEGMENTS: Array<{ label: string; start: number; end: number; color:
   { label: "Buy", start: 65, end: 80, color: "#33a316" },
   { label: "Strong buy", start: 80, end: 100, color: "#157f0a" },
 ];
-
-function activeSegment(score: number): typeof SIGNAL_SEGMENTS[number] {
-  const v = Math.max(0, Math.min(100, score));
-  for (const seg of SIGNAL_SEGMENTS) {
-    if (v >= seg.start && v < seg.end) return seg;
-  }
-  return SIGNAL_SEGMENTS[SIGNAL_SEGMENTS.length - 1]!;
-}
 
 // score 0~100 → 반원 위 angle (라디안). 0=왼쪽 끝(π), 100=오른쪽 끝(0).
 function scoreToAngleRad(score: number): number {
@@ -408,6 +435,7 @@ function GaugeCard({
   gauge,
   mode,
   regimePct,
+  commodityMini,
   onClick,
   onHoverEnter,
   onHoverLeave,
@@ -416,6 +444,7 @@ function GaugeCard({
   gauge: GaugeScore;
   mode: GaugeMode;
   regimePct?: number | null;
+  commodityMini?: CommodityVizData | null;
   onClick?: () => void;
   onHoverEnter?: () => void;
   onHoverLeave?: () => void;
@@ -440,18 +469,21 @@ function GaugeCard({
       <div style={S.gaugeBody}>
         <div style={S.gaugeLeft}>
           <div style={{ ...S.gaugeLabel, color }}>{gauge.label}</div>
-          <div style={S.gaugeScore}>
-            {mode === "regime"
-              ? taglineText
-              : gauge.score != null
-                ? `Score ${gauge.score}/100`
-                : "데이터 없음"}
-          </div>
+          {mode !== "none" && mode !== "trafficLight" && (
+            <div style={S.gaugeScore}>
+              {mode === "regime"
+                ? taglineText
+                : gauge.score != null
+                  ? `Score ${gauge.score}/100`
+                  : "데이터 없음"}
+            </div>
+          )}
         </div>
         <div style={S.gaugeRight}>
           {mode === "donut" && <Donut score={gauge.score ?? 0} color={color} size={86} />}
           {mode === "regime" && <StackBar value={regimePct ?? null} color={color} />}
           {mode === "halfGauge" && <HalfGauge score={gauge.score} />}
+          {mode === "trafficLight" && <CommodityMiniTraffic data={commodityMini ?? null} />}
         </div>
       </div>
     </button>
@@ -465,14 +497,14 @@ function HalfGauge({ score }: { score: number | null }) {
   const r = 50;           // 호 반지름
   const stroke = 16;      // 호 두께 (디테일 1.8배)
   const W = 2 * r + stroke + 2;   // = 111 (좌우 1px 여유)
-  const H = 92;
+  const cy = 62;          // 호 중심 (= 반원 아래 라인)
+  // SVG 하단 = 반원 아래 라인 + 스트로크 절반 → 가로 baseline 과 정확히 일치
+  const H = cy + stroke / 2 + 1;
   const cx = W / 2;
-  const cy = 62;          // 호 중심 — 호 아래 label 공간 확보
 
   const safeScore = score == null ? 50 : score;
   const angleDeg = -180 + (Math.max(0, Math.min(100, safeScore)) / 100) * 180;
 
-  const seg = activeSegment(safeScore);
   const needleLen = r - stroke / 2 - 3;
   const needleHubR = 4;
 
@@ -510,31 +542,13 @@ function HalfGauge({ score }: { score: number | null }) {
           <circle cx={cx} cy={cy} r={needleHubR - 1.5} fill="#ffffff" />
         </g>
       )}
-
-      {/* 호 아래 신호 라벨 */}
-      {score != null && (
-        <text
-          x={cx}
-          y={cy + 22}
-          textAnchor="middle"
-          fontSize={13}
-          fontWeight={700}
-          fill={seg.color}
-          style={{ textTransform: "uppercase", letterSpacing: "0.04em" }}
-        >
-          {seg.label}
-        </text>
-      )}
-      {score == null && (
-        <text x={cx} y={cy + 22} textAnchor="middle" fontSize={12} fill="#a3a3a3">
-          —
-        </text>
-      )}
     </svg>
   );
 }
 
 // 단일 도미넌트 regime 확률 stack bar — % 라벨 + 채움 바
+// % 행은 gaugeLabel(예: NEGATIVE) 과, bar 행은 gaugeScore(예: HARD LANDING) 와
+// 동일한 line-height/높이로 맞춰서 좌측 텍스트와 가로 줄을 맞춘다.
 function StackBar({
   value,
   color,
@@ -545,11 +559,14 @@ function StackBar({
   width?: number;
 }) {
   const pct = value == null ? null : Math.max(0, Math.min(100, value));
+  // gaugeLabel: fontSize 19, lineHeight 1.05 → 약 20px
+  // gaugeScore: fontSize 15, default lineHeight ≈ 18px
+  const labelRowH = 20;
+  const barRowH = 18;
   return (
     <div style={{ width, display: "flex", flexDirection: "column", gap: 6, alignItems: "stretch" }}>
-      {/* 라벨: 채움 부분 폭(pct%)을 가진 좌측 정렬 컨테이너 안에서 textAlign:center
-          → 텍스트 중앙이 채움 영역의 가로 중간(=pct/2 지점)에 위치 */}
-      <div style={{ width: "100%", display: "flex" }}>
+      {/* 라벨 행 — gaugeLabel 과 동일 라인 박스 */}
+      <div style={{ width: "100%", display: "flex", height: labelRowH, alignItems: "center" }}>
         <div
           style={{
             width: pct == null ? "100%" : `${pct}%`,
@@ -560,31 +577,59 @@ function StackBar({
             fontWeight: 700,
             color,
             fontVariantNumeric: "tabular-nums",
-            lineHeight: 1,
+            lineHeight: 1.05,
           }}
         >
           {pct == null ? "—" : `${Math.round(pct)}%`}
         </div>
       </div>
-      <div
-        style={{
-          width: "100%",
-          height: 10,
-          borderRadius: 5,
-          background: "#ececec",
-          overflow: "hidden",
-        }}
-      >
+      {/* bar 행 — gaugeScore 와 동일 라인 박스 안에 bar 를 수직 가운데 정렬 */}
+      <div style={{ width: "100%", height: barRowH, display: "flex", alignItems: "center" }}>
         <div
           style={{
-            width: pct == null ? "0%" : `${pct}%`,
-            height: "100%",
-            background: color,
+            width: "100%",
+            height: 10,
             borderRadius: 5,
-            transition: "width 0.3s ease",
+            background: "#ececec",
+            overflow: "hidden",
           }}
-        />
+        >
+          <div
+            style={{
+              width: pct == null ? "0%" : `${pct}%`,
+              height: "100%",
+              background: color,
+              borderRadius: 5,
+              transition: "width 0.3s ease",
+            }}
+          />
+        </div>
       </div>
+    </div>
+  );
+}
+
+// 카드 내부 미니 신호등 — 비용 / 공급 / 전망 3 행, dot 색은 각 label color
+function CommodityMiniTraffic({ data }: { data: CommodityVizData | null }) {
+  const rows: Array<{ label: string; color: string }> = data
+    ? [
+        { label: "비용", color: data.cost.color },
+        { label: "공급", color: data.supply.color },
+        { label: "전망", color: data.outlook.color },
+      ]
+    : [
+        { label: "비용", color: "#ececec" },
+        { label: "공급", color: "#ececec" },
+        { label: "전망", color: "#ececec" },
+      ];
+  return (
+    <div style={S.miniTrafficWrap}>
+      {rows.map((r) => (
+        <div key={r.label} style={S.miniTrafficRow}>
+          <span style={S.miniTrafficLabel}>{r.label}</span>
+          <span style={{ ...S.miniTrafficDot, background: r.color }} aria-hidden />
+        </div>
+      ))}
     </div>
   );
 }
@@ -600,15 +645,25 @@ const GAUGE_VIZ_META: Record<GaugeKey, { title: string; placeholder: string }> =
 function ChartPanel({
   hovered,
   fundamentalViz,
+  commodityViz,
 }: {
   hovered: GaugeKey | null;
   fundamentalViz: FundamentalVizData | null;
+  commodityViz: CommodityVizData | null;
 }) {
   // 펀더멘털 호버: 4축 레이더 + 4 섹션 데이터 패널
   if (hovered === "fundamental" && fundamentalViz) {
     return (
       <div style={S.chartPanel}>
         <FundamentalVizPanel data={fundamentalViz} />
+      </div>
+    );
+  }
+  // 원자재 호버: 핵심 요약 + 비용/공급/전망 3 stat
+  if (hovered === "commodity" && commodityViz) {
+    return (
+      <div style={S.chartPanel}>
+        <CommodityVizPanel data={commodityViz} />
       </div>
     );
   }
@@ -621,6 +676,85 @@ function ChartPanel({
         </span>
       </div>
     </div>
+  );
+}
+
+/* ─── 원자재 호버 시각화 ─── */
+
+interface CommodityVizData {
+  verdictLabel: string;       // POSITIVE / NEUTRAL / NEGATIVE
+  verdictColor: string;
+  cost: { label: string; color: string };
+  supply: { label: string; color: string };
+  outlook: { label: string; color: string };
+}
+
+function CommodityVizPanel({ data }: { data: CommodityVizData }) {
+  return (
+    <div style={S.cvPanel}>
+      <div style={S.cvHead}>
+        <span style={S.cvHeadTitle}>원자재 영향</span>
+        <span style={S.cvHeadDivider}>·</span>
+        <span style={S.cvHeadSub}>핵심 요약</span>
+      </div>
+      <div style={S.cvTrafficRow}>
+        <TrafficLightCol title="비용 영향" item={data.cost} />
+        <TrafficLightCol title="공급 안정성" item={data.supply} />
+        <TrafficLightCol title="향후 전망" item={data.outlook} />
+      </div>
+    </div>
+  );
+}
+
+// 신호등 색 매핑 — costImpactLabel/supplyStabilityLabel/outlookLabel 의 color 와 일치
+const TRAFFIC_COLORS = {
+  red: "#c1121f",
+  yellow: "#f8eb37",
+  green: "#60c846",
+};
+
+// active = "red" | "yellow" | "green" | null (데이터 없음)
+function trafficActiveFromColor(color: string): "red" | "yellow" | "green" | null {
+  if (color === TRAFFIC_COLORS.red) return "red";
+  if (color === TRAFFIC_COLORS.yellow) return "yellow";
+  if (color === TRAFFIC_COLORS.green) return "green";
+  return null;
+}
+
+function TrafficLightCol({
+  title,
+  item,
+}: {
+  title: string;
+  item: { label: string; color: string };
+}) {
+  const active = trafficActiveFromColor(item.color);
+  return (
+    <div style={S.cvTrafficCol}>
+      <div style={S.cvTrafficTitle}>{title}</div>
+      <div style={S.cvTrafficBox}>
+        <TrafficCircle color={TRAFFIC_COLORS.red} on={active === "red"} />
+        <TrafficCircle color={TRAFFIC_COLORS.yellow} on={active === "yellow"} />
+        <TrafficCircle color={TRAFFIC_COLORS.green} on={active === "green"} />
+      </div>
+      <div style={{ ...S.cvTrafficValue, color: item.color }}>
+        {item.label}
+      </div>
+    </div>
+  );
+}
+
+function TrafficCircle({ color, on }: { color: string; on: boolean }) {
+  return (
+    <span
+      style={{
+        ...S.cvTrafficDot,
+        background: on ? color : "#ececec",
+        boxShadow: on ? `0 0 12px ${color}66` : "none",
+        opacity: on ? 1 : 0.5,
+      }}
+      aria-hidden
+    />
   );
 }
 
@@ -1065,10 +1199,13 @@ interface TrioItem {
 }
 
 function CompositeRow({ items }: { items: TrioItem[] }) {
+  // 사용자 요청 — 종합 점수 카드의 점수 / 그래프 색을 검정으로 통일.
+  // 점수가 null 일 때만 회색 placeholder.
+  const BLACK = "#000000";
   return (
     <section style={S.compositeRow}>
       {items.map((c, i) => {
-        const color = scoreColor(c.score);
+        const color = c.score == null ? "#7f7f7f" : BLACK;
         const deltaColor = c.positive === null ? "#7f7f7f" : c.positive ? "#60c846" : "#c1121f";
         const arrow = c.positive === null ? "" : c.positive ? "▲" : "▼";
         return (
@@ -1603,7 +1740,7 @@ const S: Record<string, CSSProperties> = {
   },
   gaugeRight: {
     display: "flex",
-    alignItems: "center",
+    alignItems: "flex-end",
     justifyContent: "flex-end",
     height: "100%",
   },
@@ -1629,6 +1766,34 @@ const S: Record<string, CSSProperties> = {
     fontWeight: 600,
     color: "#003049",
     textAlign: "left",
+  },
+
+  /* ───── 원자재 카드 미니 신호등 (3 열) ───── */
+  miniTrafficWrap: {
+    display: "flex",
+    flexDirection: "row",
+    gap: 12,
+    padding: "4px 0",
+    alignItems: "center",
+  },
+  miniTrafficRow: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 6,
+  },
+  miniTrafficLabel: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: "#4e4e4e",
+    letterSpacing: "0.02em",
+  },
+  miniTrafficDot: {
+    width: 18,
+    height: 18,
+    borderRadius: "50%",
+    display: "block",
+    border: "1px solid rgba(0,0,0,0.06)",
   },
 
   chartPanel: {
@@ -1747,6 +1912,82 @@ const S: Record<string, CSSProperties> = {
     fontVariantNumeric: "tabular-nums",
     minWidth: 70,
     textAlign: "right",
+  },
+
+  /* ───── 원자재 호버 — 핵심 요약 + 3 신호등 ───── */
+  cvPanel: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    gap: 24,
+    padding: "20px 32px",
+    background: "#ffffff",
+    minHeight: 0,
+  },
+  cvHead: {
+    display: "flex",
+    alignItems: "baseline",
+    gap: 8,
+  },
+  cvHeadTitle: {
+    fontSize: 18,
+    fontWeight: 700,
+    color: "#003049",
+  },
+  cvHeadDivider: {
+    fontSize: 16,
+    fontWeight: 600,
+    color: "#a3a3a3",
+  },
+  cvHeadSub: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#7f7f7f",
+  },
+  cvTrafficRow: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, 1fr)",
+    gap: 16,
+    alignItems: "stretch",
+    justifyItems: "center",
+  },
+  cvTrafficCol: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 12,
+    minWidth: 0,
+  },
+  cvTrafficTitle: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#003049",
+    textAlign: "center",
+  },
+  cvTrafficBox: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 8,
+    padding: "12px 14px",
+    background: "#1a1a1a",
+    borderRadius: 12,
+    border: "1px solid #2a2a2a",
+  },
+  cvTrafficDot: {
+    width: 22,
+    height: 22,
+    borderRadius: "50%",
+    display: "block",
+    transition: "all 0.2s ease",
+  },
+  cvTrafficValue: {
+    fontSize: 16,
+    fontWeight: 700,
+    fontFamily: "var(--font-numeric, sans-serif)",
+    lineHeight: 1,
+    textAlign: "center",
   },
 
   /* ───── §4 이벤트 + FX ───── */

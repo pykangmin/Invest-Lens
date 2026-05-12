@@ -191,15 +191,12 @@ export function MacroDetail({
     };
   }, [data]);
 
-  const updatedAt = useMemo(() => data?.regime.latest?.date ?? undefined, [data]);
-
   return (
     <DetailShell
       ticker={ticker}
       active="macro"
       pageTitle="거시경제 국면 모니터"
       pageSubtitle="금리, 물가, 유동성, 경기 사이클 등 주요 거시 지표를 기반으로 현재 시장 국면과 자산 흐름 방향을 분석합니다."
-      updatedAt={updatedAt}
       onBackToHome={onBackToHome}
       onBackToOverview={onBackToOverview}
       onNavigateSection={onNavigateSection}
@@ -475,7 +472,14 @@ function RegimeTrendChart({ points }: { points: RegimeTrendPoint[] }) {
           </span>
         ))}
       </div>
-      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+      <svg
+        width="100%"
+        height={H}
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="xMidYMid meet"
+        style={{ display: "block" }}
+        onMouseLeave={() => setHovered(null)}
+      >
         {yTicks.map((t) => {
           const y = yOf(t);
           return (
@@ -489,8 +493,19 @@ function RegimeTrendChart({ points }: { points: RegimeTrendPoint[] }) {
         })}
         <line x1={padL} y1={padT} x2={padL} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
         <line x1={padL} y1={padT + innerH} x2={W - padR} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+        {/* 가시 path — hover 시 비-hovered 흐려짐. 이벤트 없음. */}
         {series.map((s) => (
-          <path key={s.key} d={buildPath(s.key)} stroke={s.color} strokeWidth={1.6} fill="none" strokeLinejoin="round" strokeLinecap="round" />
+          <path
+            key={s.key}
+            d={buildPath(s.key)}
+            stroke={s.color}
+            strokeWidth={1.6}
+            fill="none"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            opacity={hovered && hovered !== s.key ? 0.3 : 1}
+            pointerEvents="none"
+          />
         ))}
         {/* dot 각 데이터 포인트 */}
         {series.map((s) =>
@@ -504,10 +519,27 @@ function RegimeTrendChart({ points }: { points: RegimeTrendPoint[] }) {
                 cy={yOf(v)}
                 r={2.5}
                 fill={s.color}
+                opacity={hovered && hovered !== s.key ? 0.3 : 1}
+                pointerEvents="none"
               />
             );
           }),
         )}
+        {/* 히트 path — stroke 12px 투명, line/chip 호버 동기화 */}
+        {series.map((s) => (
+          <path
+            key={`hit-${s.key}`}
+            d={buildPath(s.key)}
+            stroke="transparent"
+            strokeWidth={12}
+            fill="none"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            pointerEvents="stroke"
+            onMouseOver={() => setHovered(s.key)}
+            style={{ cursor: "pointer" }}
+          />
+        ))}
         {chipOrder.map((s) => {
           const last = points[points.length - 1];
           if (!last) return null;
@@ -595,7 +627,14 @@ function GirTrendChartFull({ points }: { points: GirTrendPoint[] }) {
           </span>
         ))}
       </div>
-      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+      <svg
+        width="100%"
+        height={H}
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="xMidYMid meet"
+        style={{ display: "block" }}
+        onMouseLeave={() => setHovered(null)}
+      >
         {yTicks.map((t) => {
           const y = yOf(t);
           const isZero = t === 0;
@@ -610,8 +649,19 @@ function GirTrendChartFull({ points }: { points: GirTrendPoint[] }) {
           );
         })}
         <line x1={padL} y1={padT} x2={padL} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+        {/* 가시 path — hover 시 비-hovered 흐려짐. 이벤트 없음. */}
         {series.map((s) => (
-          <path key={s.key} d={buildPath(s.key)} stroke={s.color} strokeWidth={1.6} fill="none" strokeLinejoin="round" strokeLinecap="round" />
+          <path
+            key={s.key}
+            d={buildPath(s.key)}
+            stroke={s.color}
+            strokeWidth={1.6}
+            fill="none"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            opacity={hovered && hovered !== s.key ? 0.3 : 1}
+            pointerEvents="none"
+          />
         ))}
         {series.map((s) =>
           points.map((p, i) => {
@@ -624,10 +674,27 @@ function GirTrendChartFull({ points }: { points: GirTrendPoint[] }) {
                 cy={yOf(v)}
                 r={2.5}
                 fill={s.color}
+                opacity={hovered && hovered !== s.key ? 0.3 : 1}
+                pointerEvents="none"
               />
             );
           }),
         )}
+        {/* 히트 path — stroke 12px 투명, line/chip 호버 동기화 */}
+        {series.map((s) => (
+          <path
+            key={`hit-${s.key}`}
+            d={buildPath(s.key)}
+            stroke="transparent"
+            strokeWidth={12}
+            fill="none"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            pointerEvents="stroke"
+            onMouseOver={() => setHovered(s.key)}
+            style={{ cursor: "pointer" }}
+          />
+        ))}
         {chipOrder.map((s) => {
           const last = points[points.length - 1];
           if (!last) return null;

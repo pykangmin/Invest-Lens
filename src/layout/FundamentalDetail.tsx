@@ -163,19 +163,6 @@ function buildHeroCards(
   ];
 }
 
-// §4 강점/약점 — DB·분석 없음 (MOCK) → title/body 비움. 행 구조(dot 3+3)는 유지.
-const STRENGTHS: Array<{ dotColor: string; title: string; body: string }> = [
-  { dotColor: "#60c846", title: "", body: "" },
-  { dotColor: "#60c846", title: "", body: "" },
-  { dotColor: "#60c846", title: "", body: "" },
-];
-
-const RISKS: Array<{ dotColor: string; title: string; body: string }> = [
-  { dotColor: "#c1121f", title: "", body: "" },
-  { dotColor: "#c1121f", title: "", body: "" },
-  { dotColor: "#c1121f", title: "", body: "" },
-];
-
 export function FundamentalDetail({
   ticker,
   onBackToHome,
@@ -278,15 +265,12 @@ export function FundamentalDetail({
     };
   }, [data, peers, sectorAvg, cpi, ticker]);
 
-  const updatedAt = data?.latestFundamentals?.date ?? undefined;
-
   return (
     <DetailShell
       ticker={ticker}
       active="fundamental"
       pageTitle="기업 펀더멘털"
       pageSubtitle="기업의 수익성, 성장성, 현금흐름, 밸류에이션 지표를 기반으로 장기 투자 매력도와 재무 건전성을 분석합니다."
-      updatedAt={updatedAt ? `${updatedAt} (분기 보고)` : undefined}
       onBackToHome={onBackToHome}
       onBackToOverview={onBackToOverview}
       onNavigateSection={onNavigateSection}
@@ -397,14 +381,6 @@ export function FundamentalDetail({
             </SectionBox>
           </div>
 
-          {/* §4 핵심 투자 논거 & 리스크 */}
-          <section style={S.row4}>
-            <div style={S.row4Title}>핵심 투자 논거 & 리스크</div>
-            <div style={S.thesisBody}>
-              <ThesisColumn title="강점 Strength" rows={STRENGTHS} />
-              <ThesisColumn title="약점 Risks" rows={RISKS} />
-            </div>
-          </section>
         </>
       )}
     </DetailShell>
@@ -1386,38 +1362,6 @@ function ValuationCategoryIcon({ kind, color }: { kind: string; color: string })
   );
 }
 
-function ThesisColumn({
-  title,
-  rows,
-}: {
-  title: string;
-  rows: Array<{ dotColor: string; title: string; body: string }>;
-}) {
-  return (
-    <div style={S.thesisCol}>
-      <div style={S.thesisColTitle}>{title}</div>
-      <div style={S.thesisRows}>
-        {rows.map((r, i) => (
-          <div key={i}>
-            <div style={S.thesisRow}>
-              <div style={S.thesisRowHead}>
-                <span style={{ ...S.thesisDot, background: r.dotColor }} />
-                <span style={S.thesisRowTitle}>
-                  {r.title || <span style={S.thesisEmpty}>—</span>}
-                </span>
-              </div>
-              <div style={S.thesisRowBody}>
-                {r.body || <span style={S.thesisEmpty}>—</span>}
-              </div>
-            </div>
-            {i < rows.length - 1 && <div style={S.thesisRowDivider} />}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 // ── styles ─────────────────────────────────────────────────────
 
 const NAVY = "#003049";
@@ -1508,12 +1452,18 @@ const S: Record<string, CSSProperties> = {
     display: "grid",
     gridTemplateColumns: "repeat(5, 1fr)",
     gap: 12,
+    alignItems: "stretch",
   },
   heroCard: {
     display: "flex",
     flexDirection: "column",
-    gap: 8,
+    gap: 10,
     minWidth: 0,
+    background: "#fbfcfe",
+    border: "1px solid var(--color-border)",
+    borderRadius: 10,
+    padding: "14px 16px",
+    justifyContent: "space-between",
   },
   heroCardHead: {
     display: "flex",
@@ -1672,79 +1622,6 @@ const S: Record<string, CSSProperties> = {
     alignSelf: "center",
   },
 
-  // §4
-  row4: {
-    background: "var(--color-card)",
-    border: "1px solid var(--color-border)",
-    borderRadius: 10,
-    padding: "20px 24px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 16,
-  },
-  row4Title: {
-    fontSize: 15,
-    fontWeight: 600,
-    color: NAVY,
-  },
-  thesisBody: {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: 32,
-  },
-  thesisCol: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 14,
-  },
-  thesisColTitle: {
-    fontSize: 15,
-    fontWeight: 600,
-    color: NAVY,
-  },
-  thesisRows: {
-    display: "flex",
-    flexDirection: "column",
-  },
-  thesisRow: {
-    display: "grid",
-    gridTemplateColumns: "142px 1fr",
-    gap: 18,
-    alignItems: "flex-start",
-    padding: "10px 0",
-  },
-  thesisRowHead: {
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-  },
-  thesisDot: {
-    width: 12,
-    height: 12,
-    borderRadius: "50%",
-    flexShrink: 0,
-  },
-  thesisRowTitle: {
-    fontSize: 14,
-    fontWeight: 600,
-    color: NAVY,
-    lineHeight: 1.2,
-  },
-  thesisRowBody: {
-    fontSize: 12,
-    fontWeight: 600,
-    color: MUTED,
-    lineHeight: 1.55,
-  },
-  thesisRowDivider: {
-    height: 1,
-    background: "var(--color-border)",
-  },
-  thesisEmpty: {
-    color: MUTED,
-    fontStyle: "italic",
-    fontWeight: 500,
-  },
 };
 
 const CF: Record<string, CSSProperties> = {

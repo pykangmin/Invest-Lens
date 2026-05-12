@@ -290,7 +290,11 @@ export function cashflowIndicators(history: StockFundamentals[]): CashflowIndica
   // B. FCF Margin (% 단위, 상승=개선)
   const marginCur = latest?.fcfMargin ?? null;
   const marginPrv = prev?.fcfMargin ?? null;
-  const marginVal = marginCur != null ? `~${(marginCur * 100).toFixed(0)}%` : "—";
+  // 음수는 부호(-)만 표기. 양수에 한해 근사 기호(~) 유지.
+  const marginVal =
+    marginCur != null
+      ? `${marginCur < 0 ? "" : "~"}${(marginCur * 100).toFixed(0)}%`
+      : "—";
   let marginDelta = "—";
   let marginColor = "#737474";
   if (marginCur != null && marginPrv != null) {

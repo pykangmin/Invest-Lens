@@ -147,6 +147,32 @@ export async function loadMarketIndex(symbol: string, range = "1mo"): Promise<Ma
   return fetchApiData<MarketIndexResponse>(`/api/market-index?${params}`);
 }
 
+// 2026-05 — 개별 종목 OHLC (Yahoo Finance 직통). stock_price_tech 에 OHLC 컬럼이
+// 없어 캔들 차트용 데이터는 Yahoo 비공식 chart API 로 받는다.
+// Hobby plan 12 함수 제한 회피 — /api/market-index?kind=stockOhlc 분기 사용.
+export interface StockOhlcPoint {
+  date: string;
+  open: number | null;
+  high: number | null;
+  low: number | null;
+  close: number;
+  volume: number | null;
+}
+export interface StockOhlcResponse {
+  ticker: string;
+  range: string;
+  history: StockOhlcPoint[];   // DESC (최신 [0])
+  source: "yahoo";
+}
+export async function loadStockOhlc(
+  ticker: string,
+  range = "3mo",
+  interval: "1d" | "1h" = "1d",
+): Promise<StockOhlcResponse> {
+  const params = new URLSearchParams({ kind: "stockOhlc", ticker, range, interval });
+  return fetchApiData<StockOhlcResponse>(`/api/market-index?${params}`);
+}
+
 export interface FxRatePoint {
   date: string;
   close: number;

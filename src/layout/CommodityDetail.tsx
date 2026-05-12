@@ -348,18 +348,14 @@ export function CommodityDetail({
     };
   }, [commodities]);
 
-  const updatedAt = useMemo(
-    () => data?.latestFundamentals?.date ?? undefined,
-    [data],
-  );
+  const companyName = data?.company?.name ?? ticker;
 
   return (
     <DetailShell
       ticker={ticker}
       active="commodity"
       pageTitle="원자재 영향 분석"
-      pageSubtitle="Google의 주요 원자재 관련 비용 및 매출 영향과 시장 동향을 분석합니다."
-      updatedAt={updatedAt}
+      pageSubtitle={`${companyName}의 주요 원자재 관련 비용 및 매출 영향과 시장 동향을 분석합니다.`}
       onBackToHome={onBackToHome}
       onBackToOverview={onBackToOverview}
       onNavigateSection={onNavigateSection}
@@ -369,7 +365,7 @@ export function CommodityDetail({
       {!error && (!data || !analysis) && <EmptyState variant="loading" />}
       {data && analysis && (
         <>
-          {/* §1 — 2-col */}
+          {/* §1 — 2-col (1:1): 핵심 요약 + main-four 2x2 */}
           <div style={S.row1}>
             <section style={S.summaryBox}>
               <div style={S.boxHeader}>핵심 요약</div>
@@ -386,25 +382,11 @@ export function CommodityDetail({
               </div>
             </section>
 
-            <section style={S.scoreBox}>
-              <div style={S.boxHeader}>원자재가 종합 영향 점수</div>
-              <div style={S.scoreBody}>
-                <div style={S.scoreText}>
-                  <div style={{ ...S.scoreVerdict, color: analysis.verdict.color }}>
-                    {analysis.verdict.label}
-                  </div>
-                  <div style={S.scoreDelta}>{analysis.delta.display}</div>
-                </div>
-                <ScoreCircle value={analysis.impact.score} color={analysis.verdict.color} />
-              </div>
-            </section>
-          </div>
-
-          {/* §2 main-four */}
-          <div style={S.mainFourRow}>
-            {analysis.mainFour.map((m) => (
-              <MainFourCard key={m.key} card={m} />
-            ))}
+            <div style={S.mainFourGrid}>
+              {analysis.mainFour.map((m) => (
+                <MainFourCard key={m.key} card={m} />
+              ))}
+            </div>
           </div>
 
           {/* §3 — 2-col */}
@@ -525,35 +507,6 @@ function StatIcon() {
       <rect x="10" y="8" width="4" height="13" stroke="#003049" strokeWidth="1.6" fill="none" />
       <rect x="17" y="3" width="4" height="18" stroke="#003049" strokeWidth="1.6" fill="none" />
     </svg>
-  );
-}
-
-function ScoreCircle({ value, color }: { value: number; color: string }) {
-  const pct = Math.max(0, Math.min(100, value));
-  const r = 62;
-  const cx = 72.5;
-  const cy = 72.5;
-  const circ = 2 * Math.PI * r;
-  const dashOffset = circ - (pct / 100) * circ;
-  return (
-    <div style={S.scoreCircleWrap}>
-      <svg width={145} height={145} viewBox="0 0 145 145">
-        <circle cx={cx} cy={cy} r={r} stroke="#d9d9d9" strokeWidth={14} fill="none" />
-        <circle
-          cx={cx}
-          cy={cy}
-          r={r}
-          stroke={color}
-          strokeWidth={14}
-          fill="none"
-          strokeDasharray={circ}
-          strokeDashoffset={dashOffset}
-          strokeLinecap="round"
-          transform={`rotate(-90 ${cx} ${cy})`}
-        />
-      </svg>
-      <div style={{ ...S.scoreCircleText, color }}>{value}</div>
-    </div>
   );
 }
 
@@ -698,7 +651,6 @@ function MarketIndicatorsTableView({ rows }: { rows: MarketIndicatorRow[] }) {
         <span style={CMT.cell}>연간 변동률</span>
         <span style={CMT.cell}>변동성</span>
         <span style={CMT.cell}>시장 흐름</span>
-        <span style={{ ...CMT.cell, ...CMT.colFactor }}>주요 영향 요인</span>
       </div>
       {rows.map((r) => (
         <div key={r.symbol} style={CMT.row}>
@@ -707,7 +659,6 @@ function MarketIndicatorsTableView({ rows }: { rows: MarketIndicatorRow[] }) {
           <span style={{ ...CMT.cell, color: r.yoyColor, fontWeight: 700 }}>{r.yoyDisplay}</span>
           <span style={{ ...CMT.cell, color: r.volatilityColor, fontWeight: 700 }}>{r.volatility}</span>
           <span style={{ ...CMT.cell, color: r.flowColor, fontWeight: 700 }}>{r.flow}</span>
-          <span style={{ ...CMT.cell, ...CMT.colFactor }} title={r.factor}>{r.factor}</span>
         </div>
       ))}
     </div>
@@ -1232,19 +1183,18 @@ const FAINT = "#737171";
 const S: Record<string, CSSProperties> = {
   row1: {
     display: "grid",
-    gridTemplateColumns: "640fr 451fr",
+    gridTemplateColumns: "1fr 1fr",
     gap: 16,
+    alignItems: "stretch",
+  },
+  mainFourGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gridTemplateRows: "1fr 1fr",
+    gap: 12,
+    alignItems: "stretch",
   },
   summaryBox: {
-    background: "var(--color-card)",
-    border: "1px solid var(--color-border)",
-    borderRadius: 10,
-    padding: "20px 24px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 12,
-  },
-  scoreBox: {
     background: "var(--color-card)",
     border: "1px solid var(--color-border)",
     borderRadius: 10,
@@ -1320,53 +1270,6 @@ const S: Record<string, CSSProperties> = {
     lineHeight: 1,
   },
 
-  scoreBody: {
-    display: "flex",
-    alignItems: "flex-end",
-    gap: 16,
-    justifyContent: "space-between",
-    flex: 1,
-    minHeight: 145,
-  },
-  scoreText: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 8,
-    paddingBottom: 4,
-  },
-  scoreVerdict: {
-    fontSize: 35,
-    fontWeight: 600,
-    fontFamily: "var(--font-numeric)",
-    lineHeight: 1,
-  },
-  scoreDelta: {
-    fontSize: 14,
-    fontWeight: 600,
-    color: "#000",
-  },
-  scoreCircleWrap: {
-    position: "relative",
-    width: 145,
-    height: 145,
-    flexShrink: 0,
-  },
-  scoreCircleText: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    fontSize: 45,
-    fontWeight: 600,
-    fontFamily: "var(--font-numeric)",
-    lineHeight: 1,
-  },
-
-  mainFourRow: {
-    display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: 12,
-  },
   mainFourCard: {
     background: "#ffffff",
     border: "1px solid var(--color-border)",
@@ -1719,7 +1622,7 @@ const CMT: Record<string, CSSProperties> = {
   },
   row: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr 1fr 0.8fr 0.8fr 1.6fr",
+    gridTemplateColumns: "1.4fr 1fr 1fr 0.9fr 0.9fr",
     alignItems: "center",
     padding: "8px 6px",
     borderBottom: "1px solid #ececec",
@@ -1742,11 +1645,6 @@ const CMT: Record<string, CSSProperties> = {
   colLabel: {
     fontFamily: "inherit",
     fontWeight: 600,
-  },
-  colFactor: {
-    fontFamily: "inherit",
-    color: MUTED,
-    fontWeight: 500,
   },
 };
 
