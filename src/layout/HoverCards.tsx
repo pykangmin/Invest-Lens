@@ -429,6 +429,22 @@ function SemiGauge({ score }: { score: number }) {
       {seg(0.50, 0.65, C.segHold,   350)}
       {seg(0.65, 0.80, C.segBuy,    500)}
       {seg(0.80, 1.00, C.segStrong, 650)}
+      {/* needle + 중심 dot — 점수 텍스트 뒤로 (회색, 가독성). */}
+      <g style={{
+        transformOrigin: `${cx}px ${cy}px`,
+        transform: `rotate(${needleEndDeg}deg)`,
+        animation: `hcNeedleSweep_${animKey} 900ms cubic-bezier(0.22, 1, 0.36, 1) 950ms both`,
+      }}>
+        <line x1={cx} y1={cy} x2={cx + r - 6} y2={cy} stroke={C.textFaint} strokeWidth={3} strokeLinecap="round" />
+      </g>
+      <style>{`
+        @keyframes hcNeedleSweep_${animKey} {
+          from { transform: rotate(-180deg); }
+          to   { transform: rotate(${needleEndDeg}deg); }
+        }
+      `}</style>
+      <circle cx={cx} cy={cy} r={6} fill={C.textFaint} style={anim("hcPop", 350, 950)} />
+      {/* 점수 텍스트 — 마지막에 그려져 needle 위에 오버레이 */}
       <text
         x={cx}
         y={cy - 44}
@@ -442,20 +458,6 @@ function SemiGauge({ score }: { score: number }) {
         {score}
         <tspan fontSize={16} fill={C.textMuted} fontWeight={400}> / 100</tspan>
       </text>
-      <g style={{
-        transformOrigin: `${cx}px ${cy}px`,
-        transform: `rotate(${needleEndDeg}deg)`,
-        animation: `hcNeedleSweep_${animKey} 900ms cubic-bezier(0.22, 1, 0.36, 1) 950ms both`,
-      }}>
-        <line x1={cx} y1={cy} x2={cx + r - 6} y2={cy} stroke={C.textPrimary} strokeWidth={3} strokeLinecap="round" />
-      </g>
-      <style>{`
-        @keyframes hcNeedleSweep_${animKey} {
-          from { transform: rotate(-180deg); }
-          to   { transform: rotate(${needleEndDeg}deg); }
-        }
-      `}</style>
-      <circle cx={cx} cy={cy} r={6} fill={C.textPrimary} style={anim("hcPop", 350, 950)} />
     </svg>
   );
 }
@@ -656,6 +658,7 @@ export interface HCCommodityCategory {
 }
 
 export interface HCCommodityData {
+  ticker: string;
   impactScore: number;
   verdictLabel: string;
   verdictColor: string;
@@ -674,45 +677,37 @@ const CATEGORY_LABEL: Record<string, string> = {
 export function CommodityHover({ data }: { data: HCCommodityData }) {
   return (
     <Shell>
-      <div style={{ display: "flex", height: "100%", flexDirection: "column", gap: 18 }}>
-        <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 20 }}>
-          <div style={{ width: 460, flexShrink: 0, ...anim("hcFadeIn", 500, 150) }}>
-            <CategoryNodeMap data={data} />
-          </div>
+      <div style={{ display: "flex", height: "100%", flexDirection: "column", gap: 16 }}>
+        {/* 상단: 버블 차트 — 가로 가운데 정렬 (점수 박스 제거됨) */}
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", ...anim("hcFadeIn", 500, 150) }}>
+          <CategoryNodeMap data={data} />
+        </div>
+        {/* 하단: verdict (좌, 세로만 살짝 큼) + 3 stat (기존 사이즈).
+           alignItems: flex-end → 모든 카드 하단 baseline 정렬, 각 카드는 자체 padding 만큼만. */}
+        <div style={{ display: "flex", gap: 12, justifyContent: "center", alignItems: "flex-end" }}>
+          {/* Verdict — 세로 padding ↑ → 자체적으로 키 큼 */}
           <div style={{
-            flex: 1,
-            minWidth: 0,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            gap: 6,
             background: C.innerBg,
             border: `1px solid ${C.border}`,
             borderRadius: 8,
-            padding: "16px 18px",
+            padding: "20px 24px",
+            textAlign: "center",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            ...anim("hcSlideUp", 420, 1000),
           }}>
-            <div style={{ color: C.textMuted, fontSize: 14, ...anim("hcFadeIn", 350, 300) }}>종합 영향</div>
-            <div style={{ color: data.verdictColor, fontSize: 38, fontWeight: 700, lineHeight: 1, letterSpacing: -0.5, ...anim("hcSlideUp", 600, 400) }}>
+            <div style={{ color: C.textMuted, fontSize: 12, marginBottom: 8 }}>종합 영향</div>
+            <div style={{ color: data.verdictColor, fontSize: 22, fontWeight: 700, lineHeight: 1, whiteSpace: "nowrap", letterSpacing: -0.3 }}>
               {data.verdictLabel}
             </div>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginTop: 6, ...anim("hcCountUp", 400, 800) }}>
-              <span style={{ color: C.textPrimary, fontSize: 28, fontWeight: 700 }}>{data.impactScore}</span>
-              <span style={{ color: C.textMuted, fontSize: 13 }}>/100</span>
-            </div>
-            {data.dayDelta != null && (
-              <div style={{ color: C.textMuted, fontSize: 12, ...anim("hcFadeIn", 350, 1000) }}>
-                전날 대비 {data.dayDelta > 0 ? `+${data.dayDelta}` : data.dayDelta} ({data.dayDelta >= 0 ? "상승" : "하락"})
-              </div>
-            )}
           </div>
-        </div>
-        <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
           {data.stats.map((s, i) => (
             <div key={s.label} style={{
               background: C.innerBg,
               border: `1px solid ${C.border}`,
               borderRadius: 8,
-              padding: "12px 24px",
+              padding: "12px 22px",
               textAlign: "center",
               ...anim("hcSlideUp", 420, 1100 + i * 100),
             }}>
@@ -739,17 +734,21 @@ function CategoryNodeMap({ data }: { data: HCCommodityData }) {
   // YoY 절대값 비례 — % 단위. min/max 사이즈 클램프.
   const maxAbs = Math.max(...data.categories.map((c) => Math.abs(c.yoy)), 0.01);
   const sizeOf = (yoy: number) => 32 + (Math.abs(yoy) / maxAbs) * 28; // r 32~60
+  // 가격 ↑ = 원가 부담 ↑ = stock 에 negative. threshold 는 TempHoverCards mock 과 일치.
+  //   yoy >= +10% → red (부담)
+  //   yoy <= -5% → green (완화)
+  //   그 사이 → yellow (중립)
   const colorOf = (yoy: number) =>
-    yoy >= 0.05 ? C.negative : yoy <= -0.05 ? C.positive : C.warn;
+    yoy >= 0.10 ? C.negative : yoy <= -0.05 ? C.positive : C.warn;
 
   return (
     <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
       <circle cx={w / 2} cy={h / 2} r={50} fill={C.cardBg} stroke={C.border} strokeDasharray="3 4" style={anim("hcFadeIn", 400, 300)} />
       <text x={w / 2} y={h / 2 - 4} textAnchor="middle" fontSize={13} fill={C.textMuted} fontFamily={FONT} style={anim("hcFadeIn", 400, 400)}>
-        영향 노출
+        {data.ticker}
       </text>
       <text x={w / 2} y={h / 2 + 14} textAnchor="middle" fontSize={11} fill={C.textFaint} fontFamily={FONT} style={anim("hcFadeIn", 400, 400)}>
-        4 카테고리
+        원자재 영향
       </text>
       {data.categories.map((c, i) => {
         const pos = positions[c.key];

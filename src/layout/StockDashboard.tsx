@@ -56,6 +56,7 @@ import {
   loadCompanySnapshot,
   loadDashboardEnvironment,
   loadFxRate,
+  loadGlobalEnvironment,
   loadMarketIndex,
   loadScreen,
   type DashboardEnvironment,
@@ -63,6 +64,8 @@ import {
   type MarketIndexResponse,
   type ScreenItem,
 } from "../data-loader/investmentData";
+import { buildGScore, buildIScore, buildRScore, confidenceToPct } from "../analysis/macroNarrative";
+import type { GlobalEnvironmentPoint } from "../types/investment";
 import { findSp500Entry } from "../data/sp500";
 import type { CompanySnapshot } from "../types/investment";
 import type { AnalysisEvent, GaugeScore, Severity } from "../types/scoring";
@@ -120,10 +123,46 @@ async function safeLoad<T>(loader: () => Promise<T>): Promise<T | null> {
    메인 컴포넌트
    ═══════════════════════════════════════════════════════════════════ */
 
+interface MacroExtras {
+  ism: GlobalEnvironmentPoint[];
+  unrate: GlobalEnvironmentPoint[];
+  cpi: GlobalEnvironmentPoint[];
+  fedfunds: GlobalEnvironmentPoint[];
+  dgs2: GlobalEnvironmentPoint[];
+  m2: GlobalEnvironmentPoint[];
+}
+
 export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSection }: StockDashboardProps) {
   const [data, setData] = useState<DashState | null>(null);
+  const [macroExtras, setMacroExtras] = useState<MacroExtras | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [eventsOpen, setEventsOpen] = useState(false);
+
+  // Macro 호버의 G/I/R 계산용 추가 env 데이터 — 별도 비동기 로드 (실패 시 GIR 만 placeholder).
+  useEffect(() => {
+    let alive = true;
+    Promise.all([
+      loadGlobalEnvironment({ symbol: "ISM_MAN",  historyLimit: 24 }),
+      loadGlobalEnvironment({ symbol: "UNRATE",   historyLimit: 24 }),
+      loadGlobalEnvironment({ symbol: "CPIAUCSL", historyLimit: 36 }),
+      loadGlobalEnvironment({ symbol: "FEDFUNDS", historyLimit: 24 }),
+      loadGlobalEnvironment({ symbol: "DGS2",     historyLimit: 60 }),
+      loadGlobalEnvironment({ symbol: "M2SL",     historyLimit: 36 }),
+    ])
+      .then(([ism, unrate, cpi, fedfunds, dgs2, m2]) => {
+        if (!alive) return;
+        setMacroExtras({
+          ism: ism.history,
+          unrate: unrate.history,
+          cpi: cpi.history,
+          fedfunds: fedfunds.history,
+          dgs2: dgs2.history,
+          m2: m2.history,
+        });
+      })
+      .catch(() => { /* fail silent — GIR 만 placeholder */ });
+    return () => { alive = false; };
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -200,14 +239,15 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
     return buildFundamentalVizData(data.snapshot.latestFundamentals);
   }, [data]);
 
-  // 거시 호버 — 4 regime 확률 + 도미넌트 강조
+  // 거시 호버 — 4 regime 확률 + 도미넌트 강조.
+  // confidence 는 detail 페이지(MacroDetail) 와 동일 산출 — confidenceToPct 로 변환 (Medium → "70%" 등).
   const macroViz = useMemo<MacroVizData | null>(() => {
     const latest = data?.env.macroRegime.latest;
     if (!latest) return null;
     const probs = regimeProbs(latest);
     return {
       probs,
-      confidence: latest.confidence ?? null,
+      confidence: confidenceToPct(latest.confidence ?? null),
     };
   }, [data]);
 
@@ -260,15 +300,29 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
 
   const hcMacro = useMemo<HCMacroData | null>(() => {
     if (!macroViz) return null;
-    // G/I/R 스코어는 메인 대시보드 단계에서는 미산출 (DB 부재) — null 로 placeholder 처리.
+    if (!macroExtras || !data) {
+      return {
+        probs: macroViz.probs,
+        confidence: macroViz.confidence,
+        gScore: null, iScore: null, rScore: null,
+      };
+    }
+    const g = buildGScore(macroExtras.ism, macroExtras.unrate, null);
+    const i = buildIScore(macroExtras.cpi, macroExtras.fedfunds, data.env.treasury10y.history);
+    const r = buildRScore(
+      data.env.highYieldSpread.history,
+      data.env.treasury10y.history,
+      macroExtras.dgs2,
+      macroExtras.m2,
+    );
     return {
       probs: macroViz.probs,
       confidence: macroViz.confidence,
-      gScore: null,
-      iScore: null,
-      rScore: null,
+      gScore: g.total,
+      iScore: i.total,
+      rScore: r.total,
     };
-  }, [macroViz]);
+  }, [macroViz, macroExtras, data]);
 
   const hcCommodity = useMemo<HCCommodityData | null>(() => {
     if (!data) return null;
@@ -286,6 +340,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
       return m ? parseInt(m[0], 10) : null;
     })();
     return {
+      ticker,
       impactScore: impact.score,
       verdictLabel: verdict.label,
       verdictColor: verdict.color,
@@ -302,7 +357,35 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
         { key: "agri",     label: "농산물",   yoy: impact.agriYoy ?? 0 },
       ],
     };
-  }, [data]);
+  }, [data, ticker]);
+
+  // 좌측 기술적 게이지 카드 — V4 totalScore 로 통일 (detail / hover 와 동일 산식).
+  // 기존 RSI+VIX 단순 점수는 detail 페이지 산식과 달라 디스플레이 불일치 발생.
+  const technicalGaugeAdjusted = useMemo(() => {
+    if (!analysis) return null;
+    if (!technicalViz) return analysis.gauges.technical;
+    const score = technicalViz.totalScore;
+    const severity: "INFO" | "CAUTION" | "WARNING" =
+      score >= 60 ? "INFO" : score >= 30 ? "CAUTION" : "WARNING";
+    return {
+      ...analysis.gauges.technical,
+      score,
+      severity,
+    };
+  }, [analysis, technicalViz]);
+
+  // 4 게이지 카드 label 셋 통일: POSITIVE / NEUTRAL / NEGATIVE.
+  // 산식 (analysis/*.ts) 은 그대로 두고 본 화면 렌더링 단계에서만 severity → label 재매핑.
+  //   INFO    → POSITIVE
+  //   CAUTION → NEUTRAL
+  //   WARNING → NEGATIVE
+  // 데이터 부재 (available=false / score=null) 카드는 기존 라벨 ("DATA") 유지.
+  const unifyGaugeLabel = (g: GaugeScore): GaugeScore => {
+    if (!g.available || g.score == null) return g;
+    const label =
+      g.severity === "INFO" ? "POSITIVE" : g.severity === "WARNING" ? "NEGATIVE" : "NEUTRAL";
+    return { ...g, label };
+  };
 
   return (
     <div style={S.page}>
@@ -323,10 +406,10 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
             <GaugeChartRow
               ticker={ticker}
               companyName={data.snapshot.company.name ?? ticker}
-              fundamental={analysis.gauges.fundamental}
-              macro={analysis.gauges.macro}
-              commodity={analysis.gauges.commodity}
-              technical={analysis.gauges.technical}
+              fundamental={unifyGaugeLabel(analysis.gauges.fundamental)}
+              macro={unifyGaugeLabel(analysis.gauges.macro)}
+              commodity={unifyGaugeLabel(analysis.gauges.commodity)}
+              technical={unifyGaugeLabel(technicalGaugeAdjusted ?? analysis.gauges.technical)}
               macroDominantPct={dominantRegimePct(data.env.macroRegime.latest)}
               fundamentalViz={fundamentalViz}
               macroViz={macroViz}
