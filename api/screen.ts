@@ -100,29 +100,138 @@ async function runCategory(cat: Category, limit: number): Promise<ScreenRow[]> {
     return query<ScreenRow>(sql, [limit]);
   }
 
-  // scoreTop — fundamentals 의 단순 5개 지표 만족도 (각 1점, 합 0~5 → ×20 = 0~100).
-  // NULL 보장을 위해 IS NOT NULL 명시.
-  const sql = `
+  // scoreTop —  (펀더 점수 + 기술 점수) / 2, 기술 결측 시 펀더 단독 fallback.
+  //
+  //  - 펀더: fundamentalNarrative.totalFromSections 의 SQL 재구현 (연속 0~100).
+  //      normalize(raw, good, bad) = clamp((raw - bad) / (good - bad), 0, 1) * 100  → NULL→NULL
+  //      sectionNorm = NULL 제외 평균 (avgNorm) — 모두 NULL 이면 NULL
+  //      total      = sum(sectionNorm × max) / sum(max), NULL 섹션은 분자/분모 모두 제외
+  //      max: 현금흐름 40 / 수익성 25 / 가치평가 25 / 성장성 10 (시안)
+  //    임계값은 src/analysis/fundamentalNarrative.ts:54-71 과 1:1 동일.
+  //  - 기술: public.technical_score_ticker (DB-side backfill, 협업자 적재).
+  //      스펙: docs/exec-plans/technical_score_ticker.md
+  //      테이블 부재 시 펀더 단독 ranking — 모듈 캐시로 cold-start 당 한 번만 to_regclass 체크.
+  const hasTech = await technicalScoreTableExists();
+  return query<ScreenRow>(scoreTopSql(hasTech), [limit]);
+}
+
+// ──────────────────────────────────────────────────────────────
+// scoreTop 용 SQL 빌더 + 기술 점수 테이블 존재 캐시
+// ──────────────────────────────────────────────────────────────
+
+let techTableCache: boolean | null = null;
+
+async function technicalScoreTableExists(): Promise<boolean> {
+  if (techTableCache !== null) return techTableCache;
+  try {
+    const rows = await query<{ exists: boolean | null }>(
+      `SELECT to_regclass('public.technical_score_ticker') IS NOT NULL AS exists`,
+    );
+    techTableCache = rows[0]?.exists === true;
+  } catch {
+    techTableCache = false;
+  }
+  return techTableCache;
+}
+
+function scoreTopSql(withTech: boolean): string {
+  const fundCte = `
     WITH latest_fund AS (
       SELECT DISTINCT ON (ticker)
-        ticker, roe, net_profit_margin, fcf_yield, debt_to_equity, per
+        ticker,
+        fcf_yield, fcf_margin, debt_to_equity,
+        roe, net_profit_margin,
+        revenue_growth, eps_growth,
+        per, pbr, ev_ebitda
       FROM public.stock_fundamentals
+      ORDER BY ticker, date DESC
+    ),
+    norm AS (
+      SELECT
+        ticker,
+        CASE WHEN fcf_yield IS NOT NULL
+          THEN GREATEST(0::numeric, LEAST(1::numeric, ((fcf_yield - 0.01) / (0.06 - 0.01))::numeric)) * 100 END AS n_fcf_yield,
+        CASE WHEN fcf_margin IS NOT NULL
+          THEN GREATEST(0::numeric, LEAST(1::numeric, ((fcf_margin - 0.05) / (0.20 - 0.05))::numeric)) * 100 END AS n_fcf_margin,
+        CASE WHEN debt_to_equity IS NOT NULL
+          THEN GREATEST(0::numeric, LEAST(1::numeric, ((debt_to_equity - 4.0) / (1.5 - 4.0))::numeric)) * 100 END AS n_de,
+        CASE WHEN roe IS NOT NULL
+          THEN GREATEST(0::numeric, LEAST(1::numeric, ((roe - 0.05) / (0.20 - 0.05))::numeric)) * 100 END AS n_roe,
+        CASE WHEN net_profit_margin IS NOT NULL
+          THEN GREATEST(0::numeric, LEAST(1::numeric, ((net_profit_margin - 0.05) / (0.20 - 0.05))::numeric)) * 100 END AS n_npm,
+        CASE WHEN revenue_growth IS NOT NULL
+          THEN GREATEST(0::numeric, LEAST(1::numeric, (revenue_growth / 0.20)::numeric)) * 100 END AS n_rg,
+        CASE WHEN eps_growth IS NOT NULL
+          THEN GREATEST(0::numeric, LEAST(1::numeric, (eps_growth / 0.20)::numeric)) * 100 END AS n_eg,
+        CASE WHEN per IS NOT NULL
+          THEN GREATEST(0::numeric, LEAST(1::numeric, ((per - 60) / (15 - 60))::numeric)) * 100 END AS n_per,
+        CASE WHEN pbr IS NOT NULL
+          THEN GREATEST(0::numeric, LEAST(1::numeric, ((pbr - 6.0) / (1.5 - 6.0))::numeric)) * 100 END AS n_pbr,
+        CASE WHEN ev_ebitda IS NOT NULL
+          THEN GREATEST(0::numeric, LEAST(1::numeric, ((ev_ebitda - 30) / (15 - 30))::numeric)) * 100 END AS n_ev
+      FROM latest_fund
+    ),
+    sections AS (
+      SELECT
+        ticker,
+        (SELECT AVG(v) FROM (VALUES (n_fcf_yield), (n_fcf_margin), (n_de)) AS t(v)) AS cashflow_norm,
+        (SELECT AVG(v) FROM (VALUES (n_roe), (n_npm))               AS t(v)) AS profit_norm,
+        (SELECT AVG(v) FROM (VALUES (n_rg), (n_eg))                 AS t(v)) AS growth_norm,
+        (SELECT AVG(v) FROM (VALUES (n_per), (n_pbr), (n_ev))       AS t(v)) AS valuation_norm
+      FROM norm
+    ),
+    scored AS (
+      SELECT
+        ticker,
+        (SELECT
+           CASE WHEN COALESCE(SUM(m), 0) = 0 THEN NULL ELSE SUM(n * m) / SUM(m) END
+         FROM (VALUES
+           (cashflow_norm,  40::numeric),
+           (profit_norm,    25::numeric),
+           (growth_norm,    10::numeric),
+           (valuation_norm, 25::numeric)
+         ) AS t(n, m)
+         WHERE n IS NOT NULL
+        ) AS total_score
+      FROM sections
+    )`;
+
+  if (!withTech) {
+    return `
+      ${fundCte}
+      SELECT
+        s.ticker,
+        cm.name,
+        s.total_score::numeric AS metric
+      FROM scored s
+      LEFT JOIN public.company_master cm ON cm.ticker = s.ticker
+      WHERE s.total_score IS NOT NULL
+      ORDER BY s.total_score DESC, s.ticker
+      LIMIT $1
+    `;
+  }
+
+  // 기술 점수 테이블 존재 — (펀더 + 기술) / 2 평균. 기술 결측 ticker 는 펀더 단독.
+  return `
+    ${fundCte},
+    latest_tech AS (
+      SELECT DISTINCT ON (ticker) ticker, score::numeric AS tech_score
+      FROM public.technical_score_ticker
       ORDER BY ticker, date DESC
     )
     SELECT
-      lf.ticker,
+      s.ticker,
       cm.name,
-      ((
-        (CASE WHEN lf.roe                IS NOT NULL AND lf.roe                > 0.05 THEN 1 ELSE 0 END) +
-        (CASE WHEN lf.net_profit_margin  IS NOT NULL AND lf.net_profit_margin  > 0.05 THEN 1 ELSE 0 END) +
-        (CASE WHEN lf.fcf_yield          IS NOT NULL AND lf.fcf_yield          > 0.01 THEN 1 ELSE 0 END) +
-        (CASE WHEN lf.debt_to_equity     IS NOT NULL AND lf.debt_to_equity     < 4    THEN 1 ELSE 0 END) +
-        (CASE WHEN lf.per                IS NOT NULL AND lf.per                < 60   THEN 1 ELSE 0 END)
-      ) * 20)::numeric AS metric
-    FROM latest_fund lf
-    LEFT JOIN public.company_master cm ON cm.ticker = lf.ticker
-    ORDER BY metric DESC, lf.ticker
+      (CASE
+        WHEN lt.tech_score IS NOT NULL
+          THEN (s.total_score + lt.tech_score) / 2
+        ELSE s.total_score
+      END)::numeric AS metric
+    FROM scored s
+    LEFT JOIN public.company_master cm ON cm.ticker = s.ticker
+    LEFT JOIN latest_tech lt ON lt.ticker = s.ticker
+    WHERE s.total_score IS NOT NULL
+    ORDER BY metric DESC, s.ticker
     LIMIT $1
   `;
-  return query<ScreenRow>(sql, [limit]);
 }

@@ -308,6 +308,8 @@ function ScoreCardView({ title, score }: { title: string; score: GirScore }) {
               left: isNeg ? `${50 - fillPct}%` : "50%",
               width: `${fillPct}%`,
               background: fillColor,
+              // 0 line 쪽은 직선, 절대값이 큰 쪽(±1)만 라운드.
+              borderRadius: isNeg ? "4px 0 0 4px" : "0 4px 4px 0",
             }}
           />
         </div>

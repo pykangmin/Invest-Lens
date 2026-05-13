@@ -19,12 +19,31 @@ import {
   commodityImpactScore,
   costImpactLabel,
   outlookLabel,
+  scoreDayDelta,
   supplyStabilityLabel,
   verdictFromImpactScore,
 } from "../analysis/commodityNarrative";
 import { buildEvents } from "../analysis/events";
-import { sectionScores, totalFromSections } from "../analysis/fundamentalNarrative";
-import { regimeProbs } from "../analysis/macroDetail";
+import {
+  sectionScores,
+  totalFromSections,
+  verdictFromScore,
+} from "../analysis/fundamentalNarrative";
+import { regimeProbs, type RegimeKey } from "../analysis/macroDetail";
+import {
+  technicalAnalysisV4,
+  type TechnicalAnalysisV4,
+  type TechnicalMetricScore,
+} from "../analysis/technicalV4";
+import {
+  CommodityHover,
+  FundamentalHover,
+  MacroHover,
+  TechnicalHover,
+  type HCCommodityData,
+  type HCFundamentalData,
+  type HCMacroData,
+} from "./HoverCards";
 import {
   averageScore,
   buildDailyComposite,
@@ -44,6 +63,7 @@ import {
   type MarketIndexResponse,
   type ScreenItem,
 } from "../data-loader/investmentData";
+import { findSp500Entry } from "../data/sp500";
 import type { CompanySnapshot } from "../types/investment";
 import type { AnalysisEvent, GaugeScore, Severity } from "../types/scoring";
 import { GlobalSearch } from "../visualization/GlobalSearch";
@@ -180,6 +200,28 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
     return buildFundamentalVizData(data.snapshot.latestFundamentals);
   }, [data]);
 
+  // 거시 호버 — 4 regime 확률 + 도미넌트 강조
+  const macroViz = useMemo<MacroVizData | null>(() => {
+    const latest = data?.env.macroRegime.latest;
+    if (!latest) return null;
+    const probs = regimeProbs(latest);
+    return {
+      probs,
+      confidence: latest.confidence ?? null,
+    };
+  }, [data]);
+
+  // 기술 호버 — total + 6 metric + signal
+  const technicalViz = useMemo<TechnicalAnalysisV4 | null>(() => {
+    if (!data) return null;
+    return technicalAnalysisV4(
+      data.snapshot.technicalHistory,
+      data.env.vix.latest[0] ?? null,
+      data.env.vix.history,
+      data.snapshot.latestSignals,
+    );
+  }, [data]);
+
   // 원자재 호버 시 차트 영역에 표시할 데이터 (verdict + 비용/공급/전망)
   const commodityViz = useMemo<CommodityVizData | null>(() => {
     if (!data) return null;
@@ -196,6 +238,69 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
       cost: { label: cost.label, color: cost.color },
       supply: { label: supply.label, color: supply.color },
       outlook: { label: outlook.label, color: outlook.color },
+    };
+  }, [data]);
+
+  // ── 새 hover 카드용 데이터 (HoverCards.tsx) ──────────────────────────
+  const hcFundamental = useMemo<HCFundamentalData | null>(() => {
+    if (!fundamentalViz) return null;
+    const verdict = verdictFromScore(fundamentalViz.score);
+    return {
+      totalScore: fundamentalViz.score,
+      verdictLabel: verdict.label,
+      verdictColor: verdict.color,
+      sections: fundamentalViz.sections.map((s) => ({
+        key: s.key,
+        label: s.label.split(" ")[0] ?? s.label, // "현금흐름 & 안정성" → "현금흐름"
+        ratio: s.ratio,
+        indicators: s.indicators,
+      })),
+    };
+  }, [fundamentalViz]);
+
+  const hcMacro = useMemo<HCMacroData | null>(() => {
+    if (!macroViz) return null;
+    // G/I/R 스코어는 메인 대시보드 단계에서는 미산출 (DB 부재) — null 로 placeholder 처리.
+    return {
+      probs: macroViz.probs,
+      confidence: macroViz.confidence,
+      gScore: null,
+      iScore: null,
+      rScore: null,
+    };
+  }, [macroViz]);
+
+  const hcCommodity = useMemo<HCCommodityData | null>(() => {
+    if (!data) return null;
+    const rows = data.env.commodities.history;
+    if (rows.length === 0) return null;
+    const impact = commodityImpactScore(rows);
+    const verdict = verdictFromImpactScore(impact.score);
+    const cost = costImpactLabel(impact.energyYoy);
+    const supply = supplyStabilityLabel(rows);
+    const outlook = outlookLabel(rows);
+    const dayDelta = scoreDayDelta(rows);
+    // dayDelta.display "전날 대비 +N (상승)" 에서 부호 있는 정수 추출
+    const dayDeltaNum = (() => {
+      const m = dayDelta.display.match(/[-+]?\d+/);
+      return m ? parseInt(m[0], 10) : null;
+    })();
+    return {
+      impactScore: impact.score,
+      verdictLabel: verdict.label,
+      verdictColor: verdict.color,
+      dayDelta: dayDeltaNum,
+      stats: [
+        { label: "비용 영향", value: cost.label, tone: cost.color },
+        { label: "공급 안정성", value: supply.label, tone: supply.color },
+        { label: "향후 전망", value: outlook.label, tone: outlook.color },
+      ],
+      categories: [
+        { key: "energy",   label: "에너지",   yoy: impact.energyYoy ?? 0 },
+        { key: "metal",    label: "산업금속", yoy: impact.metalYoy ?? 0 },
+        { key: "precious", label: "귀금속",   yoy: impact.preciousYoy ?? 0 },
+        { key: "agri",     label: "농산물",   yoy: impact.agriYoy ?? 0 },
+      ],
     };
   }, [data]);
 
@@ -216,13 +321,20 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
               marketIndices={data.marketIndices}
             />
             <GaugeChartRow
+              ticker={ticker}
+              companyName={data.snapshot.company.name ?? ticker}
               fundamental={analysis.gauges.fundamental}
               macro={analysis.gauges.macro}
               commodity={analysis.gauges.commodity}
               technical={analysis.gauges.technical}
               macroDominantPct={dominantRegimePct(data.env.macroRegime.latest)}
               fundamentalViz={fundamentalViz}
+              macroViz={macroViz}
               commodityViz={commodityViz}
+              technicalViz={technicalViz}
+              hcFundamental={hcFundamental}
+              hcMacro={hcMacro}
+              hcCommodity={hcCommodity}
               onNavigateSection={onNavigateSection}
             />
             <EventsFxRow
@@ -329,22 +441,36 @@ function StockRow({
 type GaugeKey = "fundamental" | "macro" | "commodity" | "technical";
 
 function GaugeChartRow({
+  ticker,
+  companyName,
   fundamental,
   macro,
   commodity,
   technical,
   macroDominantPct,
   fundamentalViz,
+  macroViz,
   commodityViz,
+  technicalViz,
+  hcFundamental,
+  hcMacro,
+  hcCommodity,
   onNavigateSection,
 }: {
+  ticker: string;
+  companyName: string;
   fundamental: GaugeScore;
   macro: GaugeScore;
   commodity: GaugeScore;
   technical: GaugeScore;
   macroDominantPct: number | null;
   fundamentalViz: FundamentalVizData | null;
+  macroViz: MacroVizData | null;
   commodityViz: CommodityVizData | null;
+  technicalViz: TechnicalAnalysisV4 | null;
+  hcFundamental: HCFundamentalData | null;
+  hcMacro: HCMacroData | null;
+  hcCommodity: HCCommodityData | null;
   onNavigateSection?: (s: DetailSection) => void;
 }) {
   const [hovered, setHovered] = useState<GaugeKey | null>(null);
@@ -391,8 +517,15 @@ function GaugeChartRow({
       </aside>
       <ChartPanel
         hovered={hovered}
+        ticker={ticker}
+        companyName={companyName}
         fundamentalViz={fundamentalViz}
+        macroViz={macroViz}
         commodityViz={commodityViz}
+        technicalViz={technicalViz}
+        hcFundamental={hcFundamental}
+        hcMacro={hcMacro}
+        hcCommodity={hcCommodity}
       />
     </section>
   );
@@ -644,36 +777,326 @@ const GAUGE_VIZ_META: Record<GaugeKey, { title: string; placeholder: string }> =
 
 function ChartPanel({
   hovered,
+  ticker,
+  companyName,
   fundamentalViz,
+  macroViz,
   commodityViz,
+  technicalViz,
+  hcFundamental,
+  hcMacro,
+  hcCommodity,
 }: {
   hovered: GaugeKey | null;
+  ticker: string;
+  companyName: string;
   fundamentalViz: FundamentalVizData | null;
+  macroViz: MacroVizData | null;
   commodityViz: CommodityVizData | null;
+  technicalViz: TechnicalAnalysisV4 | null;
+  hcFundamental: HCFundamentalData | null;
+  hcMacro: HCMacroData | null;
+  hcCommodity: HCCommodityData | null;
 }) {
-  // 펀더멘털 호버: 4축 레이더 + 4 섹션 데이터 패널
-  if (hovered === "fundamental" && fundamentalViz) {
+  // 새 hover 카드 시각 (HoverCards.tsx). 4 카드 모두 호버 시 ChartPanel 채움.
+  // key prop 으로 호버 전환마다 컴포넌트 재마운트 → 진입 애니메이션 재생.
+  if (hovered === "fundamental" && hcFundamental) {
     return (
-      <div style={S.chartPanel}>
-        <FundamentalVizPanel data={fundamentalViz} />
+      <div style={S.chartPanel} key="hover-fundamental">
+        <FundamentalHover data={hcFundamental} />
       </div>
     );
   }
-  // 원자재 호버: 핵심 요약 + 비용/공급/전망 3 stat
-  if (hovered === "commodity" && commodityViz) {
+  if (hovered === "commodity" && hcCommodity) {
     return (
-      <div style={S.chartPanel}>
-        <CommodityVizPanel data={commodityViz} />
+      <div style={S.chartPanel} key="hover-commodity">
+        <CommodityHover data={hcCommodity} />
       </div>
     );
   }
-  const meta = hovered ? GAUGE_VIZ_META[hovered] : null;
+  if (hovered === "macro" && hcMacro) {
+    return (
+      <div style={S.chartPanel} key="hover-macro">
+        <MacroHover data={hcMacro} />
+      </div>
+    );
+  }
+  if (hovered === "technical" && technicalViz) {
+    return (
+      <div style={S.chartPanel} key="hover-technical">
+        <TechnicalHover data={technicalViz} />
+      </div>
+    );
+  }
+  // unused — 기존 panel 들도 컴파일 보존을 위해 참조 유지
+  void fundamentalViz; void macroViz; void commodityViz;
+  // 기본 — 회사 요약
   return (
     <div style={S.chartPanel}>
-      <div style={S.chartFillBody}>
-        <span style={S.chartPlaceholderText}>
-          {meta?.placeholder ?? "주가 차트 영역 (데이터 매핑 예정)"}
+      <CompanySummaryPanel ticker={ticker} companyName={companyName} />
+    </div>
+  );
+}
+
+/* ─── 거시 호버 패널 ─── */
+
+interface MacroVizData {
+  probs: ReturnType<typeof regimeProbs>;
+  confidence: string | null;
+}
+
+const REGIME_META: Record<RegimeKey, { label: string; color: string; bg: string }> = {
+  softLanding: { label: "Soft Landing", color: "#60c846", bg: "#e4ffdf" },
+  noLanding: { label: "No Landing", color: "#4073ff", bg: "#e8eeff" },
+  recovery: { label: "Recovery", color: "#fdb43a", bg: "#fff5e1" },
+  hardLanding: { label: "Hard Landing", color: "#c1121f", bg: "#ffe4e4" },
+};
+
+function MacroVizPanel({ data }: { data: MacroVizData }) {
+  // 호버 진입 시 0 → 목표 pct 트랜지션
+  const [animated, setAnimated] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setAnimated(true), 50);
+    return () => clearTimeout(t);
+  }, []);
+  const dominant = data.probs.find((p) => p.isDominant) ?? null;
+  // 확률 순(내림차순) 정렬 — 도미넌트가 최상단
+  const sorted = [...data.probs].sort((a, b) => (b.pct ?? 0) - (a.pct ?? 0));
+  return (
+    <div style={S.mvPanel}>
+      <div style={S.mvHead}>
+        <span style={S.mvHeadTitle}>거시 경제</span>
+        <span style={S.mvHeadDivider}>·</span>
+        <span style={S.mvHeadSub}>현재 국면 확률</span>
+      </div>
+      {dominant && (
+        <div style={S.mvDominant}>
+          <span style={S.mvDominantLabel}>도미넌트</span>
+          <span
+            style={{
+              ...S.mvDominantValue,
+              color: REGIME_META[dominant.key].color,
+            }}
+          >
+            {REGIME_META[dominant.key].label}
+          </span>
+          {data.confidence && (
+            <span style={S.mvDominantConfidence}>신뢰도 {data.confidence}</span>
+          )}
+        </div>
+      )}
+      <ul style={S.mvList}>
+        {sorted.map((p, i) => {
+          const meta = REGIME_META[p.key];
+          const pct = p.pct == null ? 0 : Math.max(0, Math.min(100, p.pct));
+          const target = animated ? pct : 0;
+          return (
+            <li key={p.key} style={S.mvRow}>
+              <span style={{ ...S.mvLabel, color: meta.color }}>{meta.label}</span>
+              <div style={S.mvBarTrack}>
+                <div
+                  style={{
+                    ...S.mvBarFill,
+                    width: `${target}%`,
+                    background: meta.color,
+                    transition: `width 0.7s ease-out ${i * 0.05}s`,
+                  }}
+                />
+              </div>
+              <span style={S.mvPct}>{p.pct == null ? "—" : `${Math.round(pct)}%`}</span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+/* ─── 기술 호버 패널 ─── */
+
+const TECH_SIGNAL_LABEL: Record<string, { label: string; color: string }> = {
+  STRONG_BUY: { label: "Strong Buy", color: "#157f0a" },
+  BUY: { label: "Buy", color: "#33a316" },
+  HOLD: { label: "Hold", color: "#e5af43" },
+  SELL: { label: "Sell", color: "#c1121f" },
+  STRONG_SELL: { label: "Strong Sell", color: "#7e0a14" },
+};
+
+// 신호 등급 segment 정의 (디테일 페이지와 동일)
+const TV_SIGNAL_SEGMENTS: Array<{ label: string; start: number; end: number; color: string }> = [
+  { label: "Sell", start: 0, end: 50, color: "#c1121f" },
+  { label: "Hold", start: 50, end: 65, color: "#e5af43" },
+  { label: "Buy", start: 65, end: 80, color: "#33a316" },
+  { label: "Strong Buy", start: 80, end: 100, color: "#157f0a" },
+];
+
+function activeTvSegment(score: number): typeof TV_SIGNAL_SEGMENTS[number] {
+  const v = Math.max(0, Math.min(100, score));
+  for (const seg of TV_SIGNAL_SEGMENTS) {
+    if (v >= seg.start && v < seg.end) return seg;
+  }
+  return TV_SIGNAL_SEGMENTS[TV_SIGNAL_SEGMENTS.length - 1]!;
+}
+
+function TechnicalVizPanel({ data }: { data: TechnicalAnalysisV4 }) {
+  const [animated, setAnimated] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setAnimated(true), 50);
+    return () => clearTimeout(t);
+  }, []);
+  const sig = TECH_SIGNAL_LABEL[data.signal] ?? TECH_SIGNAL_LABEL.HOLD!;
+  const scoreColorVal =
+    data.totalScore >= 65 ? "#60c846" : data.totalScore >= 50 ? "#e5af43" : "#c1121f";
+  return (
+    <div style={S.tvPanel}>
+      <div style={S.tvHead}>
+        <span style={S.tvHeadTitle}>기술적 지표</span>
+        <span style={S.tvHeadDivider}>·</span>
+        <span style={S.tvHeadSub}>종합 점수 / 신호 등급</span>
+      </div>
+      <div style={S.tvScoreRow}>
+        <div style={S.tvScoreBlock}>
+          <span style={S.tvScoreLabel}>종합 점수</span>
+          <span style={{ ...S.tvScoreValue, color: scoreColorVal }}>
+            {data.totalScore}
+            <span style={S.tvScoreMax}>/100</span>
+          </span>
+        </div>
+        <div style={S.tvSignalBlock}>
+          <span style={S.tvScoreLabel}>신호 등급</span>
+          <span style={{ ...S.tvSignalValue, color: sig.color }}>{sig.label}</span>
+        </div>
+      </div>
+      {/* 신호 등급 바 — 4 segment + marker + tick */}
+      <SignalGaugeBarMini score={data.totalScore} animated={animated} />
+      <div style={S.tvMetricsGrid}>
+        {data.metrics.map((m, i) => (
+          <TechnicalMetricTile key={m.key} metric={m} animated={animated} delay={i * 0.05} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SignalGaugeBarMini({ score, animated }: { score: number; animated: boolean }) {
+  const pct = Math.max(0, Math.min(100, score));
+  const seg = activeTvSegment(score);
+  const target = animated ? pct : 0;
+  return (
+    <div style={S.tvSignalGaugeWrap}>
+      {/* badge — marker 위에 segment 라벨 (디테일 페이지와 동일 레이아웃) */}
+      <div
+        style={{
+          ...S.tvSignalBadge,
+          left: `${target}%`,
+          color: seg.color,
+          borderColor: seg.color,
+          transition: "left 0.7s ease-out",
+        }}
+      >
+        {seg.label}
+      </div>
+      {/* marker — 스택 바 위, 아래(바)를 가리키는 ▼ */}
+      <div
+        style={{
+          ...S.tvSignalMarker,
+          left: `${target}%`,
+          transition: "left 0.7s ease-out",
+        }}
+      >
+        <svg width="10" height="9" viewBox="0 0 10 9" style={{ display: "block" }}>
+          <polygon points="5,9 0,0 10,0" fill="#003049" />
+        </svg>
+      </div>
+      {/* stack bar */}
+      <div style={S.tvSignalBar}>
+        {TV_SIGNAL_SEGMENTS.map((s) => {
+          const width = s.end - s.start;
+          return (
+            <div
+              key={s.label}
+              style={{
+                ...S.tvSignalSeg,
+                width: `${width}%`,
+                background: s.color,
+              }}
+            />
+          );
+        })}
+      </div>
+      {/* ticks */}
+      <div style={S.tvSignalTicks}>
+        {[0, 50, 65, 80, 100].map((t) => (
+          <span key={t} style={{ ...S.tvSignalTick, left: `${t}%` }}>
+            {t}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function TechnicalMetricTile({
+  metric,
+  animated,
+  delay,
+}: {
+  metric: TechnicalMetricScore;
+  animated: boolean;
+  delay: number;
+}) {
+  const ratio = metric.available ? metric.score / metric.max : 0;
+  const color =
+    !metric.available
+      ? "#a3a3a3"
+      : ratio >= 0.66
+        ? "#60c846"
+        : ratio >= 0.4
+          ? "#e5af43"
+          : "#c1121f";
+  const target = animated ? Math.max(0, Math.min(100, ratio * 100)) : 0;
+  return (
+    <div style={S.tvTile}>
+      <div style={S.tvTileHead}>
+        <span style={S.tvTileLabel}>{metric.label}</span>
+        <span style={S.tvTileScore}>
+          {metric.available ? `${Math.round(metric.score)}/${metric.max}` : "—"}
         </span>
+      </div>
+      <div style={S.tvTileBarTrack}>
+        <div
+          style={{
+            ...S.tvTileBarFill,
+            width: `${target}%`,
+            background: color,
+            transition: `width 0.7s ease-out ${delay}s`,
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ─── 기본 상태 — 회사 요약 + 가격 sparkline ─── */
+
+function CompanySummaryPanel({
+  ticker,
+  companyName,
+}: {
+  ticker: string;
+  companyName: string;
+}) {
+  const entry = findSp500Entry(ticker);
+  const description = entry?.description ?? "회사 설명 데이터가 등록되지 않은 종목입니다.";
+  return (
+    <div style={S.csPanel}>
+      <div style={S.csInner}>
+        <div style={S.csTitleBlock}>
+          <span style={S.csCompany}>{entry?.name ?? companyName}</span>
+          <span style={S.csTicker}>{ticker}</span>
+        </div>
+        <p style={S.csDescription}>{description}</p>
+        <span style={S.csHint}>좌측 게이지에 마우스를 올리면 상세 시각화가 표시됩니다.</span>
       </div>
     </div>
   );
@@ -1912,6 +2335,323 @@ const S: Record<string, CSSProperties> = {
     fontVariantNumeric: "tabular-nums",
     minWidth: 70,
     textAlign: "right",
+  },
+
+  /* ───── 기본 상태 — 회사 요약 패널 (세로 가운데 정렬) ───── */
+  csPanel: {
+    flex: 1,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "24px 32px",
+    background: "#ffffff",
+    minHeight: 0,
+  },
+  csInner: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 14,
+    width: "100%",
+    maxWidth: 640,
+  },
+  csTitleBlock: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 4,
+    minWidth: 0,
+  },
+  csCompany: {
+    fontSize: 22,
+    fontWeight: 700,
+    color: "#003049",
+    lineHeight: 1.2,
+  },
+  csTicker: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: "#7f7f7f",
+    fontFamily: "var(--font-numeric)",
+    letterSpacing: "0.04em",
+  },
+  csDescription: {
+    fontSize: 15,
+    fontWeight: 500,
+    color: "#373737",
+    lineHeight: 1.6,
+    margin: 0,
+  },
+  csHint: {
+    fontSize: 11,
+    fontWeight: 500,
+    color: "#a3a3a3",
+    marginTop: 4,
+  },
+
+  /* ───── 거시 호버 — 4 regime 확률 ───── */
+  mvPanel: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+    padding: "20px 32px",
+    background: "#ffffff",
+    minHeight: 0,
+    justifyContent: "center",
+  },
+  mvHead: {
+    display: "flex",
+    alignItems: "baseline",
+    gap: 8,
+  },
+  mvHeadTitle: {
+    fontSize: 18,
+    fontWeight: 700,
+    color: "#003049",
+  },
+  mvHeadDivider: {
+    fontSize: 16,
+    fontWeight: 600,
+    color: "#a3a3a3",
+  },
+  mvHeadSub: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#7f7f7f",
+  },
+  mvDominant: {
+    display: "flex",
+    alignItems: "baseline",
+    gap: 12,
+    padding: "10px 14px",
+    background: "#f4f9ff",
+    borderRadius: 8,
+    border: "1px solid #e2ecff",
+  },
+  mvDominantLabel: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: "#7f7f7f",
+  },
+  mvDominantValue: {
+    fontSize: 22,
+    fontWeight: 700,
+    fontFamily: "var(--font-numeric, sans-serif)",
+    lineHeight: 1,
+  },
+  mvDominantConfidence: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: "#7f7f7f",
+    marginLeft: "auto",
+  },
+  mvList: {
+    display: "flex",
+    flexDirection: "column",
+    listStyle: "none",
+    padding: 0,
+    margin: 0,
+    gap: 10,
+  },
+  mvRow: {
+    display: "grid",
+    gridTemplateColumns: "110px 1fr 48px",
+    alignItems: "center",
+    gap: 12,
+  },
+  mvLabel: {
+    fontSize: 13,
+    fontWeight: 700,
+  },
+  mvBarTrack: {
+    height: 10,
+    borderRadius: 5,
+    background: "#ececec",
+    overflow: "hidden",
+  },
+  mvBarFill: {
+    height: "100%",
+    borderRadius: 5,
+    transition: "width 0.5s ease",
+  },
+  mvPct: {
+    fontSize: 13,
+    fontWeight: 700,
+    color: "#003049",
+    fontFamily: "var(--font-numeric, sans-serif)",
+    textAlign: "right",
+  },
+
+  /* ───── 기술 호버 — total + 6 metric ───── */
+  tvPanel: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    gap: 16,
+    padding: "20px 32px",
+    background: "#ffffff",
+    minHeight: 0,
+    justifyContent: "center",
+  },
+  tvHead: {
+    display: "flex",
+    alignItems: "baseline",
+    gap: 8,
+  },
+  tvHeadTitle: {
+    fontSize: 18,
+    fontWeight: 700,
+    color: "#003049",
+  },
+  tvHeadDivider: {
+    fontSize: 16,
+    fontWeight: 600,
+    color: "#a3a3a3",
+  },
+  tvHeadSub: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#7f7f7f",
+  },
+  tvScoreRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 24,
+    padding: "12px 16px",
+    background: "#f4f9ff",
+    borderRadius: 8,
+    border: "1px solid #e2ecff",
+  },
+  tvScoreBlock: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+  },
+  tvScoreLabel: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: "#7f7f7f",
+  },
+  tvScoreValue: {
+    fontSize: 28,
+    fontWeight: 700,
+    fontFamily: "var(--font-numeric, sans-serif)",
+    lineHeight: 1,
+  },
+  tvScoreMax: {
+    fontSize: 14,
+    fontWeight: 600,
+    color: "#a3a3a3",
+    marginLeft: 2,
+  },
+  tvSignalBlock: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+    marginLeft: "auto",
+    alignItems: "flex-end",
+  },
+  tvSignalValue: {
+    fontSize: 20,
+    fontWeight: 700,
+    fontFamily: "var(--font-numeric, sans-serif)",
+    lineHeight: 1,
+    letterSpacing: "0.02em",
+  },
+  /* 기술 신호 등급 바 — 디테일 페이지 SignalGaugeBar 와 동일 레이아웃 (mini) */
+  tvSignalGaugeWrap: {
+    position: "relative",
+    marginTop: 50,
+    marginBottom: 8,
+  },
+  tvSignalBadge: {
+    position: "absolute",
+    // marker(top:-11, height 9 = -2 까지) 위에 충분히 띄움
+    bottom: "calc(100% + 13px)",
+    transform: "translateX(-50%)",
+    fontSize: 11,
+    fontWeight: 700,
+    padding: "2px 7px",
+    borderRadius: 4,
+    background: "#ffffff",
+    border: "1.5px solid",
+    whiteSpace: "nowrap",
+    pointerEvents: "none",
+    boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+  },
+  tvSignalMarker: {
+    position: "absolute",
+    top: -11,
+    transform: "translateX(-50%)",
+    pointerEvents: "none",
+  },
+  tvSignalBar: {
+    display: "flex",
+    width: "100%",
+    height: 10,
+    borderRadius: 5,
+    overflow: "hidden",
+  },
+  tvSignalTicks: {
+    position: "relative",
+    width: "100%",
+    height: 14,
+    marginTop: 4,
+  },
+  tvSignalTick: {
+    position: "absolute",
+    top: 0,
+    transform: "translateX(-50%)",
+    fontSize: 10,
+    fontWeight: 600,
+    color: "#7f7f7f",
+    fontFamily: "var(--font-numeric, sans-serif)",
+  },
+
+  tvMetricsGrid: {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr 1fr",
+    gap: 10,
+  },
+  tvTile: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+    padding: "8px 10px",
+    background: "#fafbfc",
+    border: "1px solid #ececec",
+    borderRadius: 6,
+  },
+  tvTileHead: {
+    display: "flex",
+    alignItems: "baseline",
+    justifyContent: "space-between",
+    gap: 6,
+  },
+  tvTileLabel: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: "#003049",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+  tvTileScore: {
+    fontSize: 12,
+    fontWeight: 700,
+    color: "#003049",
+    fontFamily: "var(--font-numeric, sans-serif)",
+    flexShrink: 0,
+  },
+  tvTileBarTrack: {
+    height: 6,
+    borderRadius: 3,
+    background: "#ececec",
+    overflow: "hidden",
+  },
+  tvTileBarFill: {
+    height: "100%",
+    borderRadius: 3,
+    transition: "width 0.5s ease",
   },
 
   /* ───── 원자재 호버 — 핵심 요약 + 3 신호등 ───── */

@@ -5,6 +5,7 @@ import { Landing } from "./Landing";
 import { MacroDetail } from "./MacroDetail";
 import { StockDashboard } from "./StockDashboard";
 import { TechnicalDetail } from "./TechnicalDetail";
+import { TempHoverCards } from "./TempHoverCards";
 import type { DetailSection } from "./DetailShell";
 
 function readPath(): string {
@@ -58,6 +59,11 @@ export function App() {
   const goTicker = (t: string) => navigate(`/dashboard/${encodeURIComponent(t)}`);
   const goSection = (t: string, s: DetailSection) =>
     navigate(`/dashboard/${encodeURIComponent(t)}/${s}`);
+
+  // 0) /temp — 동적 호버 카드 컨셉 iteration 페이지 (mock data).
+  if (path === "/temp" || path === "/temp/") {
+    return <TempHoverCards />;
+  }
 
   // 1) detail 라우트 — /dashboard/<TICKER>/<section>
   const detailRoute = parseDetailRoute(path);
