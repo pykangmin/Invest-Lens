@@ -7,6 +7,8 @@ import {
 } from "react";
 import { searchCompanies } from "../data-loader/investmentData";
 import type { CompanyMaster } from "../types/investment";
+import { responsiveStyles } from "../shared/responsiveStyle";
+import { TruncatedText } from "../shared/TruncatedText";
 
 const DEBOUNCE_MS = 220;
 const RESULT_LIMIT = 8;
@@ -168,7 +170,7 @@ export function GlobalSearch({
               }}
             >
               <span style={S.tickerCol}>{row.ticker}</span>
-              <span style={S.nameCol}>{row.name}</span>
+              <TruncatedText style={S.nameCol}>{row.name}</TruncatedText>
               {row.sector && <span style={S.sectorCol}>{row.sector}</span>}
             </li>
           ))}
@@ -178,7 +180,7 @@ export function GlobalSearch({
   );
 }
 
-const S: Record<string, React.CSSProperties> = {
+const S = responsiveStyles({
   heroWrap: { position: "relative", width: "min(560px, 92vw)" },
   headerWrap: { position: "relative", width: 761, maxWidth: "100%" },
 
@@ -288,4 +290,4 @@ const S: Record<string, React.CSSProperties> = {
     fontSize: "var(--font-size-xxs)",
     color: "var(--color-text-muted)",
   },
-};
+});

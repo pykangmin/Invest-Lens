@@ -29,11 +29,32 @@ interface PeerRow {
   revenue_growth: number | null;
 }
 
-interface RoeSeriesRow {
+// 모든 metric forward-fill 용 — peer row 의 단일 LATERAL row 에서 null 인 컬럼을
+// 직전 분기 유효값으로 채워 ROE 등 sparse 데이터 누락을 막음.
+interface FillRow {
   ticker: string;
   date: string | Date;
-  roe: number | null;
+  market_cap: number | string | null;
+  per: number | string | null;
+  pbr: number | string | null;
+  roe: number | string | null;
+  net_profit_margin: number | string | null;
+  fcf_yield: number | string | null;
+  debt_to_equity: number | string | null;
+  revenue_growth: number | string | null;
 }
+
+const FILL_FIELDS = [
+  "market_cap",
+  "per",
+  "pbr",
+  "roe",
+  "net_profit_margin",
+  "fcf_yield",
+  "debt_to_equity",
+  "revenue_growth",
+] as const;
+type FillField = (typeof FILL_FIELDS)[number];
 
 export interface PeerCompany {
   ticker: string;
@@ -124,54 +145,78 @@ export default async function handler(req: ApiRequest, res: ApiResponse): Promis
     }
 
     const tickers = rows.map((r) => r.ticker);
-    // sparkline 용 ROE 12분기 시계열 (peer 종목별).
-    const seriesRows = tickers.length > 0
-      ? await query<RoeSeriesRow>(
+
+    // 1) sparkline 용 ROE 12분기 시계열 + 2) 모든 metric forward-fill 입력 (top 12 rows).
+    const fillRows = tickers.length > 0
+      ? await query<FillRow>(
           `
-            SELECT ticker, date, roe
-            FROM public.stock_fundamentals
-            WHERE ticker = ANY($1::text[])
-            ORDER BY ticker, date DESC
+            WITH ranked AS (
+              SELECT ticker, date, market_cap, per, pbr, roe,
+                     net_profit_margin, fcf_yield, debt_to_equity, revenue_growth,
+                     ROW_NUMBER() OVER (PARTITION BY ticker ORDER BY date DESC) AS rn
+              FROM public.stock_fundamentals
+              WHERE ticker = ANY($1::text[])
+            )
+            SELECT ticker, date, market_cap, per, pbr, roe,
+                   net_profit_margin, fcf_yield, debt_to_equity, revenue_growth
+            FROM ranked
+            WHERE rn <= 12
+            ORDER BY ticker, date ASC
           `,
           [tickers],
         )
       : [];
-    const seriesByTicker = new Map<string, Array<number | null>>();
-    for (const t of tickers) seriesByTicker.set(t, []);
-    // ticker 별 12행 (이미 DESC) → ASC 12 값으로 forward-fill
-    const groupedDesc = new Map<string, Array<number | null>>();
-    for (const r of seriesRows) {
-      const arr = groupedDesc.get(r.ticker) ?? [];
-      if (arr.length < 12) {
-        arr.push(toNum(r.roe));
-        groupedDesc.set(r.ticker, arr);
-      }
-    }
-    for (const [t, desc] of groupedDesc) {
-      const asc = desc.slice().reverse();
-      let last: number | null = null;
-      const filled = asc.map((v) => {
-        if (v != null) last = v;
-        return last;
-      });
-      seriesByTicker.set(t, filled);
+
+    // ticker 별 ASC (오래된→최신) 분기 데이터 그룹화.
+    const ascByTicker = new Map<string, FillRow[]>();
+    for (const r of fillRows) {
+      const arr = ascByTicker.get(r.ticker) ?? [];
+      arr.push(r);
+      ascByTicker.set(r.ticker, arr);
     }
 
-    const peers: PeerCompany[] = rows.map((r) => ({
-      ticker: r.ticker,
-      name: r.name,
-      subIndustry: r.sub_industry,
-      marketCap: toNum(r.market_cap),
-      per: toNum(r.per),
-      pbr: toNum(r.pbr),
-      roe: toNum(r.roe),
-      netProfitMargin: toNum(r.net_profit_margin),
-      fcfYield: toNum(r.fcf_yield),
-      debtToEquity: toNum(r.debt_to_equity),
-      revenueGrowth: toNum(r.revenue_growth),
-      roeSeries: seriesByTicker.get(r.ticker) ?? [],
-      isSelf: r.ticker === ticker,
-    }));
+    // 각 ticker 의 metric 별 forward-fill 결과 (최신 유효값 = filledLatest[field]).
+    const filledLatestByTicker = new Map<string, Record<FillField, number | null>>();
+    // 각 ticker 의 ROE 시계열 (sparkline) — ASC, forward-fill.
+    const roeSeriesByTicker = new Map<string, Array<number | null>>();
+    for (const [t, asc] of ascByTicker) {
+      const carry: Record<FillField, number | null> = {
+        market_cap: null, per: null, pbr: null, roe: null,
+        net_profit_margin: null, fcf_yield: null,
+        debt_to_equity: null, revenue_growth: null,
+      };
+      const roeSeries: Array<number | null> = [];
+      for (const row of asc) {
+        for (const f of FILL_FIELDS) {
+          const v = toNum(row[f]);
+          if (v != null) carry[f] = v;
+        }
+        roeSeries.push(carry.roe);
+      }
+      filledLatestByTicker.set(t, { ...carry });
+      roeSeriesByTicker.set(t, roeSeries);
+    }
+
+    // 원래 LATERAL JOIN 의 단일 row 값을 forward-fill 결과로 덮어쓰기 — null 컬럼 누락 해결.
+    const peers: PeerCompany[] = rows.map((r) => {
+      const filled = filledLatestByTicker.get(r.ticker);
+      const pick = (f: FillField): number | null => filled?.[f] ?? toNum(r[f]);
+      return {
+        ticker: r.ticker,
+        name: r.name,
+        subIndustry: r.sub_industry,
+        marketCap: pick("market_cap"),
+        per: pick("per"),
+        pbr: pick("pbr"),
+        roe: pick("roe"),
+        netProfitMargin: pick("net_profit_margin"),
+        fcfYield: pick("fcf_yield"),
+        debtToEquity: pick("debt_to_equity"),
+        revenueGrowth: pick("revenue_growth"),
+        roeSeries: roeSeriesByTicker.get(r.ticker) ?? [],
+        isSelf: r.ticker === ticker,
+      };
+    });
 
     if (res.setHeader) {
       res.setHeader("Cache-Control", "public, s-maxage=300, stale-while-revalidate=1800");

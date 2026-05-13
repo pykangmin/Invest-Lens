@@ -4,6 +4,7 @@
 //   "card"   — hover 즉시 floating card 표시 (시안 tooltip=on variant 외형)
 
 import { useState, type CSSProperties } from "react";
+import { responsiveStyles, scaledPx } from "../shared/responsiveStyle";
 
 export interface InfoTooltipProps {
   text: string;
@@ -19,10 +20,15 @@ export function InfoTooltip({
   placement = "top",
 }: InfoTooltipProps) {
   const [open, setOpen] = useState(false);
+  const scaledSize = scaledPx(size);
+  const scaledFontSize = scaledPx(size * 0.65);
 
   if (mode === "native") {
     return (
-      <span style={{ ...S.icon, width: size, height: size, fontSize: size * 0.65 }} title={text}>
+      <span
+        style={{ ...S.icon, width: scaledSize, height: scaledSize, fontSize: scaledFontSize }}
+        title={text}
+      >
         i
       </span>
     );
@@ -38,7 +44,7 @@ export function InfoTooltip({
       onBlur={() => setOpen(false)}
       tabIndex={0}
     >
-      <span style={{ ...S.icon, width: size, height: size, fontSize: size * 0.65 }}>
+      <span style={{ ...S.icon, width: scaledSize, height: scaledSize, fontSize: scaledFontSize }}>
         i
       </span>
       {open && (
@@ -62,7 +68,7 @@ export function InfoTooltip({
   );
 }
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   wrap: {
     position: "relative",
     display: "inline-flex",
@@ -125,4 +131,4 @@ const S: Record<string, CSSProperties> = {
     borderBottom: "none",
     borderRight: "none",
   },
-};
+});

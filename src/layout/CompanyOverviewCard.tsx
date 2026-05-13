@@ -17,6 +17,7 @@ import {
 } from "../data/sp500";
 import { loadPeers } from "../data-loader/investmentData";
 import type { PeerCompany } from "../types/investment";
+import { TruncatedText } from "../shared/TruncatedText";
 
 const C = {
   navy: "#003049",
@@ -31,6 +32,8 @@ const C = {
 } as const;
 
 const FONT = "Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+
+const overviewPeersCache = new Map<string, PeerCompany[]>();
 
 export interface CompanyOverviewCardProps {
   ticker: string;
@@ -69,15 +72,22 @@ function CompanyOverviewContent({
   onSelectTicker?: (ticker: string) => void;
 }) {
   // 동종 업계 — /api/peers (B-2: sub_industry 우선, sector fallback, 자기 제외). 비동기 로드.
-  const [peers, setPeers] = useState<PeerCompany[] | null>(null);
+  const cacheKey = ticker.toUpperCase();
+  const [peers, setPeers] = useState<PeerCompany[] | null>(() => overviewPeersCache.get(cacheKey) ?? null);
   useEffect(() => {
     let alive = true;
-    setPeers(null);
+    const cachedPeers = overviewPeersCache.get(cacheKey) ?? null;
+    setPeers(cachedPeers);
+    if (cachedPeers) return () => { alive = false; };
+
     loadPeers(ticker, 5)
-      .then((r) => { if (alive) setPeers(r.peers); })
+      .then((r) => {
+        overviewPeersCache.set(cacheKey, r.peers);
+        if (alive) setPeers(r.peers);
+      })
       .catch(() => { if (alive) setPeers([]); });
     return () => { alive = false; };
-  }, [ticker]);
+  }, [cacheKey, ticker]);
 
   // 키워드 = 테마 + 시장 지위 모두 합쳐 # 제거. 앞 2개 강조.
   const chipLabels: string[] = [
@@ -134,16 +144,17 @@ function CompanyOverviewContent({
       <Divider />
 
       <Section title="동종 업계">
-        {/* /api/peers — sub_industry top (sector fallback), 자기 제외 5종목 */}
+        {/* /api/peers — sub_industry top (sector fallback), 자기 제외 5종목.
+            keyword 태그처럼 flex-wrap — 폭이 좁아지면 자연스럽게 줄바꿈. */}
         <div style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(5, 1fr)",
+          display: "flex",
+          flexWrap: "wrap",
           gap: 10,
         }}>
           {peers == null && Array.from({ length: 5 }).map((_, i) => <PeerSkeleton key={i} />)}
           {peers != null && peers.length === 0 && (
             <div style={{
-              gridColumn: "1 / -1",
+              width: "100%",
               textAlign: "center",
               color: C.textFaint,
               fontSize: 12,
@@ -256,6 +267,9 @@ function PeerCard({
       onClick={onClick}
       disabled={!interactive}
       style={{
+        // 키워드 태그와 동일하게 wrap — basis 20% 로 5장이 1행, 좁아지면 minWidth 에서 줄바꿈.
+        flex: "1 1 calc((100% - 40px) / 5)",
+        minWidth: 80,
         background: C.innerBg,
         border: `1px solid ${C.border}`,
         borderRadius: 8,
@@ -279,14 +293,15 @@ function PeerCard({
       } : undefined}
     >
       <div style={{ fontSize: 13, fontWeight: 700, color: C.navy }}>{ticker}</div>
-      <div style={{
+      <TruncatedText style={{
         fontSize: 11,
         color: C.textMuted,
         overflow: "hidden",
         textOverflow: "ellipsis",
         whiteSpace: "nowrap",
         maxWidth: "100%",
-      }}>{name}</div>
+        display: "block",
+      }}>{name}</TruncatedText>
     </button>
   );
 }
@@ -294,6 +309,8 @@ function PeerCard({
 function PeerSkeleton() {
   return (
     <div style={{
+      flex: "1 1 calc((100% - 40px) / 5)",
+      minWidth: 80,
       background: C.innerBg,
       border: `1px solid ${C.border}`,
       borderRadius: 8,

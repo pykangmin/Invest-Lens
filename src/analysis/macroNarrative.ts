@@ -71,6 +71,30 @@ function momentum(
   return latest - sum / n;
 }
 
+// 주식 모멘텀 정규화 — 일별 close 시리즈에서 (latest / N일 평균 - 1) / 5%.
+// ±5% 편차 → ±1 로 매핑 (G Score 다른 기여 항목과 스케일 정합).
+// `closes` 는 ASC 순서 (오래 → 최신) 가정.
+export function normalizeMarketIndexMomentum(
+  closes: number[],
+  windowN = 60,
+): number | null {
+  if (closes.length < windowN + 1) return null;
+  const latest = closes[closes.length - 1];
+  if (latest == null || !Number.isFinite(latest)) return null;
+  let sum = 0;
+  let n = 0;
+  for (let i = closes.length - 1 - windowN; i < closes.length - 1; i++) {
+    const v = closes[i];
+    if (v == null || !Number.isFinite(v)) continue;
+    sum += v;
+    n++;
+  }
+  if (n === 0) return null;
+  const avg = sum / n;
+  if (avg === 0) return null;
+  return (latest / avg - 1) / 0.05;
+}
+
 // ──────────────────────────────────────────────────────────────
 // 1.3 dominant — DB CamelCase → 띄어쓰기 라벨 + 색상
 // ──────────────────────────────────────────────────────────────

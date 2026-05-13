@@ -5,6 +5,7 @@
 // 단일 책임: CSS grid 의 columns/gap 만 표준화. 자식 카드는 외부에서 결정.
 
 import type { CSSProperties, ReactNode } from "react";
+import { scaledPx } from "../../shared/responsiveStyle";
 
 export interface MetricCardGridProps {
   /** 컬럼 수 (디폴트 4) — 반응형 단순화: 모바일 미고려 (시안이 1440 desktop) */
@@ -20,12 +21,13 @@ export function MetricCardGrid({
   children,
   style,
 }: MetricCardGridProps) {
+  const minColumnWidth = Math.max(160, Math.round(1000 / columns));
   return (
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: `repeat(${columns}, 1fr)`,
-        gap,
+        gridTemplateColumns: `repeat(auto-fit, minmax(min(100%, ${minColumnWidth}px), 1fr))`,
+        gap: scaledPx(gap),
         ...style,
       }}
     >

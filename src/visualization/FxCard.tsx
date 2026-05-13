@@ -1,4 +1,5 @@
 import { Sparkline } from "./Sparkline";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 export interface FxCardProps {
   label: string;
@@ -36,7 +37,7 @@ export function FxCard({ label, sublabel, value, delta, sparkline }: FxCardProps
   );
 }
 
-const S: Record<string, React.CSSProperties> = {
+const S = responsiveStyles({
   row: {
     display: "grid",
     gridTemplateColumns: "minmax(120px, 1fr) auto auto",
@@ -75,4 +76,4 @@ const S: Record<string, React.CSSProperties> = {
     fontWeight: 600,
     fontVariantNumeric: "tabular-nums",
   },
-};
+});

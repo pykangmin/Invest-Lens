@@ -14,7 +14,7 @@
 //   §6 (1538-1734, h=196) — 주요 섹터별 시장 이슈 분석: 3 INSTANCE Card/원자재/주요 이슈 (각 345w)
 //   §7 (1746-2096, h=350) — 2-col: 자산군 정규화 사이클(494w) + 에너지 괴리율(597w) + 우측 사이드 지표
 
-import { Fragment, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { Icon } from "@iconify/react";
 import {
   barChangeData,
@@ -47,6 +47,9 @@ import type { CommoditiesResponse, CompanySnapshot } from "../types/investment";
 import { InfoTooltip } from "../visualization/InfoTooltip";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
+import { responsiveStyles, scaledPx } from "../shared/responsiveStyle";
+import { TruncatedText } from "../shared/TruncatedText";
+import { ChartCrosshair, ChartTooltip, useChartHoverIdx } from "../visualization/chartHover";
 
 export interface CommodityDetailProps {
   ticker: string;
@@ -57,6 +60,13 @@ export interface CommodityDetailProps {
 }
 
 // ── 정적 메타 ─────────────────────────────────────────────────
+
+interface CommodityDetailCache {
+  data: CompanySnapshot;
+  commodities: CommoditiesResponse;
+}
+
+const commodityDetailCache = new Map<string, CommodityDetailCache>();
 
 interface StatSpec {
   label: string;
@@ -284,20 +294,29 @@ export function CommodityDetail({
   onNavigateSection,
   onSelectTicker,
 }: CommodityDetailProps) {
-  const [data, setData] = useState<CompanySnapshot | null>(null);
-  const [commodities, setCommodities] = useState<CommoditiesResponse | null>(null);
+  const cacheKey = ticker.toUpperCase();
+  const cached = commodityDetailCache.get(cacheKey) ?? null;
+  const [data, setData] = useState<CompanySnapshot | null>(() => cached?.data ?? null);
+  const [commodities, setCommodities] = useState<CommoditiesResponse | null>(() => cached?.commodities ?? null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
-    setData(null);
+    const cachedState = commodityDetailCache.get(cacheKey) ?? null;
+    setData(cachedState?.data ?? null);
+    setCommodities(cachedState?.commodities ?? null);
     setError(null);
+    if (cachedState) return () => {
+      alive = false;
+    };
+
     Promise.all([
       loadCompanySnapshot(ticker, 24),
       // 자산군 정규화 사이클(2021 Q2 baseline) + WTI vs NG 5년치 시계열 커버용
       loadCommodities(undefined, 1300),
     ])
       .then(([s, c]) => {
+        commodityDetailCache.set(cacheKey, { data: s, commodities: c });
         if (alive) {
           setData(s);
           setCommodities(c);
@@ -309,7 +328,7 @@ export function CommodityDetail({
     return () => {
       alive = false;
     };
-  }, [ticker]);
+  }, [cacheKey, ticker]);
 
   const analysis = useMemo(() => {
     if (!commodities) return null;
@@ -579,8 +598,8 @@ function StatItem({ stat }: { stat: StatSpec }) {
         <StatIcon />
       </div>
       <div style={S.statText}>
-        <span style={S.statLabel}>{stat.label}</span>
-        <span style={{ ...S.statValue, color: stat.color }}>{stat.value}</span>
+        <TruncatedText style={S.statLabel}>{stat.label}</TruncatedText>
+        <TruncatedText style={{ ...S.statValue, color: stat.color }}>{stat.value}</TruncatedText>
       </div>
     </div>
   );
@@ -596,17 +615,17 @@ function StatIcon() {
   );
 }
 
+
+
 function MainFourCard({ card }: { card: MainFourSpec }) {
   return (
     <div style={S.mainFourCard}>
       <div style={{ ...S.mainFourIconWrap, background: card.iconBg }} aria-hidden>
-        <Icon icon={card.iconName} width={28} height={28} color={card.color} />
+        <Icon icon={card.iconName} width={scaledPx(28)} height={scaledPx(28)} color={card.color} />
       </div>
       <div style={S.mainFourText}>
-        <span style={S.mainFourLabel} title={card.label}>
-          {card.label}
-        </span>
-        <span style={{ ...S.mainFourValue, color: card.color }}>{card.value}</span>
+        <TruncatedText style={S.mainFourLabel}>{card.label}</TruncatedText>
+        <TruncatedText style={{ ...S.mainFourValue, color: card.color }}>{card.value}</TruncatedText>
       </div>
     </div>
   );
@@ -626,22 +645,16 @@ const PRICE_CARD_TOOLTIP: Record<string, string> = {
 
 function PriceCard({ card, idx }: { card: PriceCardSpec; idx: number }) {
   // 4×2 격자: 내부 선만 (마지막 열 우측 X, 마지막 행 하단 X)
-  const isLastCol = idx % 4 === 3;
-  const isLastRow = idx >= 4;
-  const border = "1px solid var(--color-border)";
+  void idx;
   const tooltipText = PRICE_CARD_TOOLTIP[card.key];
   return (
     <div
       style={{
         ...S.priceCard,
-        borderRight: isLastCol ? "none" : border,
-        borderBottom: isLastRow ? "none" : border,
       }}
     >
       <div style={S.priceCardHead}>
-        <span style={S.priceCardLabel} title={card.label}>
-          {card.label}
-        </span>
+        <TruncatedText style={S.priceCardLabel}>{card.label}</TruncatedText>
         {tooltipText && <InfoTooltip text={tooltipText} mode="card" size={14} />}
       </div>
       <div style={S.priceCardValue}>
@@ -680,7 +693,10 @@ function BarChangeChart({ items }: { items: BarChangeItem[] }) {
   const xStep = innerW / items.length;
   const barW = Math.max(14, xStep * 0.55);
   return (
-    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+    // flex-grow wrapper — 부모 row3Right 박스의 남은 세로 공간을 모두 차지.
+    // SVG 는 viewBox 기반으로 100%×100% 채우며 meet 비율 유지.
+    <div style={{ flex: 1, minHeight: 0, display: "flex" }}>
+    <svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", width: "100%", height: "100%" }}>
       {yTicks.map((t) => {
         const y = yOf(t);
         const isZero = t === 0;
@@ -713,6 +729,7 @@ function BarChangeChart({ items }: { items: BarChangeItem[] }) {
         );
       })}
     </svg>
+    </div>
   );
 }
 
@@ -777,7 +794,9 @@ function VolatilityScatter({ points }: { points: ScatterPoint[] }) {
   const pointOrder = hovered
     ? [...points.filter((p) => p.symbol !== hovered), ...points.filter((p) => p.symbol === hovered)]
     : points;
+  const hoveredPoint = hovered ? points.find((p) => p.symbol === hovered) : null;
   return (
+    <div style={{ position: "relative" }} onMouseLeave={() => setHovered(null)}>
     <svg
       width="100%"
       height="100%"
@@ -868,6 +887,19 @@ function VolatilityScatter({ points }: { points: ScatterPoint[] }) {
         );
       })}
     </svg>
+    {hoveredPoint && (
+      <ChartTooltip
+        leftPercent={(xOf(hoveredPoint.x) / W) * 100}
+        style={{
+          top: `${(yOf(hoveredPoint.y) / H) * 100}%`,
+          transform: "translate(-50%, calc(-100% - 14px))",
+        }}
+      >
+        <div style={{ fontWeight: 700 }}>{hoveredPoint.label}</div>
+        <div>변동성 {hoveredPoint.x.toFixed(1)} · 수익률 {hoveredPoint.y >= 0 ? "+" : ""}{hoveredPoint.y.toFixed(1)}%</div>
+      </ChartTooltip>
+    )}
+    </div>
   );
 }
 
@@ -918,8 +950,13 @@ function SectorLineSvg({ chart }: { chart: SectorChart }) {
   const stepX = chart.points.length > 1 ? innerW / (chart.points.length - 1) : 0;
   const xOf = (i: number) => padL + i * stepX;
   const yOf = (v: number) => padT + innerH - (v / yMax) * innerH;
+  const xOfIdx = useCallback((i: number) => xOf(i), [stepX]);
+  const { hoverIdx, onPointerMove, onPointerLeave } = useChartHoverIdx(chart.points.length, xOfIdx, W);
+  const fmtVal = (v: number) =>
+    v >= 1000 ? Math.round(v).toLocaleString() : v >= 100 ? v.toFixed(0) : v.toFixed(2);
   return (
-    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+    <div style={{ position: "relative" }} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}>
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
       {/* Y grid + tick label */}
       {yTicks.map((t, i) => {
         const y = yOf(t);
@@ -960,7 +997,26 @@ function SectorLineSvg({ chart }: { chart: SectorChart }) {
           </text>
         ) : null,
       )}
+      {hoverIdx !== null && (
+        <ChartCrosshair x={xOf(hoverIdx)} y1={padT} y2={padT + innerH} />
+      )}
     </svg>
+    {hoverIdx !== null && chart.points[hoverIdx] && (
+      <ChartTooltip leftPercent={(xOf(hoverIdx) / W) * 100}>
+        <div style={{ fontWeight: 700 }}>{chart.points[hoverIdx].date}</div>
+        {chart.series.map((s) => {
+          const v = chart.points[hoverIdx].values[s.symbol];
+          if (v == null) return null;
+          return (
+            <div key={s.symbol} style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+              <span style={{ color: s.color }}>{s.label}</span>
+              <span>{fmtVal(v)}</span>
+            </div>
+          );
+        })}
+      </ChartTooltip>
+    )}
+    </div>
   );
 }
 
@@ -991,6 +1047,8 @@ function NormalizedCycleChart({ series }: { series: NormalizedCycleSeries[] }) {
   const stepX = allDates.length > 1 ? innerW / (allDates.length - 1) : 0;
   const xOf = (i: number) => padL + i * stepX;
   const yOf = (v: number) => padT + innerH - (v / yMax) * innerH;
+  const xOfIdx = useCallback((i: number) => xOf(i), [stepX]);
+  const { hoverIdx, onPointerMove, onPointerLeave } = useChartHoverIdx(allDates.length, xOfIdx, W);
   return (
     <div style={CFM.wrap}>
       {/* 범례 — svg 위 */}
@@ -1007,7 +1065,8 @@ function NormalizedCycleChart({ series }: { series: NormalizedCycleSeries[] }) {
           </span>
         ))}
       </div>
-      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+      <div style={{ position: "relative" }} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}>
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
         {yTicks.map((t) => {
           const y = yOf(t);
           return (
@@ -1054,7 +1113,26 @@ function NormalizedCycleChart({ series }: { series: NormalizedCycleSeries[] }) {
             </text>
           ) : null,
         )}
+        {hoverIdx !== null && (
+          <ChartCrosshair x={xOf(hoverIdx)} y1={padT} y2={padT + innerH} />
+        )}
       </svg>
+      {hoverIdx !== null && allDates[hoverIdx] && (
+        <ChartTooltip leftPercent={(xOf(hoverIdx) / W) * 100}>
+          <div style={{ fontWeight: 700 }}>{allDates[hoverIdx]}</div>
+          {series.map((s) => {
+            const v = s.points[hoverIdx]?.index;
+            if (v == null) return null;
+            return (
+              <div key={s.symbol} style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                <span style={{ color: s.color }}>{s.label}</span>
+                <span>{v.toFixed(1)}</span>
+              </div>
+            );
+          })}
+        </ChartTooltip>
+      )}
+      </div>
     </div>
   );
 }
@@ -1086,6 +1164,8 @@ function WtiNgDualChart({ points }: { points: DualAxisPoint[] }) {
   const xOf = (i: number) => padL + i * stepX;
   const yWti = (v: number) => padT + innerH - (v / wtiMax) * innerH;
   const yNg = (v: number) => padT + innerH - (v / ngMax) * innerH;
+  const xOfIdx = useCallback((i: number) => xOf(i), [stepX]);
+  const { hoverIdx, onPointerMove, onPointerLeave } = useChartHoverIdx(points.length, xOfIdx, W);
   return (
     <div style={CFM.wrap}>
       {/* 범례 — svg 위 */}
@@ -1099,7 +1179,8 @@ function WtiNgDualChart({ points }: { points: DualAxisPoint[] }) {
           <span style={{ ...CFM.legendText, color: "#4a7aff" }}>천연가스 ($/MMBtu)</span>
         </span>
       </div>
-      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+      <div style={{ position: "relative" }} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}>
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
         {wtiTicks.map((t) => {
           const y = yWti(t);
           return (
@@ -1160,7 +1241,28 @@ function WtiNgDualChart({ points }: { points: DualAxisPoint[] }) {
             </text>
           ) : null,
         )}
+        {hoverIdx !== null && (
+          <ChartCrosshair x={xOf(hoverIdx)} y1={padT} y2={padT + innerH} />
+        )}
       </svg>
+      {hoverIdx !== null && points[hoverIdx] && (
+        <ChartTooltip leftPercent={(xOf(hoverIdx) / W) * 100}>
+          <div style={{ fontWeight: 700 }}>{points[hoverIdx].date}</div>
+          {points[hoverIdx].wti != null && (
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+              <span style={{ color: "#fdb43a" }}>WTI</span>
+              <span>${points[hoverIdx].wti!.toFixed(1)}</span>
+            </div>
+          )}
+          {points[hoverIdx].ng != null && (
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+              <span style={{ color: "#4a7aff" }}>천연가스</span>
+              <span>${points[hoverIdx].ng!.toFixed(2)}</span>
+            </div>
+          )}
+        </ChartTooltip>
+      )}
+      </div>
     </div>
   );
 }
@@ -1170,9 +1272,9 @@ function IssueCard({ card }: { card: IssueCardSpec }) {
     <div style={S.issueCard}>
       <div style={S.issueHead}>
         <div style={{ ...S.issueIcon, background: card.iconBg }} aria-hidden>
-          <Icon icon={card.iconName} width={20} height={20} color={card.tagColor} />
+          <Icon icon={card.iconName} width={scaledPx(20)} height={scaledPx(20)} color={card.tagColor} />
         </div>
-        <span style={S.issueTitle} title={card.title}>{card.title}</span>
+        <TruncatedText style={S.issueTitle}>{card.title}</TruncatedText>
         <span
           style={{
             ...S.issueTag,
@@ -1223,11 +1325,11 @@ function SideIndicators({
             border: `1px solid ${s.borderColor ?? "#ececec"}`,
             background: s.bgColor ?? "transparent",
             borderRadius: 8,
-            padding: "12px 14px",
+            padding: "clamp(0.5rem, 1vw, 0.75rem) clamp(0.5rem, 1.1vw, 0.875rem)",
           }}
         >
-          <span style={S.sideIndicatorLabel}>{s.label}</span>
-          <span style={S.sideIndicatorValue}>{s.value}</span>
+          <TruncatedText style={S.sideIndicatorLabel}>{s.label}</TruncatedText>
+          <TruncatedText style={S.sideIndicatorValue}>{s.value}</TruncatedText>
         </div>
       ))}
     </div>
@@ -1257,8 +1359,16 @@ function SectionBoxFull({
           {sub && <div style={S.subHeader}>{sub}</div>}
         </div>
       </div>
-      <div style={{ display: "flex", flex: 1, gap: 12, minHeight: height }}>
-        <div style={{ flex: 1, display: "flex" }}>{children}</div>
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          gap: scaledPx(12),
+          minHeight: scaledPx(height),
+          minWidth: 0,
+        }}
+      >
+        <div style={{ flex: 1, display: "flex", minWidth: 0 }}>{children}</div>
         {rightSide}
       </div>
     </section>
@@ -1279,10 +1389,12 @@ const NAVY = "#003049";
 const MUTED = "#747474";
 const FAINT = "#737171";
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   row1: {
     display: "grid",
+
     gridTemplateColumns: "1fr 1fr",
+
     gap: 16,
     alignItems: "stretch",
   },
@@ -1297,10 +1409,11 @@ const S: Record<string, CSSProperties> = {
     background: "var(--color-card)",
     border: "1px solid var(--color-border)",
     borderRadius: 10,
-    padding: "20px 24px",
+    padding: "clamp(1rem, 1.55vw, 1.25rem) clamp(1rem, 1.85vw, 1.5rem)",
     display: "flex",
     flexDirection: "column",
     gap: 12,
+    minWidth: 0,
   },
   boxHeader: {
     fontSize: 16,
@@ -1353,8 +1466,9 @@ const S: Record<string, CSSProperties> = {
   statRow: {
     display: "flex",
     alignItems: "stretch",
-    gap: 16,
+    gap: "clamp(0.5rem, 1.1vw, 1rem)",
     marginTop: "auto",
+    minWidth: 0,
   },
   statDivider: {
     width: 1,
@@ -1364,12 +1478,13 @@ const S: Record<string, CSSProperties> = {
   statItem: {
     display: "flex",
     alignItems: "center",
-    gap: 10,
+    gap: "clamp(0.375rem, 0.75vw, 0.625rem)",
     flex: 1,
+    minWidth: 0,
   },
   statIcon: {
-    width: 42,
-    height: 42,
+    width: "clamp(1.75rem, 3.2vw, 2.625rem)",
+    height: "clamp(1.75rem, 3.2vw, 2.625rem)",
     borderRadius: "50%",
     background: "#f7f9ff",
     display: "flex",
@@ -1384,30 +1499,39 @@ const S: Record<string, CSSProperties> = {
     minWidth: 0,
   },
   statLabel: {
-    fontSize: 15,
+    fontSize: "clamp(0.6875rem, 1.15vw, 0.9375rem)",
     fontWeight: 600,
     color: NAVY,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   statValue: {
-    fontSize: 25,
+    fontSize: "clamp(1rem, 1.9vw, 1.5625rem)",
     fontWeight: 600,
     fontFamily: "var(--font-numeric)",
     lineHeight: 1,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
+
+
 
   mainFourCard: {
     background: "#ffffff",
     border: "1px solid var(--color-border)",
     borderRadius: 10,
-    padding: "20px 24px",
+    padding: "clamp(0.875rem, 1.55vw, 1.25rem) clamp(0.875rem, 1.85vw, 1.5rem)",
     display: "flex",
     alignItems: "center",
-    gap: 16,
+    gap: "clamp(0.5rem, 1.1vw, 1rem)",
     minWidth: 0,
+    overflow: "hidden",
   },
   mainFourIconWrap: {
-    width: 55,
-    height: 55,
+    width: "clamp(2.25rem, 4vw, 3.4375rem)",
+    height: "clamp(2.25rem, 4vw, 3.4375rem)",
     borderRadius: "50%",
     background: "#f7f9ff",
     display: "flex",
@@ -1430,11 +1554,13 @@ const S: Record<string, CSSProperties> = {
     textOverflow: "ellipsis",
   },
   mainFourValue: {
-    fontSize: 30,
+    fontSize: "clamp(1.25rem, 2.25vw, 1.875rem)",
     fontWeight: 600,
     fontFamily: "var(--font-numeric)",
     lineHeight: 1,
     whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
 
   row3: {
@@ -1462,10 +1588,9 @@ const S: Record<string, CSSProperties> = {
   },
   priceGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
-    gap: 0,
-    flex: 1,
-    alignContent: "center",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: 1,
+    background: "var(--color-border)",
   },
   priceCard: {
     display: "flex",
@@ -1473,6 +1598,7 @@ const S: Record<string, CSSProperties> = {
     gap: 6,
     padding: "12px 14px",
     minWidth: 0,
+    background: "var(--color-card)",
   },
   priceCardHead: {
     display: "flex",
@@ -1602,7 +1728,8 @@ const S: Record<string, CSSProperties> = {
   },
   row6Grid: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
+    // 2×2 고정.
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
     gap: 12,
     alignItems: "stretch",
   },
@@ -1729,31 +1856,40 @@ const S: Record<string, CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-    gap: 12,
+    gap: "clamp(0.5rem, 1vw, 0.75rem)",
     flexShrink: 0,
-    width: 160,
-    paddingLeft: 14,
+    width: "clamp(5.5rem, 11vw, 10rem)",
+    paddingLeft: "clamp(0.35rem, 0.9vw, 0.875rem)",
+    minWidth: 0,
   },
   sideIndicatorRow: {
     display: "flex",
     flexDirection: "column",
-    gap: 18,
+    gap: "clamp(0.625rem, 1.4vw, 1.125rem)",
     padding: "20px 0",
+    minWidth: 0,
+    overflow: "hidden",
   },
   sideIndicatorDivider: {
     height: 1,
     background: "var(--color-border)",
   },
   sideIndicatorLabel: {
-    fontSize: 14,
+    fontSize: "clamp(0.6875rem, 1vw, 0.875rem)",
     fontWeight: 600,
     color: NAVY,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   sideIndicatorValue: {
-    fontSize: 16,
+    fontSize: "clamp(0.875rem, 1.2vw, 1rem)",
     fontWeight: 700,
     color: NAVY,
     fontFamily: "var(--font-numeric)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
 
   graphPlaceholder: {
@@ -1771,10 +1907,10 @@ const S: Record<string, CSSProperties> = {
     color: FAINT,
     fontStyle: "italic",
   },
-};
+});
 
 // 차트 frame 공통 스타일 (legend + svg wrap)
-const CFM: Record<string, CSSProperties> = {
+const CFM = responsiveStyles({
   wrap: {
     display: "flex",
     flexDirection: "column",
@@ -1785,12 +1921,13 @@ const CFM: Record<string, CSSProperties> = {
     display: "flex",
     gap: 14,
     alignItems: "center",
-    flexWrap: "wrap",
+    flexWrap: "nowrap",
   },
   legendItem: {
     display: "flex",
     alignItems: "center",
     gap: 5,
+    minWidth: 0,
   },
   legendDot: {
     width: 8,
@@ -1802,11 +1939,14 @@ const CFM: Record<string, CSSProperties> = {
     fontSize: 12,
     fontWeight: 700,
     fontFamily: "var(--font-numeric)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
-};
+});
 
 // §4-A 시장 지표 표 스타일
-const CMT: Record<string, CSSProperties> = {
+const CMT = responsiveStyles({
   wrap: {
     display: "flex",
     flexDirection: "column",
@@ -1839,7 +1979,9 @@ const CMT: Record<string, CSSProperties> = {
     fontFamily: "inherit",
     fontWeight: 600,
   },
-};
+
+});
+
 
 // §5 sector legend 스타일 추가
 S.sectorLegend = {
@@ -1847,12 +1989,13 @@ S.sectorLegend = {
   gap: 10,
   alignItems: "center",
   marginTop: 4,
-  flexWrap: "wrap",
+  flexWrap: "nowrap",
 };
 S.sectorLegendItem = {
   display: "flex",
   alignItems: "center",
   gap: 4,
+  minWidth: 0,
 };
 S.sectorLegendDot = {
   width: 8,
@@ -1864,4 +2007,7 @@ S.sectorLegendText = {
   fontSize: 10,
   fontWeight: 700,
   fontFamily: "var(--font-numeric)",
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
 };

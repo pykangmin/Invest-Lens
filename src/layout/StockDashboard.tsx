@@ -13,7 +13,7 @@
 //   6) TOP 3 × 4          — 오른 / 거래된 / 떨어진 / 점수 좋았던
 //   7) 풋터 면책
 
-import { Fragment, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { analyze } from "../analysis";
 import {
   commodityImpactScore,
@@ -31,20 +31,17 @@ import {
 } from "../analysis/fundamentalNarrative";
 import { regimeProbs, type RegimeKey } from "../analysis/macroDetail";
 import {
+  buildGScore,
+  buildIScore,
+  buildRScore,
+  confidenceToPct,
+  normalizeMarketIndexMomentum,
+} from "../analysis/macroNarrative";
+import {
   technicalAnalysisV4,
   type TechnicalAnalysisV4,
   type TechnicalMetricScore,
 } from "../analysis/technicalV4";
-import {
-  CommodityHover,
-  FundamentalHover,
-  MacroHover,
-  TechnicalHover,
-  type HCCommodityData,
-  type HCFundamentalData,
-  type HCMacroData,
-} from "./HoverCards";
-import { CompanyOverviewCard } from "./CompanyOverviewCard";
 import {
   averageScore,
   buildDailyComposite,
@@ -65,15 +62,25 @@ import {
   type MarketIndexResponse,
   type ScreenItem,
 } from "../data-loader/investmentData";
-import { buildGScore, buildIScore, buildRScore, confidenceToPct } from "../analysis/macroNarrative";
-import type { GlobalEnvironmentPoint } from "../types/investment";
 import { findSp500Entry } from "../data/sp500";
-import type { CompanySnapshot } from "../types/investment";
+import type { CompanySnapshot, GlobalEnvironmentPoint } from "../types/investment";
 import type { AnalysisEvent, GaugeScore, Severity } from "../types/scoring";
 import { GlobalSearch } from "../visualization/GlobalSearch";
 import { Sparkline } from "../visualization/Sparkline";
 
+import {
+  CommodityHover,
+  FundamentalHover,
+  MacroHover,
+  TechnicalHover,
+  type HCCommodityData,
+  type HCFundamentalData,
+  type HCMacroData,
+} from "./HoverCards";
+import { CompanyOverviewCard } from "./CompanyOverviewCard";
 import type { DetailSection } from "./DetailShell";
+import { EmptyState } from "./detail";
+import { responsiveStyles, scaledPx } from "../shared/responsiveStyle";
 
 export interface StockDashboardProps {
   ticker: string;
@@ -93,6 +100,15 @@ interface DashState {
   };
   marketIndices: Array<MarketIndexResponse | null>;
   fxRates: Array<FxRateResponse | null>;
+}
+
+interface MacroExtras {
+  ism: GlobalEnvironmentPoint[];
+  unrate: GlobalEnvironmentPoint[];
+  cpi: GlobalEnvironmentPoint[];
+  fedfunds: GlobalEnvironmentPoint[];
+  dgs2: GlobalEnvironmentPoint[];
+  m2: GlobalEnvironmentPoint[];
 }
 
 const MARKET_INDEX_SYMBOLS = ["^GSPC", "^DJI", "^IXIC", "^RUT"];
@@ -120,27 +136,27 @@ async function safeLoad<T>(loader: () => Promise<T>): Promise<T | null> {
   }
 }
 
+const dashboardCache = new Map<string, DashState>();
+let macroExtrasCache: MacroExtras | null = null;
+
 /* ═══════════════════════════════════════════════════════════════════
    메인 컴포넌트
    ═══════════════════════════════════════════════════════════════════ */
 
-interface MacroExtras {
-  ism: GlobalEnvironmentPoint[];
-  unrate: GlobalEnvironmentPoint[];
-  cpi: GlobalEnvironmentPoint[];
-  fedfunds: GlobalEnvironmentPoint[];
-  dgs2: GlobalEnvironmentPoint[];
-  m2: GlobalEnvironmentPoint[];
-}
-
 export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSection }: StockDashboardProps) {
-  const [data, setData] = useState<DashState | null>(null);
-  const [macroExtras, setMacroExtras] = useState<MacroExtras | null>(null);
+  const cacheKey = ticker.toUpperCase();
+  const [data, setData] = useState<DashState | null>(() => dashboardCache.get(cacheKey) ?? null);
+  const [macroExtras, setMacroExtras] = useState<MacroExtras | null>(() => macroExtrasCache);
   const [error, setError] = useState<string | null>(null);
   const [eventsOpen, setEventsOpen] = useState(false);
 
   // Macro 호버의 G/I/R 계산용 추가 env 데이터 — 별도 비동기 로드 (실패 시 GIR 만 placeholder).
   useEffect(() => {
+    if (macroExtrasCache) {
+      setMacroExtras(macroExtrasCache);
+      return;
+    }
+
     let alive = true;
     Promise.all([
       loadGlobalEnvironment({ symbol: "ISM_MAN",  historyLimit: 24 }),
@@ -152,14 +168,16 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
     ])
       .then(([ism, unrate, cpi, fedfunds, dgs2, m2]) => {
         if (!alive) return;
-        setMacroExtras({
+        const next: MacroExtras = {
           ism: ism.history,
           unrate: unrate.history,
           cpi: cpi.history,
           fedfunds: fedfunds.history,
           dgs2: dgs2.history,
           m2: m2.history,
-        });
+        };
+        macroExtrasCache = next;
+        setMacroExtras(next);
       })
       .catch(() => { /* fail silent — GIR 만 placeholder */ });
     return () => { alive = false; };
@@ -167,8 +185,11 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
 
   useEffect(() => {
     let alive = true;
-    setData(null);
+    const cached = dashboardCache.get(cacheKey) ?? null;
+    setData(cached);
     setError(null);
+    if (cached) return () => { alive = false; };
+
     Promise.all([
       loadCompanySnapshot(ticker),
       loadDashboardEnvironment(),
@@ -176,12 +197,13 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
       loadScreen("priceDown", 3),
       loadScreen("volume", 3),
       loadScreen("scoreTop", 3),
-      Promise.all(MARKET_INDEX_SYMBOLS.map((s) => safeLoad(() => loadMarketIndex(s)))),
+      // range 3mo — 1mo 는 ~21 거래일밖에 안돼서 G Score 의 60일 모멘텀 계산 불가.
+      Promise.all(MARKET_INDEX_SYMBOLS.map((s) => safeLoad(() => loadMarketIndex(s, "3mo")))),
       Promise.all(FX_PAIRS.map((p) => safeLoad(() => loadFxRate(p)))),
     ])
       .then(([snapshot, env, sUp, sDown, sVol, sScore, marketIndices, fxRates]) => {
         if (!alive) return;
-        setData({
+        const next: DashState = {
           snapshot,
           env,
           screens: {
@@ -192,7 +214,9 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
           },
           marketIndices,
           fxRates,
-        });
+        };
+        dashboardCache.set(cacheKey, next);
+        setData(next);
       })
       .catch((e: unknown) => {
         if (alive) setError(e instanceof Error ? e.message : String(e));
@@ -200,7 +224,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
     return () => {
       alive = false;
     };
-  }, [ticker]);
+  }, [cacheKey, ticker]);
 
   const analysis = useMemo(() => {
     if (!data) return null;
@@ -240,14 +264,14 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
     return buildFundamentalVizData(data.snapshot.latestFundamentals);
   }, [data]);
 
-  // 거시 호버 — 4 regime 확률 + 도미넌트 강조.
-  // confidence 는 detail 페이지(MacroDetail) 와 동일 산출 — confidenceToPct 로 변환 (Medium → "70%" 등).
+  // 거시 호버 — 4 regime 확률 + 도미넌트 강조
   const macroViz = useMemo<MacroVizData | null>(() => {
     const latest = data?.env.macroRegime.latest;
     if (!latest) return null;
     const probs = regimeProbs(latest);
     return {
       probs,
+      // detail 페이지(MacroDetail) 와 동일 산출 — Medium → "70%" 등.
       confidence: confidenceToPct(latest.confidence ?? null),
     };
   }, [data]);
@@ -308,7 +332,13 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
         gScore: null, iScore: null, rScore: null,
       };
     }
-    const g = buildGScore(macroExtras.ism, macroExtras.unrate, null);
+    // ^GSPC = MARKET_INDEX_SYMBOLS[0]. history DESC → ASC.
+    const sp500 = data.marketIndices[0];
+    const sp500Closes = sp500
+      ? [...sp500.history].reverse().map((p) => p.close)
+      : [];
+    const marketMom = normalizeMarketIndexMomentum(sp500Closes);
+    const g = buildGScore(macroExtras.ism, macroExtras.unrate, marketMom);
     const i = buildIScore(macroExtras.cpi, macroExtras.fedfunds, data.env.treasury10y.history);
     const r = buildRScore(
       data.env.highYieldSpread.history,
@@ -335,7 +365,6 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
     const supply = supplyStabilityLabel(rows);
     const outlook = outlookLabel(rows);
     const dayDelta = scoreDayDelta(rows);
-    // dayDelta.display "전날 대비 +N (상승)" 에서 부호 있는 정수 추출
     const dayDeltaNum = (() => {
       const m = dayDelta.display.match(/[-+]?\d+/);
       return m ? parseInt(m[0], 10) : null;
@@ -369,7 +398,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
     if (!analysis) return null;
     if (!technicalViz) return analysis.gauges.technical;
     const score = technicalViz.totalScore;
-    const severity: "INFO" | "CAUTION" | "WARNING" =
+    const severity: Severity =
       score >= 65 ? "INFO" : score >= 50 ? "CAUTION" : "WARNING";
     return {
       ...analysis.gauges.technical,
@@ -394,10 +423,10 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
   return (
     <div style={S.page}>
       <Header onBack={onBack} onSelectTicker={onSelectTicker} />
-      <main style={S.canvas}>
+      <main className="il-canvas" style={S.canvas}>
         {error && <div style={S.error}>로드 실패: {error}</div>}
         {!error && (!data || !analysis || !compositeTrio) && (
-          <div style={S.loading}>분석 중…</div>
+          <EmptyState variant="loading" />
         )}
         {data && analysis && compositeTrio && (
           <>
@@ -449,7 +478,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
 
 function Header({ onBack, onSelectTicker }: { onBack: () => void; onSelectTicker: (t: string) => void }) {
   return (
-    <header style={S.header}>
+    <header className="il-header" style={S.header}>
       <button type="button" style={S.headerLogo} onClick={onBack} aria-label="진입 화면으로">
         <img src="/invest-lens-logo.svg" alt="" style={S.logoMark} aria-hidden />
         <span style={S.logoWord}>Invest Lens</span>
@@ -478,7 +507,7 @@ function StockRow({
   const positive = priceMeta?.delta != null ? priceMeta.delta > 0 : null;
   const priceColor = positive === null ? "#7f7f7f" : positive ? "#4c956c" : "#c1121f";
   return (
-    <section style={S.stockRow}>
+    <section className="il-stock-row" style={S.stockRow}>
       <div style={S.stockLeft}>
         <div style={S.stockName}>{name}</div>
         <div style={S.stockPriceLine}>
@@ -497,7 +526,7 @@ function StockRow({
           )}
         </div>
       </div>
-      <div style={S.marketStripe}>
+      <div className="il-market-stripe" style={S.marketStripe}>
         {MARKET_INDEX_SYMBOLS.map((sym, i) => {
           const mi = marketIndices[i];
           const label = MARKET_INDEX_LABELS[sym] ?? mi?.name ?? sym;
@@ -564,27 +593,48 @@ function GaugeChartRow({
   onSelectTicker?: (ticker: string) => void;
 }) {
   const [hovered, setHovered] = useState<GaugeKey | null>(null);
-  const enter = (k: GaugeKey) => () => setHovered(k);
-  const leave = () => setHovered(null);
+  const hasHover = useHasHover();
+  const sectionRef = useRef<HTMLElement>(null);
+  const activate = (k: GaugeKey) => () => setHovered(k);
+  const deactivate = () => setHovered(null);
+  const goDetail = (s: DetailSection) => () => onNavigateSection?.(s);
+
+  // 모바일 — gauge/chart 외부 탭 시 호버 해제.
+  useEffect(() => {
+    if (hasHover || !hovered) return;
+    const onDocPointerDown = (e: PointerEvent) => {
+      const root = sectionRef.current;
+      if (root && !root.contains(e.target as Node)) {
+        setHovered(null);
+      }
+    };
+    document.addEventListener("pointerdown", onDocPointerDown);
+    return () => document.removeEventListener("pointerdown", onDocPointerDown);
+  }, [hasHover, hovered]);
+
   return (
-    <section style={S.gaugeChartRow}>
-      <aside style={S.gaugeStack}>
+    <section ref={sectionRef} className="il-gauge-chart-row" style={S.gaugeChartRow}>
+      <aside className="il-gauge-stack" style={S.gaugeStack}>
         <GaugeCard
           title="기업 펀더멘털"
           gauge={fundamental}
           mode="donut"
-          onClick={() => onNavigateSection?.("fundamental")}
-          onHoverEnter={enter("fundamental")}
-          onHoverLeave={leave}
+          hasHover={hasHover}
+          isActive={hovered === "fundamental"}
+          onActivate={activate("fundamental")}
+          onDeactivate={deactivate}
+          onNavigateDetail={goDetail("fundamental")}
         />
         <GaugeCard
           title="거시 경제"
           gauge={macro}
           mode="regime"
           regimePct={macroDominantPct}
-          onClick={() => onNavigateSection?.("macro")}
-          onHoverEnter={enter("macro")}
-          onHoverLeave={leave}
+          hasHover={hasHover}
+          isActive={hovered === "macro"}
+          onActivate={activate("macro")}
+          onDeactivate={deactivate}
+          onNavigateDetail={goDetail("macro")}
         />
         <GaugeCard
           title="원자재 영향"
@@ -592,17 +642,21 @@ function GaugeChartRow({
           // 사용자 요청 — 스코어/도넛 대신 카드 내부에 3 행 신호등 미니 그래프 (비용/공급/전망)
           mode="trafficLight"
           commodityMini={commodityViz}
-          onClick={() => onNavigateSection?.("commodity")}
-          onHoverEnter={enter("commodity")}
-          onHoverLeave={leave}
+          hasHover={hasHover}
+          isActive={hovered === "commodity"}
+          onActivate={activate("commodity")}
+          onDeactivate={deactivate}
+          onNavigateDetail={goDetail("commodity")}
         />
         <GaugeCard
           title="기술적 지표"
           gauge={technical}
           mode="halfGauge"
-          onClick={() => onNavigateSection?.("technical")}
-          onHoverEnter={enter("technical")}
-          onHoverLeave={leave}
+          hasHover={hasHover}
+          isActive={hovered === "technical"}
+          onActivate={activate("technical")}
+          onDeactivate={deactivate}
+          onNavigateDetail={goDetail("technical")}
         />
       </aside>
       <ChartPanel
@@ -654,43 +708,103 @@ function arcPath(
   return `M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}`;
 }
 
+// 호버 가능 디바이스(데스크탑) 감지 — (hover: hover) 미디어 쿼리.
+function useHasHover(): boolean {
+  const [hasHover, setHasHover] = useState<boolean>(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(hover: hover)").matches
+      : true,
+  );
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(hover: hover)");
+    const handler = (e: MediaQueryListEvent) => setHasHover(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return hasHover;
+}
+
 function GaugeCard({
   title,
   gauge,
   mode,
   regimePct,
   commodityMini,
-  onClick,
-  onHoverEnter,
-  onHoverLeave,
+  hasHover,
+  isActive,
+  onActivate,
+  onDeactivate,
+  onNavigateDetail,
 }: {
   title: string;
   gauge: GaugeScore;
   mode: GaugeMode;
   regimePct?: number | null;
   commodityMini?: CommodityVizData | null;
-  onClick?: () => void;
-  onHoverEnter?: () => void;
-  onHoverLeave?: () => void;
+  hasHover: boolean;
+  isActive: boolean;
+  onActivate?: () => void;
+  onDeactivate?: () => void;
+  onNavigateDetail?: () => void;
 }) {
   const color = gaugeColor(gauge);
   const taglineText = (gauge.tagline || gauge.label).replace(/\n/g, " ");
 
+  // 데스크탑: 카드 클릭 = detail / hover 시 activate.
+  // 모바일:   카드 탭 = activate / chevron 탭 = detail.
+  const handleCardClick = () => {
+    if (hasHover) onNavigateDetail?.();
+    else onActivate?.();
+  };
+  const handleChevronClick = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.stopPropagation();
+    onNavigateDetail?.();
+  };
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleCardClick();
+    }
+  };
+
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={!hasHover && isActive ? true : undefined}
+      className="il-gauge-card"
       style={S.gaugeCard}
-      onClick={onClick}
-      onMouseEnter={onHoverEnter}
-      onMouseLeave={onHoverLeave}
-      onFocus={onHoverEnter}
-      onBlur={onHoverLeave}
+      onClick={handleCardClick}
+      onKeyDown={handleKeyDown}
+      onMouseEnter={hasHover ? onActivate : undefined}
+      onMouseLeave={hasHover ? onDeactivate : undefined}
+      onFocus={hasHover ? onActivate : undefined}
+      onBlur={hasHover ? onDeactivate : undefined}
     >
       <div style={S.gaugeHead}>
         <span style={S.gaugeTitle}>{title}</span>
-        <ChevronRight />
+        <button
+          type="button"
+          aria-label={`${title} 자세히 보기`}
+          onClick={handleChevronClick}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") handleChevronClick(e);
+          }}
+          style={{
+            background: "transparent",
+            border: 0,
+            padding: 4,
+            margin: -4,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+          }}
+        >
+          <ChevronRight />
+        </button>
       </div>
-      <div style={S.gaugeBody}>
+      <div className="il-gauge-card-body" style={S.gaugeBody}>
         <div style={S.gaugeLeft}>
           <div style={{ ...S.gaugeLabel, color }}>{gauge.label}</div>
           {mode !== "none" && mode !== "trafficLight" && (
@@ -703,14 +817,14 @@ function GaugeCard({
             </div>
           )}
         </div>
-        <div style={S.gaugeRight}>
+        <div className="il-gauge-visual" style={S.gaugeRight}>
           {mode === "donut" && <Donut score={gauge.score ?? 0} color={color} size={86} />}
           {mode === "regime" && <StackBar value={regimePct ?? null} color={color} />}
           {mode === "halfGauge" && <HalfGauge score={gauge.score} />}
           {mode === "trafficLight" && <CommodityMiniTraffic data={commodityMini ?? null} />}
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -733,7 +847,12 @@ function HalfGauge({ score }: { score: number | null }) {
   const needleHubR = 4;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width={W} style={{ display: "block" }}>
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      width={W}
+      height={H}
+      style={{ display: "block", width: scaledPx(W), height: scaledPx(H) }}
+    >
       {/* 4 segment 호 */}
       {SIGNAL_SEGMENTS.map((s) => (
         <path
@@ -788,16 +907,26 @@ function StackBar({
   const labelRowH = 20;
   const barRowH = 18;
   return (
-    <div style={{ width, display: "flex", flexDirection: "column", gap: 6, alignItems: "stretch" }}>
+
+    <div
+      style={{
+        width: scaledPx(width),
+        display: "flex",
+        flexDirection: "column",
+        gap: scaledPx(6),
+        alignItems: "stretch",
+      }}
+    >
       {/* 라벨 행 — gaugeLabel 과 동일 라인 박스 */}
-      <div style={{ width: "100%", display: "flex", height: labelRowH, alignItems: "center" }}>
+      <div style={{ width: "100%", display: "flex", height: scaledPx(labelRowH), alignItems: "center" }}>
+
         <div
           style={{
             width: pct == null ? "100%" : `${pct}%`,
             textAlign: pct == null ? "right" : "center",
             whiteSpace: "nowrap",
             overflow: "visible",
-            fontSize: 16,
+            fontSize: scaledPx(16),
             fontWeight: 700,
             color,
             fontVariantNumeric: "tabular-nums",
@@ -807,15 +936,17 @@ function StackBar({
           {pct == null ? "—" : `${Math.round(pct)}%`}
         </div>
       </div>
+
       {/* bar 행 — gaugeScore 와 동일 라인 박스 안에 bar 를 수직 가운데 정렬 */}
-      <div style={{ width: "100%", height: barRowH, display: "flex", alignItems: "center" }}>
+      <div style={{ width: "100%", height: scaledPx(barRowH), display: "flex", alignItems: "center" }}>
         <div
           style={{
             width: "100%",
-            height: 10,
-            borderRadius: 5,
+            height: scaledPx(10),
+            borderRadius: scaledPx(5),
             background: "#ececec",
             overflow: "hidden",
+
           }}
         >
           <div
@@ -823,7 +954,7 @@ function StackBar({
               width: pct == null ? "0%" : `${pct}%`,
               height: "100%",
               background: color,
-              borderRadius: 5,
+              borderRadius: scaledPx(5),
               transition: "width 0.3s ease",
             }}
           />
@@ -858,14 +989,6 @@ function CommodityMiniTraffic({ data }: { data: CommodityVizData | null }) {
   );
 }
 
-// 게이지 호버 시 표시할 시각화 메타 — 실제 차트는 추후 매핑.
-const GAUGE_VIZ_META: Record<GaugeKey, { title: string; placeholder: string }> = {
-  fundamental: { title: "기업 펀더멘털 시각화", placeholder: "펀더멘털 시각화 (예정)" },
-  macro: { title: "거시 경제 시각화", placeholder: "거시 경제 시각화 (예정)" },
-  commodity: { title: "원자재 영향 시각화", placeholder: "원자재 영향 시각화 (예정)" },
-  technical: { title: "기술적 지표 시각화", placeholder: "기술적 지표 시각화 (예정)" },
-};
-
 function ChartPanel({
   hovered,
   ticker,
@@ -895,37 +1018,37 @@ function ChartPanel({
   // key prop 으로 호버 전환마다 컴포넌트 재마운트 → 진입 애니메이션 재생.
   if (hovered === "fundamental" && hcFundamental) {
     return (
-      <div style={S.chartPanel} key="hover-fundamental">
+      <div className="il-chart-panel" style={S.chartPanel} key="hover-fundamental">
         <FundamentalHover data={hcFundamental} />
       </div>
     );
   }
   if (hovered === "commodity" && hcCommodity) {
     return (
-      <div style={S.chartPanel} key="hover-commodity">
+      <div className="il-chart-panel" style={S.chartPanel} key="hover-commodity">
         <CommodityHover data={hcCommodity} />
       </div>
     );
   }
   if (hovered === "macro" && hcMacro) {
     return (
-      <div style={S.chartPanel} key="hover-macro">
+      <div className="il-chart-panel" style={S.chartPanel} key="hover-macro">
         <MacroHover data={hcMacro} />
       </div>
     );
   }
   if (hovered === "technical" && technicalViz) {
     return (
-      <div style={S.chartPanel} key="hover-technical">
+      <div className="il-chart-panel" style={S.chartPanel} key="hover-technical">
         <TechnicalHover data={technicalViz} />
       </div>
     );
   }
-  // unused — 기존 panel 들도 컴파일 보존을 위해 참조 유지
+  // unused — 기존 inline panel 들도 컴파일 보존을 위해 참조 유지
   void fundamentalViz; void macroViz; void commodityViz;
-  // 기본 (호버 없음) — 핵심 요약 카드. ticker 기준 sp500.json 조회 + /api/peers.
+  // 기본 (호버 없음) — 핵심 요약 카드 (CompanyOverviewCard).
   return (
-    <div style={S.chartPanel}>
+    <div className="il-chart-panel" style={S.chartPanel}>
       <CompanyOverviewCard
         ticker={ticker}
         companyName={companyName}
@@ -950,14 +1073,12 @@ const REGIME_META: Record<RegimeKey, { label: string; color: string; bg: string 
 };
 
 function MacroVizPanel({ data }: { data: MacroVizData }) {
-  // 호버 진입 시 0 → 목표 pct 트랜지션
   const [animated, setAnimated] = useState(false);
   useEffect(() => {
     const t = setTimeout(() => setAnimated(true), 50);
     return () => clearTimeout(t);
   }, []);
   const dominant = data.probs.find((p) => p.isDominant) ?? null;
-  // 확률 순(내림차순) 정렬 — 도미넌트가 최상단
   const sorted = [...data.probs].sort((a, b) => (b.pct ?? 0) - (a.pct ?? 0));
   return (
     <div style={S.mvPanel}>
@@ -1019,7 +1140,6 @@ const TECH_SIGNAL_LABEL: Record<string, { label: string; color: string }> = {
   STRONG_SELL: { label: "Strong Sell", color: "#7e0a14" },
 };
 
-// 신호 등급 segment 정의 (디테일 페이지와 동일)
 const TV_SIGNAL_SEGMENTS: Array<{ label: string; start: number; end: number; color: string }> = [
   { label: "Sell", start: 0, end: 50, color: "#c1121f" },
   { label: "Hold", start: 50, end: 65, color: "#e5af43" },
@@ -1064,7 +1184,6 @@ function TechnicalVizPanel({ data }: { data: TechnicalAnalysisV4 }) {
           <span style={{ ...S.tvSignalValue, color: sig.color }}>{sig.label}</span>
         </div>
       </div>
-      {/* 신호 등급 바 — 4 segment + marker + tick */}
       <SignalGaugeBarMini score={data.totalScore} animated={animated} />
       <div style={S.tvMetricsGrid}>
         {data.metrics.map((m, i) => (
@@ -1081,7 +1200,6 @@ function SignalGaugeBarMini({ score, animated }: { score: number; animated: bool
   const target = animated ? pct : 0;
   return (
     <div style={S.tvSignalGaugeWrap}>
-      {/* badge — marker 위에 segment 라벨 (디테일 페이지와 동일 레이아웃) */}
       <div
         style={{
           ...S.tvSignalBadge,
@@ -1093,7 +1211,6 @@ function SignalGaugeBarMini({ score, animated }: { score: number; animated: bool
       >
         {seg.label}
       </div>
-      {/* marker — 스택 바 위, 아래(바)를 가리키는 ▼ */}
       <div
         style={{
           ...S.tvSignalMarker,
@@ -1105,7 +1222,6 @@ function SignalGaugeBarMini({ score, animated }: { score: number; animated: bool
           <polygon points="5,9 0,0 10,0" fill="#003049" />
         </svg>
       </div>
-      {/* stack bar */}
       <div style={S.tvSignalBar}>
         {TV_SIGNAL_SEGMENTS.map((s) => {
           const width = s.end - s.start;
@@ -1121,7 +1237,6 @@ function SignalGaugeBarMini({ score, animated }: { score: number; animated: bool
           );
         })}
       </div>
-      {/* ticks */}
       <div style={S.tvSignalTicks}>
         {[0, 50, 65, 80, 100].map((t) => (
           <span key={t} style={{ ...S.tvSignalTick, left: `${t}%` }}>
@@ -1174,7 +1289,7 @@ function TechnicalMetricTile({
   );
 }
 
-/* ─── 기본 상태 — 회사 요약 + 가격 sparkline ─── */
+/* ─── 기본 상태 — 회사 요약 ─── */
 
 function CompanySummaryPanel({
   ticker,
@@ -1422,8 +1537,13 @@ function ScoreDistDonut({
   const totalMax = sections.reduce((a, b) => a + b.max, 0);
   let cum = 0;
   return (
-    <div style={{ position: "relative", width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: "block" }}>
+    <div style={{ position: "relative", width: scaledPx(size), height: scaledPx(size) }}>
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        style={{ display: "block", width: scaledPx(size), height: scaledPx(size) }}
+      >
         <circle cx={cx} cy={cy} r={r} stroke="#ececec" strokeWidth={thickness} fill="none" />
         {sections.map((s) => {
           const ratio = (s.score ?? 0) / totalMax;
@@ -1606,7 +1726,7 @@ function EventsFxRow({
   onOpenAllEvents: () => void;
 }) {
   return (
-    <section style={S.twoCol}>
+    <section className="il-two-col" style={S.twoCol}>
       <Card>
         <CardHeader
           title="주요 이벤트"
@@ -1673,6 +1793,7 @@ function EventsFxRow({
                 ? `${fr.delta >= 0 ? "+" : ""}${fr.delta.toFixed(2)} (${fr.pct >= 0 ? "+" : ""}${fr.pct.toFixed(2)}%)`
                 : "—";
             const sparkValues = (fr?.history ?? []).map((h) => h.close);
+            const sparkDates = (fr?.history ?? []).map((h) => h.date);
             return (
               <li
                 key={pair}
@@ -1687,7 +1808,16 @@ function EventsFxRow({
                 </div>
                 <div style={S.fxSparkCol}>
                   {sparkValues.length > 1 ? (
-                    <Sparkline values={sparkValues} width="100%" height={32} color={deltaColor} strokeWidth={1.6} />
+                    <Sparkline
+                      values={sparkValues}
+                      dates={sparkDates}
+                      width="100%"
+                      height={32}
+                      color={deltaColor}
+                      strokeWidth={1.6}
+                      showHoverValue
+                      formatValue={(v) => v.toLocaleString(undefined, { maximumFractionDigits: 4 })}
+                    />
                   ) : (
                     <span style={S.fxSparkEmpty}>—</span>
                   )}
@@ -1716,6 +1846,7 @@ interface TrioItem {
   deltaText: string;
   positive: boolean | null;
   history: Array<number | null>;
+  historyDates: string[];
 }
 
 function CompositeRow({ items }: { items: TrioItem[] }) {
@@ -1723,7 +1854,7 @@ function CompositeRow({ items }: { items: TrioItem[] }) {
   // 점수가 null 일 때만 회색 placeholder.
   const BLACK = "#000000";
   return (
-    <section style={S.compositeRow}>
+    <section className="il-composite-row" style={S.compositeRow}>
       {items.map((c, i) => {
         const color = c.score == null ? "#7f7f7f" : BLACK;
         const deltaColor = c.positive === null ? "#7f7f7f" : c.positive ? "#60c846" : "#c1121f";
@@ -1736,7 +1867,16 @@ function CompositeRow({ items }: { items: TrioItem[] }) {
                 {c.score == null ? "—" : c.score.toFixed(1)}
               </div>
               <div style={S.compSpark}>
-                <Sparkline values={c.history} width="100%" height={56} color={color} strokeWidth={2} />
+                <Sparkline
+                  values={c.history}
+                  dates={c.historyDates}
+                  width="100%"
+                  height={56}
+                  color={color}
+                  strokeWidth={2}
+                  showHoverValue
+                  formatValue={(v) => v.toFixed(1)}
+                />
               </div>
             </div>
             <div style={{ ...S.compDelta, color: deltaColor }}>
@@ -1767,7 +1907,7 @@ function Top3Row({
     { title: "어제 점수가 좋았던 주식 TOP 3", tone: "score" as const, bg: "#fffdf9", items: screens.scoreTop, fmt: formatScore },
   ];
   return (
-    <section style={S.top3Row}>
+    <section className="il-top3-row" style={S.top3Row}>
       {cards.map((card, idx) => {
         const numColor =
           card.tone === "up"
@@ -1941,8 +2081,13 @@ function Donut({ score, color, size = 86 }: { score: number; color: string; size
   const circ = 2 * Math.PI * r;
   const dash = (Math.max(0, Math.min(100, score)) / 100) * circ;
   return (
-    <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <div style={{ position: "relative", width: scaledPx(size), height: scaledPx(size), flexShrink: 0 }}>
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        style={{ width: scaledPx(size), height: scaledPx(size) }}
+      >
         <circle cx={cx} cy={cy} r={r} stroke="#ececec" strokeWidth={stroke} fill="none" />
         <circle
           cx={cx}
@@ -1963,7 +2108,7 @@ function Donut({ score, color, size = 86 }: { score: number; color: string; size
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 25,
+          fontSize: scaledPx(25),
           fontWeight: 700,
           color,
           fontFamily: "var(--font-numeric, sans-serif)",
@@ -2039,6 +2184,7 @@ function buildTrioItems(data: DashState): TrioItem[] {
       deltaText: todayDelta?.text ?? "—",
       positive: todayDelta?.positive ?? null,
       history: toSparkline(todaySeries),
+      historyDates: todaySeries.map((p) => p.date),
     },
     {
       label: "이번 달 종합 점수",
@@ -2047,6 +2193,7 @@ function buildTrioItems(data: DashState): TrioItem[] {
       deltaText: monthDelta?.text ?? "—",
       positive: monthDelta?.positive ?? null,
       history: toSparkline(monthSeries),
+      historyDates: monthSeries.map((p) => p.date),
     },
     {
       label: "올해 종합 점수",
@@ -2055,6 +2202,7 @@ function buildTrioItems(data: DashState): TrioItem[] {
       deltaText: yearDelta?.text ?? "—",
       positive: yearDelta?.positive ?? null,
       history: toSparkline(yearOrFallback),
+      historyDates: yearOrFallback.map((p) => p.date),
     },
   ];
 }
@@ -2092,13 +2240,14 @@ function formatScore(v: number | null): string {
    ═══════════════════════════════════════════════════════════════════ */
 
 const PAGE_W = 1110;          // 시안 콘텐츠 폭 (1275 - 165)
-const SIDE_PAD = 165;         // 시안 좌측 마진
+const SIDE_PAD = 132;         // 시안 좌우 여백의 80%
 const GAUGE_W = 281;          // Card/main-analysis 폭
 const GAP = 16;
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   page: {
     minHeight: "100vh",
+    minWidth: "64rem",
     background: "#ffffff",
     fontFamily: "var(--font-body, 'Pretendard Variable', sans-serif)",
     color: "#003049",
@@ -2118,6 +2267,7 @@ const S: Record<string, CSSProperties> = {
     display: "flex",
     alignItems: "center",
     gap: 6,
+    flexShrink: 0,
     background: "transparent",
     border: 0,
     padding: 0,
@@ -2131,11 +2281,13 @@ const S: Record<string, CSSProperties> = {
     fontWeight: 400,
     fontSize: 20,
     letterSpacing: "0.02em",
+    whiteSpace: "nowrap",
   },
 
   /* ───── 캔버스 / 로딩 ───── */
   canvas: {
     maxWidth: PAGE_W + SIDE_PAD * 2,
+    minWidth: "64rem",
     margin: "0 auto",
     padding: `26px ${SIDE_PAD}px 60px`,
     display: "flex",
@@ -2231,6 +2383,7 @@ const S: Record<string, CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     gap: GAP,
+    minWidth: 0,
   },
   gaugeCard: {
     background: "#ffffff",
@@ -2243,6 +2396,8 @@ const S: Record<string, CSSProperties> = {
     cursor: "pointer",
     textAlign: "left",
     width: "100%",
+    minWidth: 0,
+    overflow: "hidden",
     transition: "border-color 0.18s ease, transform 0.18s ease",
   },
   gaugeHead: {
@@ -2257,12 +2412,14 @@ const S: Record<string, CSSProperties> = {
     alignItems: "stretch",
     gap: 14,
     minHeight: 92,
+    minWidth: 0,
   },
   gaugeRight: {
     display: "flex",
     alignItems: "flex-end",
     justifyContent: "flex-end",
     height: "100%",
+    flexShrink: 0,
   },
   gaugeLeft: {
     display: "flex",
@@ -2323,6 +2480,7 @@ const S: Record<string, CSSProperties> = {
     overflow: "hidden",
     display: "flex",
     flexDirection: "column",
+    minWidth: 0,
   },
   chartFillBody: {
     flex: 1,
@@ -2434,7 +2592,7 @@ const S: Record<string, CSSProperties> = {
     textAlign: "right",
   },
 
-  /* ───── 기본 상태 — 회사 요약 패널 (세로 가운데 정렬) ───── */
+  /* ───── 기본 상태 — 회사 요약 패널 ───── */
   csPanel: {
     flex: 1,
     display: "flex",
@@ -2654,7 +2812,6 @@ const S: Record<string, CSSProperties> = {
     lineHeight: 1,
     letterSpacing: "0.02em",
   },
-  /* 기술 신호 등급 바 — 디테일 페이지 SignalGaugeBar 와 동일 레이아웃 (mini) */
   tvSignalGaugeWrap: {
     position: "relative",
     marginTop: 50,
@@ -2662,7 +2819,6 @@ const S: Record<string, CSSProperties> = {
   },
   tvSignalBadge: {
     position: "absolute",
-    // marker(top:-11, height 9 = -2 까지) 위에 충분히 띄움
     bottom: "calc(100% + 13px)",
     transform: "translateX(-50%)",
     fontSize: 11,
@@ -2688,6 +2844,9 @@ const S: Record<string, CSSProperties> = {
     borderRadius: 5,
     overflow: "hidden",
   },
+  tvSignalSeg: {
+    height: "100%",
+  },
   tvSignalTicks: {
     position: "relative",
     width: "100%",
@@ -2703,7 +2862,6 @@ const S: Record<string, CSSProperties> = {
     color: "#7f7f7f",
     fontFamily: "var(--font-numeric, sans-serif)",
   },
-
   tvMetricsGrid: {
     display: "grid",
     gridTemplateColumns: "1fr 1fr 1fr",
@@ -2907,7 +3065,7 @@ const S: Record<string, CSSProperties> = {
   fxList: { listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 0 },
   fxRow: {
     display: "grid",
-    gridTemplateColumns: "140px 1fr 110px",
+    gridTemplateColumns: "minmax(90px, 0.8fr) minmax(80px, 1fr) minmax(70px, auto)",
     gap: 16,
     alignItems: "center",
     padding: "12px 0",
@@ -3064,4 +3222,4 @@ const S: Record<string, CSSProperties> = {
     fontWeight: 600,
     color: "#828282",
   },
-};
+});

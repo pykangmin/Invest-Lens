@@ -1,3 +1,4 @@
+import { responsiveStyles } from "../shared/responsiveStyle";
 export interface Top3Item {
   ticker: string;
   korName?: string;
@@ -94,7 +95,7 @@ export function Top3Card({ title, items, tone = "up", pending = false, badge, on
   );
 }
 
-const S: Record<string, React.CSSProperties> = {
+const S = responsiveStyles({
   card: {
     background: "var(--color-card)",
     border: "1px solid var(--color-border)",
@@ -173,4 +174,4 @@ const S: Record<string, React.CSSProperties> = {
     padding: "16px 0",
     textAlign: "center",
   },
-};
+});

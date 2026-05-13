@@ -1,4 +1,5 @@
 import { Sparkline } from "./Sparkline";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 export interface CompositeTrioItem {
   label: string;          // 시점 라벨 (예: "오늘 종합 점수", "이번 달 종합 점수")
@@ -64,10 +65,10 @@ export function CompositeTrio({ items }: CompositeTrioProps) {
   );
 }
 
-const S: Record<string, React.CSSProperties> = {
+const S = responsiveStyles({
   row: {
     display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 16rem), 1fr))",
     gap: 16,
     minHeight: 147,
   },
@@ -119,4 +120,4 @@ const S: Record<string, React.CSSProperties> = {
     fontVariantNumeric: "tabular-nums",
     fontWeight: 600,
   },
-};
+});

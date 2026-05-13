@@ -11,7 +11,7 @@
 //        지표 detail table(347,1006,880×318): head row + 6 행 (지표/sparkline/요약/점수)
 //   §4 (1365-1742, h=377) — 평균이동선 차트: 차트 placeholder
 
-import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties, type PointerEvent, type ReactNode } from "react";
 import {
   technicalAnalysisV4,
   type TechnicalAnalysisV4,
@@ -34,6 +34,9 @@ import type {
 import { InfoTooltip } from "../visualization/InfoTooltip";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
+import { responsiveStyles, scaledPx } from "../shared/responsiveStyle";
+import { TruncatedText } from "../shared/TruncatedText";
+import { ChartCrosshair, ChartPortalTooltip, ChartTooltip, useChartHoverIdx, useChartHoverIdxPortal } from "../visualization/chartHover";
 
 interface DetailState {
   snapshot: CompanySnapshot;
@@ -41,6 +44,8 @@ interface DetailState {
   marketScoreAvg: MarketScoreAvgResponse;
   ohlc: StockOhlcResponse | null;
 }
+
+const technicalDetailCache = new Map<string, DetailState>();
 
 export interface TechnicalDetailProps {
   ticker: string;
@@ -70,15 +75,16 @@ const SIGNAL_TICKS = [0, 50, 65, 80, 100];
 // 신규 분석 헬퍼
 // ──────────────────────────────────────────────────────────────
 
-// 1A.6 전일 대비 Δscore (scoreHistory 마지막 2개 차이)
+// 1A.6 전주 대비 Δscore (scoreHistory 의 7일 전과 차이).
+//   상승/하락 기여 chip 의 7일 window 와 동일 기준 → Σ chip ≈ 전주 대비 정합성.
 function prevDayDelta(analysis: TechnicalAnalysisV4): {
   display: string;
   color: string;
 } {
   const h = analysis.scoreHistory;
-  if (h.length < 2) return { display: "—", color: "#737474" };
+  if (h.length < 8) return { display: "—", color: "#737474" };
   const last = h[h.length - 1]?.score;
-  const prev = h[h.length - 2]?.score;
+  const prev = h[h.length - 8]?.score;
   if (last == null || prev == null) return { display: "—", color: "#737474" };
   const diff = Math.round(last - prev);
   if (diff === 0) return { display: "±0pt", color: "#737474" };
@@ -152,13 +158,19 @@ export function TechnicalDetail({
   onNavigateSection,
   onSelectTicker,
 }: TechnicalDetailProps) {
-  const [data, setData] = useState<DetailState | null>(null);
+  const cacheKey = ticker.toUpperCase();
+  const [data, setData] = useState<DetailState | null>(() => technicalDetailCache.get(cacheKey) ?? null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
-    setData(null);
+    const cached = technicalDetailCache.get(cacheKey) ?? null;
+    setData(cached);
     setError(null);
+    if (cached) return () => {
+      alive = false;
+    };
+
     Promise.all([
       loadCompanySnapshot(ticker, 252),
       loadGlobalEnvironment({ symbol: "^VIX", historyLimit: 120 }),
@@ -170,7 +182,9 @@ export function TechnicalDetail({
       }),
     ])
       .then(([snapshot, vix, marketScoreAvg, ohlc]) => {
-        if (alive) setData({ snapshot, vix, marketScoreAvg, ohlc });
+        const next = { snapshot, vix, marketScoreAvg, ohlc };
+        technicalDetailCache.set(cacheKey, next);
+        if (alive) setData(next);
       })
       .catch((e: unknown) => {
         if (alive) setError(e instanceof Error ? e.message : String(e));
@@ -178,7 +192,7 @@ export function TechnicalDetail({
     return () => {
       alive = false;
     };
-  }, [ticker]);
+  }, [cacheKey, ticker]);
 
   const analysis = useMemo<TechnicalAnalysisV4 | null>(() => {
     if (!data) return null;
@@ -313,7 +327,7 @@ function ScoreCircle({ value }: { value: number }) {
   const dashOffset = circ - (pct / 100) * circ;
   return (
     <div style={S.scoreCircleWrap}>
-      <svg width={139} height={139} viewBox="0 0 139 139">
+      <svg width={139} height={139} viewBox="0 0 139 139" style={{ width: scaledPx(139), height: scaledPx(139) }}>
         <circle cx={cx} cy={cy} r={r} stroke="#d9d9d9" strokeWidth={14} fill="none" />
         <circle
           cx={cx}
@@ -337,7 +351,7 @@ function PrevDayDelta({ analysis }: { analysis: TechnicalAnalysisV4 }) {
   const d = prevDayDelta(analysis);
   return (
     <div style={S.deltaBlock}>
-      <span style={S.deltaLabel}>전일 대비</span>
+      <span style={S.deltaLabel}>전주 대비</span>
       <span style={{ ...S.deltaValue, color: d.color }}>{d.display}</span>
     </div>
   );
@@ -439,28 +453,51 @@ function MiniLineChart({
 }) {
   // 최근 7개 (null 제외)
   const last7 = values.slice(-7).filter((v): v is number => v != null);
-  if (last7.length < 2) {
-    return <span style={{ color: "#9a9a9a" }}>—</span>;
-  }
-  const min = Math.min(...last7);
-  const max = Math.max(...last7);
+  const min = last7.length > 0 ? Math.min(...last7) : 0;
+  const max = last7.length > 0 ? Math.max(...last7) : 1;
   const span = max - min || 1;
   const padX = 6;
   const padY = 5;
   const innerW = width - 2 * padX;
   const innerH = height - 2 * padY;
-  const xs = last7.map((_, i) => padX + (i / (last7.length - 1)) * innerW);
+  const xs =
+    last7.length > 1 ? last7.map((_, i) => padX + (i / (last7.length - 1)) * innerW) : [];
   const ys = last7.map((v) => padY + (1 - (v - min) / span) * innerH);
+  const xOfIdx = useCallback((i: number) => xs[i] ?? 0, [xs]);
+  const { hoverIdx, pointer, onPointerMove, onPointerLeave } = useChartHoverIdxPortal(
+    last7.length, xOfIdx, width,
+  );
+  if (last7.length < 2) {
+    return <span style={{ color: "#9a9a9a" }}>—</span>;
+  }
   const pathD = xs
     .map((x, i) => `${i === 0 ? "M" : "L"} ${x.toFixed(1)} ${ys[i]!.toFixed(1)}`)
     .join(" ");
   return (
-    <svg width={width} height={height} style={{ display: "block" }}>
-      <path d={pathD} stroke={color} strokeWidth={1.5} fill="none" strokeLinejoin="round" />
-      {xs.map((x, i) => (
-        <circle key={i} cx={x} cy={ys[i]!} r={2.5} fill={color} />
-      ))}
-    </svg>
+    <div style={{ position: "relative" }} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}>
+      <svg
+        width={width}
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
+        style={{ display: "block", width: "100%", height: scaledPx(height) }}
+      >
+        <path d={pathD} stroke={color} strokeWidth={1.5} fill="none" strokeLinejoin="round" />
+        {xs.map((x, i) => (
+          <circle key={i} cx={x} cy={ys[i]!} r={2.5} fill={color} />
+        ))}
+        {hoverIdx !== null && (
+          <>
+            <ChartCrosshair x={xs[hoverIdx]!} y1={0} y2={height} color={color} />
+            <circle cx={xs[hoverIdx]!} cy={ys[hoverIdx]!} r={3.5} fill={color} stroke="#fff" strokeWidth={1.2} />
+          </>
+        )}
+      </svg>
+      {hoverIdx !== null && pointer && (
+        <ChartPortalTooltip clientX={pointer.x} clientY={pointer.topY}>
+          {last7[hoverIdx]!.toFixed(1)}
+        </ChartPortalTooltip>
+      )}
+    </div>
   );
 }
 
@@ -501,7 +538,7 @@ function ContribTile({
       }}
     >
       <div style={S.contribTileHead}>
-        <span style={S.contribTileLabel}>{label}</span>
+        <TruncatedText style={S.contribTileLabel}>{label}</TruncatedText>
         {!isTotal && tooltipText && (
           <InfoTooltip text={tooltipText} mode="card" size={14} />
         )}
@@ -836,13 +873,65 @@ function PriceMaChart({
   // 캔들 폭 — stepX 의 70% (gap 30%)
   const candleW = Math.max(1.5, stepX * 0.7);
 
+  // 두 영역(price / volume) 호버 추적 — y 좌표로 영역 분리.
+  const [hoverState, setHoverState] = useState<{ idx: number; area: "price" | "volume" } | null>(null);
+  const onChartPointerMove = useCallback(
+    (e: PointerEvent<HTMLDivElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0 || ascDates.length === 0) return;
+      const vbX = ((e.clientX - rect.left) / rect.width) * W;
+      const vbY = ((e.clientY - rect.top) / rect.height) * H;
+      let bestIdx = 0;
+      let bestDist = Infinity;
+      for (let i = 0; i < ascDates.length; i++) {
+        const d = Math.abs(xOf(i) - vbX);
+        if (d < bestDist) {
+          bestDist = d;
+          bestIdx = i;
+        }
+      }
+      let area: "price" | "volume" | null = null;
+      if (vbY >= padT && vbY <= padT + chartH) area = "price";
+      else if (vbY >= volStartY && vbY <= volStartY + volH) area = "volume";
+      if (area === null) {
+        setHoverState(null);
+        return;
+      }
+      setHoverState({ idx: bestIdx, area });
+    },
+    [ascDates.length, stepX, padT, chartH, volStartY, volH],
+  );
+  const onChartPointerLeave = useCallback(() => {
+    setHoverState(null);
+    setHovered(null);
+  }, []);
+  const hoverIdx = hoverState?.idx ?? null;
+  const hoverArea = hoverState?.area ?? null;
+  const hoverDateStr = hoverIdx !== null ? ascDates[hoverIdx]?.slice(0, 10) : null;
+  const hoverTech = hoverDateStr ? techByDate.get(hoverDateStr) : null;
+  const hoverOhlc = hoverIdx !== null && useOhlc ? ohlcAsc[hoverIdx] : null;
+  const hoverVol = hoverIdx !== null ? volSource[hoverIdx] : null;
+  const fmtVol = (v: number) =>
+    v >= 1e12
+      ? `${(v / 1e12).toFixed(2)}조`
+      : v >= 1e8
+        ? `${(v / 1e8).toFixed(2)}억`
+        : v >= 1e4
+          ? `${Math.round(v / 1e4).toLocaleString()}만`
+          : v.toLocaleString();
+
   return (
+    <div
+      style={{ position: "relative" }}
+      onPointerMove={onChartPointerMove}
+      onPointerLeave={onChartPointerLeave}
+    >
     <svg
       width="100%"
       height="100%"
       viewBox={`0 0 ${W} ${H}`}
       preserveAspectRatio="xMidYMid meet"
-      style={{ display: "block" }}
+      style={{ display: "block", overflow: "visible" }}
       onMouseLeave={() => setHovered(null)}
     >
       {/* 범례 — MA 3종만 */}
@@ -1036,6 +1125,14 @@ function PriceMaChart({
         );
       })()}
 
+      {/* 호버 crosshair — price 는 상단 tooltip 까지, volume 은 바 상단 ~ 하단 tooltip 까지 */}
+      {hoverIdx !== null && hoverArea === "price" && (
+        <ChartCrosshair x={xOf(hoverIdx)} y1={-80} y2={padT + chartH} />
+      )}
+      {hoverIdx !== null && hoverArea === "volume" && (
+        <ChartCrosshair x={xOf(hoverIdx)} y1={volStartY} y2={H + 12} />
+      )}
+
       {/* 우측 chip — 현재가 + MA 최신값. 모두 동일 규격 50×20 / 11pt */}
       {chipOrder.map((c) => {
         const isHover = hovered === c.key;
@@ -1071,6 +1168,49 @@ function PriceMaChart({
         );
       })}
     </svg>
+    {hoverIdx !== null && hoverArea === "price" && hoverDateStr && (
+      <ChartTooltip
+        leftPercent={(xOf(hoverIdx) / W) * 100}
+        style={{ top: "auto", bottom: "calc(100% + 6px)", transform: "translateX(-50%)" }}
+      >
+        <div style={{ fontWeight: 700 }}>{hoverDateStr}</div>
+        {hoverOhlc != null && (
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+            <span style={{ color: UP_BLUE }}>종가</span>
+            <span>{hoverOhlc.close.toFixed(2)}</span>
+          </div>
+        )}
+        {!hoverOhlc && hoverTech?.close != null && (
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+            <span style={{ color: UP_BLUE }}>종가</span>
+            <span>{hoverTech.close.toFixed(2)}</span>
+          </div>
+        )}
+        {hoverTech && lines.map((s) => {
+          const v = s.getVal(hoverTech);
+          if (v == null) return null;
+          return (
+            <div key={s.key} style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+              <span style={{ color: s.color }}>{s.label}</span>
+              <span>{v.toFixed(2)}</span>
+            </div>
+          );
+        })}
+      </ChartTooltip>
+    )}
+    {hoverIdx !== null && hoverArea === "volume" && hoverDateStr && hoverVol && (
+      <ChartTooltip
+        leftPercent={(xOf(hoverIdx) / W) * 100}
+        style={{ top: "calc(100% + 6px)", transform: "translateX(-50%)" }}
+      >
+        <div style={{ fontWeight: 700 }}>{hoverDateStr}</div>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+          <span>거래량</span>
+          <span>{fmtVol(hoverVol.vol)}</span>
+        </div>
+      </ChartTooltip>
+    )}
+    </div>
   );
 }
 
@@ -1097,7 +1237,7 @@ function SectionBoxFull({
   return (
     <section style={S.sectionBoxFull}>
       <div style={S.sectionBoxFullHeader}>{title}</div>
-      <div style={{ ...S.sectionBoxFullBody, minHeight: height }}>{children}</div>
+      <div style={{ ...S.sectionBoxFullBody, minHeight: scaledPx(height) }}>{children}</div>
     </section>
   );
 }
@@ -1123,11 +1263,11 @@ const TICK_GRAY = "#b8b8b8";
 const SIGNAL_BG = "#f8f8f8";
 const TILE_BG = "#fafbfc";
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   // §1 — 시안은 467fr / 622fr 이지만 신호 등급 bar 가독성을 위해 좌측 2/3 압축, 우측 확대
   row1: {
     display: "grid",
-    gridTemplateColumns: "minmax(360px, 2fr) minmax(520px, 3fr)",
+    gridTemplateColumns: "467fr 622fr",
     gap: 16,
   },
   scoreBox: {
@@ -1352,7 +1492,7 @@ const S: Record<string, CSSProperties> = {
 
   contribTileRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(7, 1fr)",
+    gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
     gap: 12,
   },
   contribTile: {
@@ -1410,7 +1550,8 @@ const S: Record<string, CSSProperties> = {
     flexDirection: "column",
   },
   tableHead: {
-    display: "flex",
+    display: "grid",
+    gridTemplateColumns: "minmax(72px, 0.8fr) minmax(150px, 1.8fr) minmax(82px, 1fr) minmax(44px, 0.45fr)",
     alignItems: "center",
     gap: 12,
     padding: "12px 8px",
@@ -1421,9 +1562,14 @@ const S: Record<string, CSSProperties> = {
     fontSize: 14,
     fontWeight: 600,
     color: NAVY,
+    minWidth: 0,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   tableRow: {
-    display: "flex",
+    display: "grid",
+    gridTemplateColumns: "minmax(72px, 0.8fr) minmax(150px, 1.8fr) minmax(82px, 1fr) minmax(44px, 0.45fr)",
     alignItems: "center",
     gap: 12,
     padding: "16px 8px",
@@ -1433,5 +1579,9 @@ const S: Record<string, CSSProperties> = {
     fontSize: 13,
     fontWeight: 600,
     color: MUTED,
+    minWidth: 0,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
-};
+});

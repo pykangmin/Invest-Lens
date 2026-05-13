@@ -5,6 +5,7 @@
 // 단일 행. 여러 행을 쌓을 때는 <div style={{display:flex; flexDir:column}}> 로 감싸 사용.
 
 import type { CSSProperties, ReactNode } from "react";
+import { responsiveStyles } from "../../shared/responsiveStyle";
 
 export interface ContributionRowProps {
   label: ReactNode;
@@ -62,7 +63,7 @@ export function ContributionRow({
   );
 }
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   row: {
     display: "grid",
     gridTemplateColumns: "1fr auto auto",
@@ -109,4 +110,4 @@ const S: Record<string, CSSProperties> = {
     color: "var(--color-text-muted)",
   },
   trailing: { display: "inline-flex", alignItems: "center", justifyContent: "flex-end" },
-};
+});

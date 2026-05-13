@@ -9,6 +9,7 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { GlobalSearch } from "../visualization/GlobalSearch";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 export type DetailSection = "fundamental" | "macro" | "commodity" | "technical";
 
@@ -58,7 +59,7 @@ export function DetailShell({
   return (
     <div style={S.page}>
       {/* 헤더 — 풀폭 */}
-      <header style={S.header}>
+      <header className="il-header" style={S.header}>
         <button style={S.headerLogo} onClick={onBackToHome} aria-label="진입 화면으로">
           <img src="/invest-lens-logo.svg" alt="" style={S.logoMark} aria-hidden />
           <span style={S.logoWord}>Invest Lens</span>
@@ -68,8 +69,8 @@ export function DetailShell({
       </header>
 
       {/* 사이드바 (좌측 viewport 고정) + 메인 영역 (헤더 아래 풀폭, 내부 콘텐츠 1110 centered) */}
-      <div style={S.bodyGrid}>
-        <aside style={S.nav}>
+      <div className="il-detail-body-grid" style={S.bodyGrid}>
+        <aside className="il-detail-nav" style={S.nav}>
           {/* 사이드바 최상단: 〈 이전으로 */}
           <button type="button" style={S.crumbBack} onClick={onBackToOverview}>
             〈 이전으로
@@ -85,6 +86,8 @@ export function DetailShell({
                 <button
                   key={item.key}
                   type="button"
+                  className={`il-detail-nav-item${isActive ? " is-active" : ""}`}
+                  aria-current={isActive ? "page" : undefined}
                   style={{
                     ...S.navItem,
                     ...(isActive ? S.navItemActive : null),
@@ -98,7 +101,7 @@ export function DetailShell({
           </div>
         </aside>
 
-        <main style={S.mainArea}>
+        <main className="il-detail-main" style={S.mainArea}>
           <div style={S.contentInner}>
             {/* 메인 콘텐츠 좌상단: GOOGLE > 원자재 영향 */}
             <div style={S.crumbRow}>
@@ -119,8 +122,8 @@ export function DetailShell({
   );
 }
 
-const S: Record<string, CSSProperties> = {
-  page: { minHeight: "100vh", background: "var(--color-bg)" },
+const S = responsiveStyles({
+  page: { minHeight: "100vh", minWidth: "64rem", background: "var(--color-bg)" },
   header: {
     height: 66,
     display: "grid",
@@ -135,6 +138,7 @@ const S: Record<string, CSSProperties> = {
     display: "flex",
     alignItems: "center",
     gap: 6,
+    flexShrink: 0,
     color: "var(--color-text)",
     justifySelf: "start",
   },
@@ -144,13 +148,14 @@ const S: Record<string, CSSProperties> = {
     fontWeight: 400,
     fontSize: 20,
     letterSpacing: "0.02em",
+    whiteSpace: "nowrap",
   },
 
   // 헤더 아래 — viewport 풀폭 grid: [사이드바 | 메인 영역]
   // 사이드바는 좌측에 고정 위치로 보이고, 메인 영역은 나머지를 채움
   bodyGrid: {
     display: "grid",
-    gridTemplateColumns: "200px 1fr",
+    gridTemplateColumns: "11rem 1fr",
     alignItems: "start",
     minHeight: "calc(100vh - 66px)",
   },
@@ -160,8 +165,11 @@ const S: Record<string, CSSProperties> = {
     gap: 16,
     position: "sticky",
     top: 16,
-    padding: "16px 16px 24px 40px",
+    padding: "16px 10px 24px 24px",
     alignSelf: "start",
+    minHeight: "calc(100vh - 66px)",
+    borderRight: "1px solid var(--color-border)",
+    boxSizing: "border-box",
   },
   navList: {
     display: "flex",
@@ -172,12 +180,13 @@ const S: Record<string, CSSProperties> = {
   mainArea: {
     display: "flex",
     flexDirection: "column",
-    minWidth: 0,
+    minWidth: "48.75rem",
     padding: "16px 24px 64px",
   },
   contentInner: {
     width: "100%",
     maxWidth: 1110,
+    minWidth: "48.75rem",
     margin: "0 auto",
     display: "flex",
     flexDirection: "column",
@@ -212,17 +221,19 @@ const S: Record<string, CSSProperties> = {
 
   navItem: {
     textAlign: "left",
-    padding: "10px 12px",
+    padding: "10px 10px",
     fontSize: "var(--font-size-md)",
     fontWeight: 500,
     color: "var(--color-text-muted)",
     borderRadius: "var(--radius-tag)",
-    transition: "background var(--duration-fast) var(--ease-out)",
+    transition: "background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out)",
   },
   navItemActive: {
     color: "var(--color-text)",
-    background: "var(--color-header-bg)",
+    background: "#eef6ff",
     fontWeight: 600,
+    boxShadow: "inset 3px 0 0 var(--color-text)",
+    transform: "translateX(2px)",
   },
 
   titleBlock: { display: "flex", flexDirection: "column", gap: 6 },
@@ -238,4 +249,4 @@ const S: Record<string, CSSProperties> = {
     lineHeight: 1.4,
     fontWeight: 500,
   },
-};
+});

@@ -1,4 +1,5 @@
 import type { GaugeScore } from "../types/scoring";
+import { scaledPx } from "../shared/responsiveStyle";
 import { severityTrack, severityVar } from "./severityColor";
 
 export interface DonutProps {
@@ -15,9 +16,17 @@ export function Donut({ gauge, size = 72, thickness = 8 }: DonutProps) {
   const dash = (score / 100) * circ;
   const color = severityVar(gauge.severity);
   const track = severityTrack(gauge.severity);
+  const scaledSize = scaledPx(size);
 
   return (
-    <svg width={size} height={size} role="img" aria-label={`${gauge.label} ${score}`}>
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      style={{ width: scaledSize, height: scaledSize }}
+      role="img"
+      aria-label={`${gauge.label} ${score}`}
+    >
       <circle
         cx={c}
         cy={c}

@@ -3,6 +3,7 @@
 // 각 셀은 수치 또는 작은 sparkline 가능.
 
 import type { CSSProperties, ReactNode } from "react";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 export interface DataTableColumn<T> {
   key: keyof T | string;
@@ -62,7 +63,7 @@ export function DataTable<T>({ columns, rows, rowKey }: DataTableProps<T>) {
   );
 }
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   wrap: {
     width: "100%",
     overflowX: "auto",
@@ -94,4 +95,4 @@ const S: Record<string, CSSProperties> = {
     whiteSpace: "nowrap",
     fontVariantNumeric: "tabular-nums",
   },
-};
+});

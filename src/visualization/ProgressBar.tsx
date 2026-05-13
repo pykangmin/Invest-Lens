@@ -1,4 +1,5 @@
 import type { Severity } from "../types/scoring";
+import { scaledPx } from "../shared/responsiveStyle";
 import { severityVar } from "./severityColor";
 
 export interface ProgressBarProps {
@@ -19,12 +20,14 @@ export function ProgressBar({
   const v = value === null || Number.isNaN(value) ? 0 : Math.max(0, Math.min(100, value));
   const fillW = (v / 100) * width;
   const color = severityVar(severity);
+  const scaledWidth = scaledPx(width);
+  const scaledHeight = scaledPx(height);
   return (
     <div
       style={{
         position: "relative",
-        width,
-        height,
+        width: scaledWidth,
+        height: scaledHeight,
         background: "var(--color-card)",
         borderRadius: "var(--radius-pill)",
         boxShadow: "inset 0 0 0 1px var(--color-border)",
@@ -41,7 +44,7 @@ export function ProgressBar({
           left: 0,
           top: 0,
           bottom: 0,
-          width: fillW,
+          width: scaledPx(fillW),
           background: color,
           opacity: 0.18,
           transition: "width var(--duration-normal) var(--ease-out)",

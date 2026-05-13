@@ -1,3 +1,4 @@
+import { responsiveStyles } from "../shared/responsiveStyle";
 export interface SymbolHeaderProps {
   name: string;
   ticker: string;
@@ -41,7 +42,7 @@ export function SymbolHeader({ name, ticker, current, delta, pct }: SymbolHeader
   );
 }
 
-const S: Record<string, React.CSSProperties> = {
+const S = responsiveStyles({
   block: { display: "flex", flexDirection: "column", gap: 4 },
   name: {
     fontSize: "var(--font-size-2xl)",
@@ -72,4 +73,4 @@ const S: Record<string, React.CSSProperties> = {
     fontSize: "var(--font-size-md)",
     color: "var(--color-text-muted)",
   },
-};
+});

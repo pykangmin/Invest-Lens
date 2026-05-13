@@ -57,6 +57,9 @@ import type {
 import { InfoTooltip } from "../visualization/InfoTooltip";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
+import { responsiveStyles, scaledPx } from "../shared/responsiveStyle";
+import { TruncatedText } from "../shared/TruncatedText";
+import { ChartCrosshair, ChartTooltip, useChartHoverIdx } from "../visualization/chartHover";
 
 export interface FundamentalDetailProps {
   ticker: string;
@@ -78,6 +81,11 @@ interface HeroCard {
 }
 
 // 시안 ellipse 36 bg + vector color (각 카드별)
+const fundamentalDataCache = new Map<string, CompanySnapshot>();
+const fundamentalPeersCache = new Map<string, PeersResponse>();
+const fundamentalSectorAvgCache = new Map<string, SectorAvgResponse>();
+let fundamentalCpiCache: GlobalEnvironmentResponse | null = null;
+
 const HERO_ICON_META: Record<
   HeroCard["key"],
   { iconName: string; iconBg: string; iconColor: string }
@@ -139,7 +147,7 @@ function buildHeroCards(
       "roe",
       "ROE",
       f?.roe != null ? fmtPct(f.roe) : "—",
-      peers && peers.length > 0 ? peerRankLabel(ticker, peers, "roe", true) : "—",
+      peers && peers.length > 0 ? peerRankLabel(ticker, peers, "roe", true, f?.roe ?? null) : "—",
     ),
     card(
       "revenue",
@@ -170,26 +178,49 @@ export function FundamentalDetail({
   onNavigateSection,
   onSelectTicker,
 }: FundamentalDetailProps) {
-  const [data, setData] = useState<CompanySnapshot | null>(null);
-  const [peers, setPeers] = useState<PeersResponse | null>(null);
-  const [sectorAvg, setSectorAvg] = useState<SectorAvgResponse | null>(null);
-  const [cpi, setCpi] = useState<GlobalEnvironmentResponse | null>(null);
+  const cacheKey = ticker.toUpperCase();
+  const cachedData = fundamentalDataCache.get(cacheKey) ?? null;
+  const cachedSector = cachedData?.company.sector
+    ? fundamentalSectorAvgCache.get(cachedData.company.sector) ?? null
+    : null;
+  const [data, setData] = useState<CompanySnapshot | null>(() => cachedData);
+  const [peers, setPeers] = useState<PeersResponse | null>(() => fundamentalPeersCache.get(cacheKey) ?? null);
+  const [sectorAvg, setSectorAvg] = useState<SectorAvgResponse | null>(() => cachedSector);
+  const [cpi, setCpi] = useState<GlobalEnvironmentResponse | null>(() => fundamentalCpiCache);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
-    setData(null);
-    setPeers(null);
-    setSectorAvg(null);
+    const cached = fundamentalDataCache.get(cacheKey) ?? null;
+    setData(cached);
+    setPeers(fundamentalPeersCache.get(cacheKey) ?? null);
+    setSectorAvg(
+      cached?.company.sector
+        ? fundamentalSectorAvgCache.get(cached.company.sector) ?? null
+        : null,
+    );
     setError(null);
+    if (cached) return () => {
+      alive = false;
+    };
+
     loadCompanySnapshot(ticker, 24)
       .then((s) => {
+        fundamentalDataCache.set(cacheKey, s);
         if (alive) setData(s);
         // company snapshot 의 sector 로 sector 평균 조회
         const sec = s.company.sector;
         if (sec) {
+          const cachedSectorAvg = fundamentalSectorAvgCache.get(sec);
+          if (cachedSectorAvg) {
+            if (alive) setSectorAvg(cachedSectorAvg);
+            return;
+          }
           loadSectorAvg(sec)
-            .then((sa) => { if (alive) setSectorAvg(sa); })
+            .then((sa) => {
+              fundamentalSectorAvgCache.set(sec, sa);
+              if (alive) setSectorAvg(sa);
+            })
             .catch(() => { /* sector-avg 실패 비치명 — peers fallback */ });
         }
       })
@@ -198,6 +229,7 @@ export function FundamentalDetail({
       });
     loadPeers(ticker, 6)
       .then((p) => {
+        fundamentalPeersCache.set(cacheKey, p);
         if (alive) setPeers(p);
       })
       .catch(() => {
@@ -206,13 +238,19 @@ export function FundamentalDetail({
     return () => {
       alive = false;
     };
-  }, [ticker]);
+  }, [cacheKey, ticker]);
 
   // CPI 는 ticker 무관 — 마운트 1회만.
   useEffect(() => {
+    if (fundamentalCpiCache) {
+      setCpi(fundamentalCpiCache);
+      return;
+    }
+
     let alive = true;
     loadGlobalEnvironment({ symbol: "CPIAUCSL", historyLimit: 14 })
       .then((r) => {
+        fundamentalCpiCache = r;
         if (alive) setCpi(r);
       })
       .catch(() => {
@@ -410,16 +448,15 @@ function HeroCardView({ card }: { card: HeroCard }) {
         >
           <Icon
             icon={card.iconName}
-            width={16}
-            height={16}
+            width={scaledPx(16)} height={scaledPx(16)}
             color={card.iconColor}
           />
         </div>
-        <span style={S.heroCardLabel}>{card.label}</span>
+        <TruncatedText style={S.heroCardLabel}>{card.label}</TruncatedText>
         <InfoTooltip text={TOOLTIP_TEXT[card.key]} mode="card" size={16} />
       </div>
-      <div style={S.heroCardBig}>{card.bigValue}</div>
-      <div style={S.heroCardSub}>{card.sub}</div>
+      <TruncatedText style={S.heroCardBig}>{card.bigValue}</TruncatedText>
+      <TruncatedText style={S.heroCardSub}>{card.sub}</TruncatedText>
     </div>
   );
 }
@@ -444,7 +481,7 @@ function SectionBox({
         <div style={S.sectionBoxTags}>
           {scoreTag && <span style={S.sectionScoreTag}>{scoreTag}</span>}
           {extraTag && (
-            <span style={{ ...S.sectionScoreTag, minWidth: 140 }}>{extraTag}</span>
+            <span style={{ ...S.sectionScoreTag, minWidth: scaledPx(140) }}>{extraTag}</span>
           )}
         </div>
       </div>
@@ -549,9 +586,16 @@ function GroupedBarChart({ bars }: { bars: CashflowChartData["bars"] }) {
 
   const groupW = innerW / bars.length;
   const barW = Math.max(6, (groupW - 12) / 2);
+  const xOfBar = (i: number) => padL + i * groupW + groupW / 2;
+
+  const { hoverIdx, onPointerMove, onPointerLeave } = useChartHoverIdx(
+    bars.length, xOfBar, W,
+  );
+  const hovered = hoverIdx !== null ? bars[hoverIdx] : null;
 
   return (
-    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+    <div style={{ position: "relative" }} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}>
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
       {/* Y grid line + tick label (0 제외하고 3개 line) */}
       {yTicks.map((t) => {
         const y = padT + innerH - (t / yMax) * innerH;
@@ -645,7 +689,19 @@ function GroupedBarChart({ bars }: { bars: CashflowChartData["bars"] }) {
           </g>
         );
       })}
+      {/* hover crosshair */}
+      {hoverIdx !== null && (
+        <ChartCrosshair x={xOfBar(hoverIdx)} y1={padT} y2={padT + innerH} />
+      )}
     </svg>
+    {hovered && (
+      <ChartTooltip leftPercent={(xOfBar(hoverIdx!) / W) * 100}>
+        <div style={{ opacity: 0.85, fontWeight: 500, marginBottom: 2 }}>{hovered.label}</div>
+        <div>매출 <strong>${hovered.revenue?.toFixed(1) ?? "—"}B</strong></div>
+        <div>FCF <strong>${hovered.fcf?.toFixed(1) ?? "—"}B</strong></div>
+      </ChartTooltip>
+    )}
+    </div>
   );
 }
 
@@ -739,8 +795,14 @@ function DualLineChart({ points }: { points: ProfitabilityChartData["points"] })
 
   const lineColors = { netMargin: "#5b8bd9", roe: "#e5af43" };
 
+  const { hoverIdx, onPointerMove, onPointerLeave } = useChartHoverIdx(
+    points.length, xOf, W,
+  );
+  const hovered = hoverIdx !== null ? points[hoverIdx] : null;
+
   return (
-    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+    <div style={{ position: "relative" }} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}>
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
       {/* Y grid line + tick label */}
       {yTicks.map((t) => {
         const y = padT + innerH - (t / yMax) * innerH;
@@ -830,7 +892,19 @@ function DualLineChart({ points }: { points: ProfitabilityChartData["points"] })
           {p.label}
         </text>
       ))}
+      {/* hover crosshair */}
+      {hoverIdx !== null && (
+        <ChartCrosshair x={xOf(hoverIdx)} y1={padT} y2={padT + innerH} />
+      )}
     </svg>
+    {hovered && (
+      <ChartTooltip leftPercent={(xOf(hoverIdx!) / W) * 100}>
+        <div style={{ opacity: 0.85, fontWeight: 500, marginBottom: 2 }}>{hovered.label}</div>
+        <div>Net Margin <strong>{hovered.netMargin?.toFixed(1) ?? "—"}%</strong></div>
+        <div>ROE <strong>{hovered.roe?.toFixed(1) ?? "—"}%</strong></div>
+      </ChartTooltip>
+    )}
+    </div>
   );
 }
 
@@ -875,8 +949,8 @@ function GrowthSection({
           <Fragment key={ind.label}>
             {i > 0 && <div style={CF.indicatorDivider} />}
             <div style={CF.indicatorRow}>
-              <span style={CF.indicatorLabel}>{ind.label}</span>
-              <span style={CF.indicatorValue}>{ind.value}</span>
+              <TruncatedText style={CF.indicatorLabel}>{ind.label}</TruncatedText>
+              <TruncatedText style={CF.indicatorValue}>{ind.value}</TruncatedText>
               <span
                 style={{
                   ...CF.indicatorChip,
@@ -923,9 +997,16 @@ function GrowthBarChart({ bars }: { bars: GrowthChartData["bars"] }) {
 
   const groupW = innerW / bars.length;
   const barW = Math.max(10, groupW * 0.45);
+  const xOfBar = (i: number) => padL + (i + 0.5) * groupW;
+
+  const { hoverIdx, onPointerMove, onPointerLeave } = useChartHoverIdx(
+    bars.length, xOfBar, W,
+  );
+  const hovered = hoverIdx !== null ? bars[hoverIdx] : null;
 
   return (
-    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+    <div style={{ position: "relative" }} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}>
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
       {/* Y grid line */}
       {yTicks.map((t) => {
         const y = yOf(t);
@@ -958,6 +1039,31 @@ function GrowthBarChart({ bars }: { bars: GrowthChartData["bars"] }) {
 
       {/* Y axis 좌측 라인 */}
       <line x1={padL} y1={padT} x2={padL} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+
+      {/* 0% baseline — tick 에 0 이 없을 때도 항상 그림 */}
+      {yMin < 0 && yMax > 0 && !yTicks.includes(0) && (
+        <g>
+          <line
+            x1={padL}
+            x2={W - padR}
+            y1={yZero}
+            y2={yZero}
+            stroke="#b8b8b8"
+            strokeWidth={1}
+          />
+          <text
+            x={padL - 6}
+            y={yZero}
+            fontSize={9}
+            fill="#737474"
+            textAnchor="end"
+            dominantBaseline="middle"
+            fontFamily="var(--font-numeric)"
+          >
+            0%
+          </text>
+        </g>
+      )}
 
       {/* Bars (0 baseline 기준 위/아래). null 분기는 dashed 빈 슬롯 + N/A. */}
       {bars.map((b, i) => {
@@ -1023,7 +1129,17 @@ function GrowthBarChart({ bars }: { bars: GrowthChartData["bars"] }) {
           {b.label}
         </text>
       ))}
+      {hoverIdx !== null && (
+        <ChartCrosshair x={xOfBar(hoverIdx)} y1={padT} y2={padT + innerH} />
+      )}
     </svg>
+    {hovered && (
+      <ChartTooltip leftPercent={(xOfBar(hoverIdx!) / W) * 100}>
+        <div style={{ opacity: 0.85, fontWeight: 500, marginBottom: 2 }}>{hovered.label}</div>
+        <div>Revenue Growth YoY <strong>{hovered.revenue != null ? `${hovered.revenue.toFixed(1)}%` : "N/A"}</strong></div>
+      </ChartTooltip>
+    )}
+    </div>
   );
 }
 
@@ -1076,10 +1192,10 @@ function ValuationRow({ ind }: { ind: ValuationIndicator }) {
   return (
     <div style={VAL.row}>
       <div style={VAL.rowHead}>
-        <span style={VAL.rowLabel}>
+        <TruncatedText style={VAL.rowLabel} text={`${ind.letter}. ${ind.label}`}>
           {ind.letter}. {ind.label}
-        </span>
-        <span style={{ ...VAL.rowValue, color: ind.barColor }}>{ind.value}</span>
+        </TruncatedText>
+        <TruncatedText style={{ ...VAL.rowValue, color: ind.barColor }}>{ind.value}</TruncatedText>
         <span
           style={{
             ...CF.indicatorChip,
@@ -1252,7 +1368,7 @@ function ScoreDistributionSection({
                 >
                   <ValuationCategoryIcon kind={s.key} color={color} />
                 </span>
-                <span style={SD.rowLabel}>{s.label}</span>
+                <TruncatedText style={SD.rowLabel}>{s.label}</TruncatedText>
                 <div style={SD.rowBar}>
                   <div style={SD.rowBarBase} />
                   <div
@@ -1293,7 +1409,12 @@ function ScoreDonut({
   let cum = 0;
   return (
     <div style={SD.donutWrap}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        style={{ width: scaledPx(size), height: scaledPx(size) }}
+      >
         <circle cx={cx} cy={cy} r={r} stroke="#ececec" strokeWidth={thickness} fill="none" />
         {sections.map((s) => {
           const ratio = (s.score ?? 0) / totalMax;
@@ -1369,7 +1490,7 @@ const MUTED = "#737373";
 const SCORE_TAG_BG = "#f4f9ff";
 const DOWN = "#c1121f";
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   // §1
   row1: {
     background: "var(--color-card)",
@@ -1420,8 +1541,8 @@ const S: Record<string, CSSProperties> = {
   },
   row1Body: {
     display: "grid",
-    gridTemplateColumns: "minmax(130px, 160px) 1fr",
-    gap: 32,
+    gridTemplateColumns: "minmax(120px, 140px) minmax(0, 1fr)",
+    gap: 24,
     alignItems: "flex-start",
   },
   scoreBlock: {
@@ -1450,20 +1571,23 @@ const S: Record<string, CSSProperties> = {
   },
   heroCardRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(5, 1fr)",
+    gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
     gap: 12,
     alignItems: "stretch",
   },
   heroCard: {
     display: "flex",
     flexDirection: "column",
-    gap: 10,
+    gap: 8,
     minWidth: 0,
     background: "#fbfcfe",
     border: "1px solid var(--color-border)",
     borderRadius: 10,
-    padding: "14px 16px",
+    padding: "clamp(0.625rem, 1.1vw, 0.875rem) clamp(0.625rem, 1.25vw, 1rem)",
     justifyContent: "space-between",
+    // overflow: hidden 제거 — 내부 label/bigValue 자체 ellipsis 가 있으므로 안전.
+    // 이전엔 InfoTooltip 팝업이 카드 경계에서 잘렸음.
+    overflow: "visible",
   },
   heroCardHead: {
     display: "flex",
@@ -1504,23 +1628,38 @@ const S: Record<string, CSSProperties> = {
     flexShrink: 0,
   },
   heroCardBig: {
-    fontSize: 35,
+    fontSize: "clamp(1.125rem, 1.9vw, 1.9375rem)",
     fontWeight: 600,
     color: NAVY,
     fontFamily: "var(--font-numeric)",
-    lineHeight: 1,
+    lineHeight: 1.08,
     whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   heroCardSub: {
     fontSize: 10.5,
     fontWeight: 500,
     color: MUTED,
     lineHeight: 1.3,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
 
   // §2 §3 — 3 컬럼 / 2 컬럼 공통 row
-  row2: { display: "flex", gap: 16, alignItems: "stretch" },
-  row3: { display: "flex", gap: 16, alignItems: "stretch" },
+  row2: {
+    display: "grid",
+    gridTemplateColumns: "369fr 380fr 328fr",
+    gap: 16,
+    alignItems: "stretch",
+  },
+  row3: {
+    display: "grid",
+    gridTemplateColumns: "561fr 520fr",
+    gap: 16,
+    alignItems: "flex-start",
+  },
 
   sectionBox: {
     background: "var(--color-card)",
@@ -1622,9 +1761,11 @@ const S: Record<string, CSSProperties> = {
     alignSelf: "center",
   },
 
-};
 
-const CF: Record<string, CSSProperties> = {
+});
+
+
+const CF = responsiveStyles({
   wrap: {
     display: "flex",
     flexDirection: "column",
@@ -1682,7 +1823,7 @@ const CF: Record<string, CSSProperties> = {
   },
   indicatorRow: {
     display: "grid",
-    gridTemplateColumns: "1fr 60px 48px",
+    gridTemplateColumns: "minmax(0, 1fr) 60px 48px",
     alignItems: "baseline",
     gap: 8,
     paddingTop: 6,
@@ -1692,6 +1833,9 @@ const CF: Record<string, CSSProperties> = {
     fontSize: 12,
     fontWeight: 600,
     color: NAVY,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   indicatorValue: {
     fontSize: 13,
@@ -1714,13 +1858,13 @@ const CF: Record<string, CSSProperties> = {
     height: 1,
     background: "#ececec",
   },
-};
+});
 
 // §3-A 가치평가 스타일
-const VAL: Record<string, CSSProperties> = {
+const VAL = responsiveStyles({
   wrap: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
+    gridTemplateColumns: "minmax(0, 58%) minmax(0, 42%)",
     gap: 18,
     flex: 1,
   },
@@ -1745,7 +1889,7 @@ const VAL: Record<string, CSSProperties> = {
   },
   rowHead: {
     display: "grid",
-    gridTemplateColumns: "1fr auto auto",
+    gridTemplateColumns: "minmax(0, 1fr) auto auto",
     alignItems: "baseline",
     gap: 8,
   },
@@ -1753,6 +1897,9 @@ const VAL: Record<string, CSSProperties> = {
     fontSize: 12,
     fontWeight: 600,
     color: NAVY,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   rowValue: {
     fontSize: 16,
@@ -1804,16 +1951,16 @@ const VAL: Record<string, CSSProperties> = {
     fontWeight: 600,
     color: NAVY,
   },
-};
+});
 
 // §3-B 섹션별 스코어 분포 스타일
-const SD: Record<string, CSSProperties> = {
+const SD = responsiveStyles({
   wrap: {
     display: "grid",
     gridTemplateColumns: "150px 1px 1fr",
     columnGap: 20,
     alignItems: "center",
-    flex: 1,
+    flex: "0 0 auto",
     paddingBottom: 8,
   },
   donutWrap: {
@@ -1858,7 +2005,7 @@ const SD: Record<string, CSSProperties> = {
   },
   row: {
     display: "grid",
-    gridTemplateColumns: "22px 1fr 90px auto",
+    gridTemplateColumns: "22px minmax(0, 1fr) 70px auto",
     alignItems: "center",
     gap: 10,
     paddingTop: 6,
@@ -1882,6 +2029,9 @@ const SD: Record<string, CSSProperties> = {
     fontSize: 13,
     fontWeight: 600,
     color: NAVY,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   rowBar: {
     position: "relative",
@@ -1909,4 +2059,4 @@ const SD: Record<string, CSSProperties> = {
     minWidth: 50,
     textAlign: "right",
   },
-};
+});

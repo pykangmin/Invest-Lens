@@ -4,6 +4,7 @@ import { ProgressBar } from "./ProgressBar";
 import { RegimeBadge } from "./RegimeBadge";
 import { Sparkline } from "./Sparkline";
 import { severityVar } from "./severityColor";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 export type GaugeMode = "donut" | "progress" | "regime";
 
@@ -72,7 +73,7 @@ export function GaugeCard({ title, gauge, mode = "donut", badge, sparkline, onDe
   );
 }
 
-const S: Record<string, React.CSSProperties> = {
+const S = responsiveStyles({
   card: {
     background: "var(--color-card)",
     border: "1px solid var(--color-border)",
@@ -144,4 +145,4 @@ const S: Record<string, React.CSSProperties> = {
     padding: 0,
     fontWeight: 500,
   },
-};
+});

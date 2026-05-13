@@ -5,6 +5,7 @@
 //       xLabels = string[] — x 축 tick 텍스트 (날짜 등)
 
 import type { CSSProperties } from "react";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 export interface LineSeries {
   label: string;
@@ -178,7 +179,7 @@ export function MultiLineChart({
   );
 }
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   wrap: { width: "100%", display: "flex", flexDirection: "column", gap: 8 },
   svg: { display: "block" },
   legend: {
@@ -201,4 +202,4 @@ const S: Record<string, CSSProperties> = {
     padding: 32,
     textAlign: "center",
   },
-};
+});

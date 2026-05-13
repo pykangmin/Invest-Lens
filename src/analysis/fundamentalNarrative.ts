@@ -129,13 +129,17 @@ export function peerRankLabel(
   peers: PeerCompany[],
   key: "roe" | "per" | "pbr" | "netProfitMargin",
   higherIsBetter = true,
+  selfValue?: number | null,
 ): string {
   const valued = peers
     .map((p) => ({ ticker: p.ticker, v: p[key] }))
     .filter((p): p is { ticker: string; v: number } => p.v != null);
+  // /api/peers 가 self 를 SQL 단계에서 제외하므로, 호출부에서 selfValue 주입해 합류시킴.
+  if (!valued.some((p) => p.ticker === selfTicker) && selfValue != null) {
+    valued.push({ ticker: selfTicker, v: selfValue });
+  }
   if (valued.length < 2) return "—";
-  const self = valued.find((p) => p.ticker === selfTicker);
-  if (!self) return "—";
+  if (!valued.some((p) => p.ticker === selfTicker)) return "—";
   // 정렬 방향
   valued.sort((a, b) => (higherIsBetter ? b.v - a.v : a.v - b.v));
   const rank = valued.findIndex((p) => p.ticker === selfTicker) + 1;

@@ -4,6 +4,7 @@
 // x = 변동성 (volatility, std dev of daily return), y = 수익률 (total return %).
 
 import type { CSSProperties } from "react";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 export interface ScatterPoint {
   label: string;
@@ -195,7 +196,7 @@ export function ScatterPlot({
   );
 }
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   svg: { display: "block" },
   empty: {
     color: "var(--color-text-muted)",
@@ -203,4 +204,4 @@ const S: Record<string, CSSProperties> = {
     padding: 32,
     textAlign: "center",
   },
-};
+});

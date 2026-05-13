@@ -4,9 +4,25 @@
 // 를 props 로 받아 detail §1 hero 의 축소 변형으로 표현.
 // /temp 의 mock 기반 TempHoverCards 와 시각 형태 1:1 동일.
 
-import type { CSSProperties, ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import type { TechnicalAnalysisV4 } from "../analysis/technicalV4";
 import type { RegimeProb } from "../analysis/macroDetail";
+import { scaledPx } from "../shared/responsiveStyle";
+
+// 미디어 쿼리 매칭 — viewport breakpoint 분기.
+function useMediaQuery(query: string): boolean {
+  const [matches, setMatches] = useState<boolean>(() =>
+    typeof window !== "undefined" ? window.matchMedia(query).matches : false,
+  );
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia(query);
+    const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, [query]);
+  return matches;
+}
 
 // ──────────────────────────────────────────────────────────────
 // 디자인 토큰 (TempHoverCards 와 동일)
@@ -145,11 +161,13 @@ export interface HCFundamentalData {
 export function FundamentalHover({ data }: { data: HCFundamentalData }) {
   return (
     <Shell>
-      <div style={{ display: "flex", height: "100%", gap: 32, alignItems: "center" }}>
-        <div style={{ width: 380, display: "flex", justifyContent: "center", ...anim("hcFadeIn", 500, 150) }}>
+      <div style={{ display: "flex", flexDirection: "column", height: "100%", gap: 16, alignItems: "stretch" }}>
+        {/* 상단: 레이더 차트 가로 중앙 */}
+        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center", ...anim("hcFadeIn", 500, 150) }}>
           <FundDiamond data={data} />
         </div>
-        <div style={{ flex: 1, display: "grid", gridTemplateRows: "1fr 1fr", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        {/* 하단: 4 섹션 카드 1행 */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
           {data.sections.map((s, i) => (
             <div key={s.key} style={{
               background: C.innerBg,
@@ -287,6 +305,58 @@ export function TechnicalHover({ data }: { data: TechnicalAnalysisV4 }) {
   const seg = activeSegment(data.totalScore);
   const metricsL = data.metrics.slice(0, 3);
   const metricsR = data.metrics.slice(3, 6);
+  const isNarrow = useMediaQuery("(max-width: 1200px)");
+
+  if (isNarrow) {
+    // ≤ 1200px: 세로 레이아웃 — gauge 상단 + Buy 그 아래 in-flow + 2×3 chip grid 하단.
+    return (
+      <Shell>
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          gap: 14,
+          alignItems: "stretch",
+        }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            <SemiGauge score={data.totalScore} />
+            <div style={{
+              color: seg.color,
+              fontSize: 22,
+              fontWeight: 700,
+              padding: "6px 22px",
+              border: `2px solid ${seg.color}`,
+              borderRadius: 8,
+              background: C.cardBg,
+              lineHeight: 1,
+              ...anim("hcPop", 500, 1300),
+              transformOrigin: "center bottom",
+            }}>
+              {seg.label}
+            </div>
+          </div>
+          {/* 2×3 grid: 왼쪽 3 chip = 첫 줄, 오른쪽 3 chip = 둘째 줄 */}
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 10,
+          }}>
+            {metricsL.map((m, i) => (
+              <div key={m.key} style={anim("hcSlideUp", 420, 600 + i * 80)}>
+                <TechMetric label={m.label} score={m.score} max={m.max} available={m.available} />
+              </div>
+            ))}
+            {metricsR.map((m, i) => (
+              <div key={m.key} style={anim("hcSlideUp", 420, 800 + i * 80)}>
+                <TechMetric label={m.label} score={m.score} max={m.max} available={m.available} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </Shell>
+    );
+  }
+
   return (
     <Shell>
       <div style={{ display: "flex", height: "100%", alignItems: "center", gap: 20, padding: "0 4px" }}>
@@ -592,7 +662,7 @@ function GirVertical({ label, full, score }: { label: string; full: string; scor
   if (score == null) {
     return (
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-        <div style={{ color: C.textMuted, fontSize: 12 }}>{full}</div>
+        <div style={{ color: C.textMuted, fontSize: 12, whiteSpace: "nowrap" }}>{full}</div>
         <div style={{
           width: 22,
           height: barH,
@@ -613,7 +683,7 @@ function GirVertical({ label, full, score }: { label: string; full: string; scor
   const scoreText = clamped > 0 ? `+${clamped.toFixed(2)}` : clamped.toFixed(2);
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-      <div style={{ color: C.textMuted, fontSize: 12 }}>{full}</div>
+      <div style={{ color: C.textMuted, fontSize: 12, whiteSpace: "nowrap" }}>{full}</div>
       <div style={{ position: "relative" }}>
         <div style={{
           width: 22,
@@ -697,7 +767,7 @@ export function CommodityHover({ data }: { data: HCCommodityData }) {
             justifyContent: "center",
             ...anim("hcSlideUp", 420, 1000),
           }}>
-            <div style={{ color: C.textMuted, fontSize: 12, marginBottom: 8 }}>종합 영향</div>
+            <div style={{ color: C.textMuted, fontSize: 12, marginBottom: 8, whiteSpace: "nowrap" }}>종합 영향</div>
             <div style={{ color: data.verdictColor, fontSize: 22, fontWeight: 700, lineHeight: 1, whiteSpace: "nowrap", letterSpacing: -0.3 }}>
               {data.verdictLabel}
             </div>
@@ -711,7 +781,7 @@ export function CommodityHover({ data }: { data: HCCommodityData }) {
               textAlign: "center",
               ...anim("hcSlideUp", 420, 1100 + i * 100),
             }}>
-              <div style={{ color: C.textMuted, fontSize: 12, marginBottom: 4 }}>{s.label}</div>
+              <div style={{ color: C.textMuted, fontSize: 12, marginBottom: 4, whiteSpace: "nowrap" }}>{s.label}</div>
               <div style={{ color: s.tone, fontSize: 18, fontWeight: 700, whiteSpace: "nowrap" }}>{s.value}</div>
             </div>
           ))}

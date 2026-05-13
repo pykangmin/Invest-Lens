@@ -5,6 +5,7 @@
 // 시각: 각 막대는 y=0 기준 위/아래로 그림 (음/양 모두 처리).
 
 import type { CSSProperties } from "react";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 export interface BarChartDatum {
   label: string;
@@ -141,7 +142,7 @@ export function BarChart({
   );
 }
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   svg: { display: "block" },
   empty: {
     color: "var(--color-text-muted)",
@@ -149,4 +150,4 @@ const S: Record<string, CSSProperties> = {
     padding: 32,
     textAlign: "center",
   },
-};
+});

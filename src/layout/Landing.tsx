@@ -19,6 +19,8 @@ import {
 } from "react";
 import { searchCompanies } from "../data-loader/investmentData";
 import type { CompanyMaster } from "../types/investment";
+import { responsiveStyles } from "../shared/responsiveStyle";
+import { TruncatedText } from "../shared/TruncatedText";
 
 const POPULAR_TICKERS = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META"];
 
@@ -189,7 +191,7 @@ export function Landing({ onSelectTicker }: LandingProps) {
                   }}
                 >
                   <span style={S.dropdownTicker}>{row.ticker}</span>
-                  <span style={S.dropdownName}>{row.name}</span>
+                  <TruncatedText style={S.dropdownName}>{row.name}</TruncatedText>
                   {row.sector && <span style={S.dropdownSector}>{row.sector}</span>}
                 </li>
               ))}
@@ -218,7 +220,7 @@ export function Landing({ onSelectTicker }: LandingProps) {
   );
 }
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   page: {
     position: "relative",
     minHeight: "100%",
@@ -386,4 +388,4 @@ const S: Record<string, CSSProperties> = {
     fontWeight: 600,
     transition: "background var(--duration-fast) var(--ease-out)",
   },
-};
+});
