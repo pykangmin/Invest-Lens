@@ -180,8 +180,8 @@ export function GlobalSearch({
 }
 
 const S = responsiveStyles({
-  heroWrap: { position: "relative", width: "min(720px, calc(100vw - 64px))" },
-  headerWrap: { position: "relative", width: "min(760px, 58vw)", maxWidth: "100%" },
+  heroWrap: { position: "relative", width: "min(560px, 92vw)" },
+  headerWrap: { position: "relative", width: 761, maxWidth: "100%" },
 
   heroForm: {
     width: "100%",

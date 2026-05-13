@@ -107,7 +107,7 @@ body {
   -webkit-font-smoothing: antialiased;
   color: var(--color-text);
   background: var(--color-bg);
-  overflow-x: hidden;
+  overflow-x: auto;
 }
 
 button,
@@ -127,6 +127,32 @@ a {
   text-decoration: none;
 }
 
+@media (max-width: 1180px) {
+  .il-header {
+    grid-template-columns: max-content minmax(0, 1fr) !important;
+    gap: clamp(12px, 2vw, 24px) !important;
+  }
+
+  .il-header > div:last-child {
+    display: none !important;
+  }
+
+}
+
+.il-detail-nav-item:hover {
+  background: #f2f7fb !important;
+  color: var(--color-text) !important;
+  transform: translateX(2px);
+}
+
+.il-detail-nav-item:active {
+  transform: translateX(3px) scale(0.99);
+}
+
+.il-detail-nav-item.is-active:hover {
+  background: #e6f1ff !important;
+}
+
 /* 紐⑤떖 fade-in (StockDashboard EventsModal) */
 @keyframes investLensFadeIn {
   from { opacity: 0; }
@@ -135,4 +161,9 @@ a {
 @keyframes investLensModalIn {
   from { opacity: 0; transform: translateY(clamp(3.36px, 0.5405vw, 6px)) scale(0.98); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes investLensLoadingBar {
+  0%   { transform: translateX(-120%); }
+  50%  { transform: translateX(65%); }
+  100% { transform: translateX(260%); }
 }

@@ -859,7 +859,7 @@ const S = responsiveStyles({
   },
   row1Body: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 12rem), 1fr))",
+    gridTemplateColumns: "1.15fr repeat(3, minmax(0, 1fr))",
     gap: 28,
     alignItems: "stretch",
   },
@@ -988,7 +988,7 @@ const S = responsiveStyles({
   },
   regimeGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 12rem), 1fr))",
+    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
     gap: 12,
   },
   regimeTitleRow: {
@@ -1086,7 +1086,7 @@ const S = responsiveStyles({
   },
   contribGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 16rem), 1fr))",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
     gap: 17,
   },
   contribCard: {
@@ -1099,7 +1099,7 @@ const S = responsiveStyles({
   },
   contribCardHeader: {
     background: "#fafbfc",
-    padding: "12px 20px",
+    padding: "12px clamp(0.75rem, 1.4vw, 1.25rem)",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
@@ -1111,11 +1111,16 @@ const S = responsiveStyles({
     fontSize: 14,
     fontWeight: 600,
     color: NAVY,
+    minWidth: 0,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   contribCardTotal: {
     display: "flex",
     alignItems: "center",
     gap: 6,
+    flexShrink: 0,
   },
   contribTotalLabel: {
     fontSize: 13,
@@ -1202,7 +1207,7 @@ const S = responsiveStyles({
   },
   warningGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 9rem), 1fr))",
+    gridTemplateColumns: "repeat(6, minmax(0, 1fr))",
     gap: 14,
   },
   warningCard: {

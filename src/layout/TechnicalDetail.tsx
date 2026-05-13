@@ -456,7 +456,12 @@ function MiniLineChart({
     .map((x, i) => `${i === 0 ? "M" : "L"} ${x.toFixed(1)} ${ys[i]!.toFixed(1)}`)
     .join(" ");
   return (
-    <svg width={width} height={height} style={{ display: "block" }}>
+    <svg
+      width={width}
+      height={height}
+      viewBox={`0 0 ${width} ${height}`}
+      style={{ display: "block", width: "100%", height: scaledPx(height) }}
+    >
       <path d={pathD} stroke={color} strokeWidth={1.5} fill="none" strokeLinejoin="round" />
       {xs.map((x, i) => (
         <circle key={i} cx={x} cy={ys[i]!} r={2.5} fill={color} />
@@ -1128,7 +1133,7 @@ const S = responsiveStyles({
   // §1 — 시안은 467fr / 622fr 이지만 신호 등급 bar 가독성을 위해 좌측 2/3 압축, 우측 확대
   row1: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 20rem), 1fr))",
+    gridTemplateColumns: "467fr 622fr",
     gap: 16,
   },
   scoreBox: {
@@ -1353,7 +1358,7 @@ const S = responsiveStyles({
 
   contribTileRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 7rem), 1fr))",
+    gridTemplateColumns: "repeat(7, minmax(0, 1fr))",
     gap: 12,
   },
   contribTile: {
@@ -1411,7 +1416,8 @@ const S = responsiveStyles({
     flexDirection: "column",
   },
   tableHead: {
-    display: "flex",
+    display: "grid",
+    gridTemplateColumns: "minmax(72px, 0.8fr) minmax(150px, 1.8fr) minmax(82px, 1fr) minmax(44px, 0.45fr)",
     alignItems: "center",
     gap: 12,
     padding: "12px 8px",
@@ -1422,9 +1428,14 @@ const S = responsiveStyles({
     fontSize: 14,
     fontWeight: 600,
     color: NAVY,
+    minWidth: 0,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
   tableRow: {
-    display: "flex",
+    display: "grid",
+    gridTemplateColumns: "minmax(72px, 0.8fr) minmax(150px, 1.8fr) minmax(82px, 1fr) minmax(44px, 0.45fr)",
     alignItems: "center",
     gap: 12,
     padding: "16px 8px",
@@ -1434,5 +1445,9 @@ const S = responsiveStyles({
     fontSize: 13,
     fontWeight: 600,
     color: MUTED,
+    minWidth: 0,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   },
 });

@@ -13,23 +13,52 @@ export interface EmptyStateProps {
 }
 
 export function EmptyState({ variant, message }: EmptyStateProps) {
+  if (variant === "loading") {
+    return (
+      <div style={S.loading}>
+        <div style={S.loadingTrack} role="progressbar" aria-label={message ?? "Loading"}>
+          <div style={S.loadingFill} />
+        </div>
+      </div>
+    );
+  }
+
   const cls =
-    variant === "error" ? S.error : variant === "noData" ? S.noData : S.loading;
+    variant === "error" ? S.error : S.noData;
   const fallback =
     variant === "error"
       ? "데이터 로드 실패"
       : variant === "noData"
         ? "표시할 데이터가 없습니다"
-        : "분석 중…";
+        : "";
   return <div style={cls}>{message ?? fallback}</div>;
 }
 
 const S = responsiveStyles({
   loading: {
-    color: "var(--color-text-muted)",
+    minHeight: 260,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 64,
-    textAlign: "center",
-    fontSize: "var(--font-size-base)",
+  },
+  loadingTrack: {
+    position: "relative",
+    width: 180,
+    height: 5,
+    borderRadius: 999,
+    background: "#e7edf3",
+    overflow: "hidden",
+  },
+  loadingFill: {
+    position: "absolute",
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: "42%",
+    borderRadius: 999,
+    background: "var(--color-text)",
+    animation: "investLensLoadingBar 1.05s ease-in-out infinite",
   },
   noData: {
     color: "var(--color-text-muted)",

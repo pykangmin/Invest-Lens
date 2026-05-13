@@ -543,16 +543,12 @@ const PRICE_CARD_TOOLTIP: Record<string, string> = {
 
 function PriceCard({ card, idx }: { card: PriceCardSpec; idx: number }) {
   // 4×2 격자: 내부 선만 (마지막 열 우측 X, 마지막 행 하단 X)
-  const isLastCol = idx % 4 === 3;
-  const isLastRow = idx >= 4;
-  const border = "1px solid var(--color-border)";
+  void idx;
   const tooltipText = PRICE_CARD_TOOLTIP[card.key];
   return (
     <div
       style={{
         ...S.priceCard,
-        borderRight: isLastCol ? "none" : border,
-        borderBottom: isLastRow ? "none" : border,
       }}
     >
       <div style={S.priceCardHead}>
@@ -1127,7 +1123,7 @@ function SideIndicators({
             border: `1px solid ${s.borderColor ?? "#ececec"}`,
             background: s.bgColor ?? "transparent",
             borderRadius: 8,
-            padding: "12px 14px",
+            padding: "clamp(0.5rem, 1vw, 0.75rem) clamp(0.5rem, 1.1vw, 0.875rem)",
           }}
         >
           <span style={S.sideIndicatorLabel}>{s.label}</span>
@@ -1167,9 +1163,10 @@ function SectionBoxFull({
           flex: 1,
           gap: scaledPx(12),
           minHeight: scaledPx(height),
+          minWidth: 0,
         }}
       >
-        <div style={{ flex: 1, display: "flex" }}>{children}</div>
+        <div style={{ flex: 1, display: "flex", minWidth: 0 }}>{children}</div>
         {rightSide}
       </div>
     </section>
@@ -1210,10 +1207,11 @@ const S = responsiveStyles({
     background: "var(--color-card)",
     border: "1px solid var(--color-border)",
     borderRadius: 10,
-    padding: "20px 24px",
+    padding: "clamp(1rem, 1.55vw, 1.25rem) clamp(1rem, 1.85vw, 1.5rem)",
     display: "flex",
     flexDirection: "column",
     gap: 12,
+    minWidth: 0,
   },
   boxHeader: {
     fontSize: 16,
@@ -1240,8 +1238,9 @@ const S = responsiveStyles({
   statRow: {
     display: "flex",
     alignItems: "stretch",
-    gap: 16,
+    gap: "clamp(0.5rem, 1.1vw, 1rem)",
     marginTop: "auto",
+    minWidth: 0,
   },
   statDivider: {
     width: 1,
@@ -1251,12 +1250,13 @@ const S = responsiveStyles({
   statItem: {
     display: "flex",
     alignItems: "center",
-    gap: 10,
+    gap: "clamp(0.375rem, 0.75vw, 0.625rem)",
     flex: 1,
+    minWidth: 0,
   },
   statIcon: {
-    width: 42,
-    height: 42,
+    width: "clamp(1.75rem, 3.2vw, 2.625rem)",
+    height: "clamp(1.75rem, 3.2vw, 2.625rem)",
     borderRadius: "50%",
     background: "#f7f9ff",
     display: "flex",
@@ -1271,15 +1271,21 @@ const S = responsiveStyles({
     minWidth: 0,
   },
   statLabel: {
-    fontSize: 15,
+    fontSize: "clamp(0.6875rem, 1.15vw, 0.9375rem)",
     fontWeight: 600,
     color: NAVY,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   statValue: {
-    fontSize: 25,
+    fontSize: "clamp(1rem, 1.9vw, 1.5625rem)",
     fontWeight: 600,
     fontFamily: "var(--font-numeric)",
     lineHeight: 1,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
 
 
@@ -1288,15 +1294,16 @@ const S = responsiveStyles({
     background: "#ffffff",
     border: "1px solid var(--color-border)",
     borderRadius: 10,
-    padding: "20px 24px",
+    padding: "clamp(0.875rem, 1.55vw, 1.25rem) clamp(0.875rem, 1.85vw, 1.5rem)",
     display: "flex",
     alignItems: "center",
-    gap: 16,
+    gap: "clamp(0.5rem, 1.1vw, 1rem)",
     minWidth: 0,
+    overflow: "hidden",
   },
   mainFourIconWrap: {
-    width: 55,
-    height: 55,
+    width: "clamp(2.25rem, 4vw, 3.4375rem)",
+    height: "clamp(2.25rem, 4vw, 3.4375rem)",
     borderRadius: "50%",
     background: "#f7f9ff",
     display: "flex",
@@ -1319,16 +1326,18 @@ const S = responsiveStyles({
     textOverflow: "ellipsis",
   },
   mainFourValue: {
-    fontSize: 30,
+    fontSize: "clamp(1.25rem, 2.25vw, 1.875rem)",
     fontWeight: 600,
     fontFamily: "var(--font-numeric)",
     lineHeight: 1,
     whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
 
   row3: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 22rem), 1fr))",
+    gridTemplateColumns: "571fr 518fr",
     gap: 16,
   },
   row3Left: {
@@ -1351,8 +1360,9 @@ const S = responsiveStyles({
   },
   priceGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 10rem), 1fr))",
-    gap: 0,
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: 1,
+    background: "var(--color-border)",
   },
   priceCard: {
     display: "flex",
@@ -1360,6 +1370,7 @@ const S = responsiveStyles({
     gap: 6,
     padding: "12px 14px",
     minWidth: 0,
+    background: "var(--color-card)",
   },
   priceCardHead: {
     display: "flex",
@@ -1489,7 +1500,7 @@ const S = responsiveStyles({
   },
   row6Grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 14rem), 1fr))",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
     gap: 12,
   },
   issueCard: {
@@ -1550,31 +1561,40 @@ const S = responsiveStyles({
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-    gap: 12,
+    gap: "clamp(0.5rem, 1vw, 0.75rem)",
     flexShrink: 0,
-    width: 160,
-    paddingLeft: 14,
+    width: "clamp(5.5rem, 11vw, 10rem)",
+    paddingLeft: "clamp(0.35rem, 0.9vw, 0.875rem)",
+    minWidth: 0,
   },
   sideIndicatorRow: {
     display: "flex",
     flexDirection: "column",
-    gap: 18,
+    gap: "clamp(0.625rem, 1.4vw, 1.125rem)",
     padding: "20px 0",
+    minWidth: 0,
+    overflow: "hidden",
   },
   sideIndicatorDivider: {
     height: 1,
     background: "var(--color-border)",
   },
   sideIndicatorLabel: {
-    fontSize: 14,
+    fontSize: "clamp(0.6875rem, 1vw, 0.875rem)",
     fontWeight: 600,
     color: NAVY,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   sideIndicatorValue: {
-    fontSize: 16,
+    fontSize: "clamp(0.875rem, 1.2vw, 1rem)",
     fontWeight: 700,
     color: NAVY,
     fontFamily: "var(--font-numeric)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
 
   graphPlaceholder: {
@@ -1606,12 +1626,13 @@ const CFM = responsiveStyles({
     display: "flex",
     gap: 14,
     alignItems: "center",
-    flexWrap: "wrap",
+    flexWrap: "nowrap",
   },
   legendItem: {
     display: "flex",
     alignItems: "center",
     gap: 5,
+    minWidth: 0,
   },
   legendDot: {
     width: 8,
@@ -1623,6 +1644,9 @@ const CFM = responsiveStyles({
     fontSize: 12,
     fontWeight: 700,
     fontFamily: "var(--font-numeric)",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
 });
 
@@ -1670,12 +1694,13 @@ S.sectorLegend = {
   gap: 10,
   alignItems: "center",
   marginTop: 4,
-  flexWrap: "wrap",
+  flexWrap: "nowrap",
 };
 S.sectorLegendItem = {
   display: "flex",
   alignItems: "center",
   gap: 4,
+  minWidth: 0,
 };
 S.sectorLegendDot = {
   width: 8,
@@ -1687,4 +1712,7 @@ S.sectorLegendText = {
   fontSize: 10,
   fontWeight: 700,
   fontFamily: "var(--font-numeric)",
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
 };

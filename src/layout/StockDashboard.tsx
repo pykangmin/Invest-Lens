@@ -50,6 +50,7 @@ import { GlobalSearch } from "../visualization/GlobalSearch";
 import { Sparkline } from "../visualization/Sparkline";
 
 import type { DetailSection } from "./DetailShell";
+import { EmptyState } from "./detail";
 import { responsiveStyles, scaledPx } from "../shared/responsiveStyle";
 
 export interface StockDashboardProps {
@@ -206,7 +207,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
       <main className="il-canvas" style={S.canvas}>
         {error && <div style={S.error}>로드 실패: {error}</div>}
         {!error && (!data || !analysis || !compositeTrio) && (
-          <div style={S.loading}>분석 중…</div>
+          <EmptyState variant="loading" />
         )}
         {data && analysis && compositeTrio && (
           <>
@@ -1600,11 +1601,15 @@ function formatScore(v: number | null): string {
    STYLES
    ═══════════════════════════════════════════════════════════════════ */
 
+const PAGE_W = 1110;          // 시안 콘텐츠 폭 (1275 - 165)
+const SIDE_PAD = 132;         // 시안 좌우 여백의 80%
+const GAUGE_W = 281;          // Card/main-analysis 폭
 const GAP = 16;
 
 const S = responsiveStyles({
   page: {
     minHeight: "100vh",
+    minWidth: "64rem",
     background: "#ffffff",
     fontFamily: "var(--font-body, 'Pretendard Variable', sans-serif)",
     color: "#003049",
@@ -1612,19 +1617,19 @@ const S = responsiveStyles({
 
   /* ───── §1 헤더 (DetailShell 과 동일 규격) ───── */
   header: {
-    height: 64,
+    height: 66,
     display: "grid",
-    gridTemplateColumns: "auto minmax(0, 1fr) 0",
+    gridTemplateColumns: "1fr auto 1fr",
     alignItems: "center",
-    gap: 16,
     background: "var(--color-header-bg)",
     borderBottom: "1px solid var(--color-border)",
-    padding: "0 var(--chrome-pad-x)",
+    padding: "0 100px",
   },
   headerLogo: {
     display: "flex",
     alignItems: "center",
     gap: 6,
+    flexShrink: 0,
     background: "transparent",
     border: 0,
     padding: 0,
@@ -1638,17 +1643,18 @@ const S = responsiveStyles({
     fontWeight: 400,
     fontSize: 20,
     letterSpacing: "0.02em",
+    whiteSpace: "nowrap",
   },
 
   /* ───── 캔버스 / 로딩 ───── */
   canvas: {
-    width: "100%",
-    maxWidth: "var(--canvas-max)",
+    maxWidth: PAGE_W + SIDE_PAD * 2,
+    minWidth: "64rem",
     margin: "0 auto",
-    padding: "var(--dashboard-pad-y) var(--content-pad-x) var(--dashboard-pad-bottom)",
+    padding: `26px ${SIDE_PAD}px 60px`,
     display: "flex",
     flexDirection: "column",
-    gap: "var(--dashboard-gap)",
+    gap: 22,
   },
   loading: {
     padding: "60px 20px",
@@ -1674,7 +1680,7 @@ const S = responsiveStyles({
   /* ───── §2 종목 행 ───── */
   stockRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 26rem), 1fr))",
+    gridTemplateColumns: "1fr auto",
     alignItems: "flex-end",
     gap: 32,
   },
@@ -1697,17 +1703,15 @@ const S = responsiveStyles({
   stockDelta: { fontWeight: 700, fontSize: 20, marginLeft: 10 },
 
   marketStripe: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(7rem, 1fr))",
+    display: "flex",
+    flexDirection: "row",
     gap: 10,
     alignItems: "end",
-    justifyContent: "flex-end",
   },
   marketCell: {
     display: "flex",
     flexDirection: "column",
     alignItems: "flex-end",
-    minWidth: 0,
     gap: 4,
     padding: "10px 14px",
     border: "1px solid #ececec",
@@ -1734,7 +1738,7 @@ const S = responsiveStyles({
   /* ───── §3 게이지 + 차트 ───── */
   gaugeChartRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 22rem), 1fr))",
+    gridTemplateColumns: `${GAUGE_W}px 1fr`,
     gap: GAP,
   },
   gaugeStack: {
@@ -2027,11 +2031,7 @@ const S = responsiveStyles({
   },
 
   /* ───── §4 이벤트 + FX ───── */
-  twoCol: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 26rem), 1fr))",
-    gap: GAP,
-  },
+  twoCol: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: GAP },
   card: {
     background: "#ffffff",
     border: "1px solid #e9e9e9",
@@ -2127,7 +2127,7 @@ const S = responsiveStyles({
   /* ───── §5 종합 점수 3중 ───── */
   compositeRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 18rem), 1fr))",
+    gridTemplateColumns: "repeat(3, 1fr)",
     gap: GAP,
   },
   compHead: { fontSize: 15, fontWeight: 600, color: "#003049", marginBottom: 10 },
@@ -2152,11 +2152,7 @@ const S = responsiveStyles({
   },
 
   /* ───── §6 TOP 3 × 4 ───── */
-  top3Row: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 14rem), 1fr))",
-    gap: GAP,
-  },
+  top3Row: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: GAP },
   top3Card: {
     border: "1px solid #e9e9e9",
     borderRadius: 10,

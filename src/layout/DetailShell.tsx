@@ -86,6 +86,8 @@ export function DetailShell({
                 <button
                   key={item.key}
                   type="button"
+                  className={`il-detail-nav-item${isActive ? " is-active" : ""}`}
+                  aria-current={isActive ? "page" : undefined}
                   style={{
                     ...S.navItem,
                     ...(isActive ? S.navItemActive : null),
@@ -121,22 +123,22 @@ export function DetailShell({
 }
 
 const S = responsiveStyles({
-  page: { minHeight: "100vh", background: "var(--color-bg)" },
+  page: { minHeight: "100vh", minWidth: "64rem", background: "var(--color-bg)" },
   header: {
-    height: 64,
+    height: 66,
     display: "grid",
-    gridTemplateColumns: "auto minmax(0, 1fr) 0",
+    gridTemplateColumns: "1fr auto 1fr",
     alignItems: "center",
-    gap: 16,
     background: "var(--color-header-bg)",
     borderBottom: "1px solid var(--color-border)",
     // 헤더는 main 뷰와 동일한 패딩 (1440 viewport 기준 좌우 100px)
-    padding: "0 var(--chrome-pad-x)",
+    padding: "0 100px",
   },
   headerLogo: {
     display: "flex",
     alignItems: "center",
     gap: 6,
+    flexShrink: 0,
     color: "var(--color-text)",
     justifySelf: "start",
   },
@@ -146,15 +148,16 @@ const S = responsiveStyles({
     fontWeight: 400,
     fontSize: 20,
     letterSpacing: "0.02em",
+    whiteSpace: "nowrap",
   },
 
   // 헤더 아래 — viewport 풀폭 grid: [사이드바 | 메인 영역]
   // 사이드바는 좌측에 고정 위치로 보이고, 메인 영역은 나머지를 채움
   bodyGrid: {
     display: "grid",
-    gridTemplateColumns: "minmax(min(100%, 11rem), 0.18fr) minmax(0, 1fr)",
+    gridTemplateColumns: "11rem 1fr",
     alignItems: "start",
-    minHeight: "calc(100vh - 64px)",
+    minHeight: "calc(100vh - 66px)",
   },
   nav: {
     display: "flex",
@@ -162,8 +165,11 @@ const S = responsiveStyles({
     gap: 16,
     position: "sticky",
     top: 16,
-    padding: "16px 16px 24px 40px",
+    padding: "16px 10px 24px 24px",
     alignSelf: "start",
+    minHeight: "calc(100vh - 66px)",
+    borderRight: "1px solid var(--color-border)",
+    boxSizing: "border-box",
   },
   navList: {
     display: "flex",
@@ -174,12 +180,13 @@ const S = responsiveStyles({
   mainArea: {
     display: "flex",
     flexDirection: "column",
-    minWidth: 0,
-    padding: "var(--dashboard-pad-y) var(--content-pad-x) var(--dashboard-pad-bottom)",
+    minWidth: "48.75rem",
+    padding: "16px 24px 64px",
   },
   contentInner: {
     width: "100%",
-    maxWidth: "min(var(--canvas-max-detail), 100%)",
+    maxWidth: 1110,
+    minWidth: "48.75rem",
     margin: "0 auto",
     display: "flex",
     flexDirection: "column",
@@ -214,17 +221,19 @@ const S = responsiveStyles({
 
   navItem: {
     textAlign: "left",
-    padding: "10px 12px",
+    padding: "10px 10px",
     fontSize: "var(--font-size-md)",
     fontWeight: 500,
     color: "var(--color-text-muted)",
     borderRadius: "var(--radius-tag)",
-    transition: "background var(--duration-fast) var(--ease-out)",
+    transition: "background var(--duration-fast) var(--ease-out), color var(--duration-fast) var(--ease-out), transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out)",
   },
   navItemActive: {
     color: "var(--color-text)",
-    background: "var(--color-header-bg)",
+    background: "#eef6ff",
     fontWeight: 600,
+    boxShadow: "inset 3px 0 0 var(--color-text)",
+    transform: "translateX(2px)",
   },
 
   titleBlock: { display: "flex", flexDirection: "column", gap: 6 },

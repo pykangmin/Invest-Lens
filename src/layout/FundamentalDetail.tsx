@@ -1425,8 +1425,8 @@ const S = responsiveStyles({
   },
   row1Body: {
     display: "grid",
-    gridTemplateColumns: "minmax(130px, 160px) 1fr",
-    gap: 32,
+    gridTemplateColumns: "minmax(120px, 140px) minmax(0, 1fr)",
+    gap: 24,
     alignItems: "flex-start",
   },
   scoreBlock: {
@@ -1455,20 +1455,21 @@ const S = responsiveStyles({
   },
   heroCardRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 10rem), 1fr))",
+    gridTemplateColumns: "repeat(5, minmax(0, 1fr))",
     gap: 12,
     alignItems: "stretch",
   },
   heroCard: {
     display: "flex",
     flexDirection: "column",
-    gap: 10,
+    gap: 8,
     minWidth: 0,
     background: "#fbfcfe",
     border: "1px solid var(--color-border)",
     borderRadius: 10,
-    padding: "14px 16px",
+    padding: "clamp(0.625rem, 1.1vw, 0.875rem) clamp(0.625rem, 1.25vw, 1rem)",
     justifyContent: "space-between",
+    overflow: "hidden",
   },
   heroCardHead: {
     display: "flex",
@@ -1509,23 +1510,38 @@ const S = responsiveStyles({
     flexShrink: 0,
   },
   heroCardBig: {
-    fontSize: 35,
+    fontSize: "clamp(1.125rem, 1.9vw, 1.9375rem)",
     fontWeight: 600,
     color: NAVY,
     fontFamily: "var(--font-numeric)",
-    lineHeight: 1,
+    lineHeight: 1.08,
     whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   heroCardSub: {
     fontSize: 10.5,
     fontWeight: 500,
     color: MUTED,
     lineHeight: 1.3,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
 
   // §2 §3 — 3 컬럼 / 2 컬럼 공통 row
-  row2: { display: "flex", gap: 16, alignItems: "stretch", flexWrap: "wrap" },
-  row3: { display: "flex", gap: 16, alignItems: "stretch", flexWrap: "wrap" },
+  row2: {
+    display: "grid",
+    gridTemplateColumns: "369fr 380fr 328fr",
+    gap: 16,
+    alignItems: "stretch",
+  },
+  row3: {
+    display: "grid",
+    gridTemplateColumns: "561fr 520fr",
+    gap: 16,
+    alignItems: "flex-start",
+  },
 
   sectionBox: {
     background: "var(--color-card)",
@@ -1689,7 +1705,7 @@ const CF = responsiveStyles({
   },
   indicatorRow: {
     display: "grid",
-    gridTemplateColumns: "1fr 60px 48px",
+    gridTemplateColumns: "minmax(0, 1fr) 60px 48px",
     alignItems: "baseline",
     gap: 8,
     paddingTop: 6,
@@ -1699,6 +1715,9 @@ const CF = responsiveStyles({
     fontSize: 12,
     fontWeight: 600,
     color: NAVY,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   indicatorValue: {
     fontSize: 13,
@@ -1727,7 +1746,7 @@ const CF = responsiveStyles({
 const VAL = responsiveStyles({
   wrap: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 18rem), 1fr))",
+    gridTemplateColumns: "minmax(0, 58%) minmax(0, 42%)",
     gap: 18,
     flex: 1,
   },
@@ -1752,7 +1771,7 @@ const VAL = responsiveStyles({
   },
   rowHead: {
     display: "grid",
-    gridTemplateColumns: "1fr auto auto",
+    gridTemplateColumns: "minmax(0, 1fr) auto auto",
     alignItems: "baseline",
     gap: 8,
   },
@@ -1760,6 +1779,9 @@ const VAL = responsiveStyles({
     fontSize: 12,
     fontWeight: 600,
     color: NAVY,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   rowValue: {
     fontSize: 16,
@@ -1820,7 +1842,7 @@ const SD = responsiveStyles({
     gridTemplateColumns: "150px 1px 1fr",
     columnGap: 20,
     alignItems: "center",
-    flex: 1,
+    flex: "0 0 auto",
     paddingBottom: 8,
   },
   donutWrap: {
@@ -1865,7 +1887,7 @@ const SD = responsiveStyles({
   },
   row: {
     display: "grid",
-    gridTemplateColumns: "22px 1fr 90px auto",
+    gridTemplateColumns: "22px minmax(0, 1fr) 70px auto",
     alignItems: "center",
     gap: 10,
     paddingTop: 6,
@@ -1889,6 +1911,9 @@ const SD = responsiveStyles({
     fontSize: 13,
     fontWeight: 600,
     color: NAVY,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   rowBar: {
     position: "relative",
