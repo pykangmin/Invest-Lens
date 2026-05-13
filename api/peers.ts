@@ -15,10 +15,6 @@ import {
   sendError,
 } from "./_lib/http.js";
 
-interface SectorRow {
-  sector: string | null;
-}
-
 interface PeerRow {
   ticker: string;
   name: string;
@@ -74,12 +70,13 @@ export default async function handler(req: ApiRequest, res: ApiResponse): Promis
     const ticker = normalizeTicker(getQueryString(req, "ticker"));
     const limit = getQueryInt(req, "limit", 5, 2, 12);
 
-    const sectorRow = await queryOne<SectorRow>(
-      `SELECT sector FROM public.company_master WHERE ticker = $1`,
+    interface SectorSubRow { sector: string | null; sub_industry: string | null; }
+    const meRow = await queryOne<SectorSubRow>(
+      `SELECT sector, sub_industry FROM public.company_master WHERE ticker = $1`,
       [ticker],
     );
-    if (!sectorRow) throw new ApiError(`Company ${ticker} not found.`, 404);
-    if (!sectorRow.sector) {
+    if (!meRow) throw new ApiError(`Company ${ticker} not found.`, 404);
+    if (!meRow.sector) {
       sendData(res, {
         ticker,
         sector: null,
@@ -88,28 +85,43 @@ export default async function handler(req: ApiRequest, res: ApiResponse): Promis
       return;
     }
 
-    // 같은 sector 의 시총 상위 N+1 (자신 포함). UI 측에서 isSelf 로 강조.
+    // 동종 업계 산식 (B-2):
+    //   1) sub_industry 일치하는 종목 시총 상위 N (자신 제외).
+    //   2) 1)이 N 미만이면 같은 sector top 으로 부족분 채움 (자신·중복 제외).
     // LATERAL JOIN 으로 종목별 최신 유효 펀더 한 행만 가져옴.
-    const rows = await query<PeerRow>(
-      `
-        SELECT cm.ticker, cm.name, cm.sub_industry,
-               sf.market_cap, sf.per, sf.pbr, sf.roe,
-               sf.net_profit_margin, sf.fcf_yield,
-               sf.debt_to_equity, sf.revenue_growth
-        FROM public.company_master cm
-        JOIN LATERAL (
-          SELECT *
-          FROM public.stock_fundamentals
-          WHERE ticker = cm.ticker AND market_cap IS NOT NULL
-          ORDER BY date DESC
-          LIMIT 1
-        ) sf ON true
-        WHERE cm.sector = $1
-        ORDER BY sf.market_cap DESC NULLS LAST
-        LIMIT $2
-      `,
-      [sectorRow.sector, limit + 1],
-    );
+    const peerSql = (filterCol: "sub_industry" | "sector") => `
+      SELECT cm.ticker, cm.name, cm.sub_industry,
+             sf.market_cap, sf.per, sf.pbr, sf.roe,
+             sf.net_profit_margin, sf.fcf_yield,
+             sf.debt_to_equity, sf.revenue_growth
+      FROM public.company_master cm
+      JOIN LATERAL (
+        SELECT *
+        FROM public.stock_fundamentals
+        WHERE ticker = cm.ticker AND market_cap IS NOT NULL
+        ORDER BY date DESC
+        LIMIT 1
+      ) sf ON true
+      WHERE cm.${filterCol} = $1
+        AND cm.ticker <> $2
+      ORDER BY sf.market_cap DESC NULLS LAST
+      LIMIT $3
+    `;
+
+    let rows: PeerRow[] = [];
+    if (meRow.sub_industry) {
+      rows = await query<PeerRow>(peerSql("sub_industry"), [meRow.sub_industry, ticker, limit]);
+    }
+    if (rows.length < limit) {
+      const haveTickers = new Set(rows.map((r) => r.ticker));
+      const sectorFill = await query<PeerRow>(peerSql("sector"), [meRow.sector, ticker, limit + rows.length]);
+      for (const r of sectorFill) {
+        if (rows.length >= limit) break;
+        if (haveTickers.has(r.ticker)) continue;
+        rows.push(r);
+        haveTickers.add(r.ticker);
+      }
+    }
 
     const tickers = rows.map((r) => r.ticker);
     // sparkline 용 ROE 12분기 시계열 (peer 종목별).
@@ -166,7 +178,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse): Promis
     }
     sendData(res, {
       ticker,
-      sector: sectorRow.sector,
+      sector: meRow.sector,
       peers,
     } satisfies PeersResponse);
   } catch (e) {

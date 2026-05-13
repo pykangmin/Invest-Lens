@@ -44,6 +44,7 @@ import {
   type HCFundamentalData,
   type HCMacroData,
 } from "./HoverCards";
+import { CompanyOverviewCard } from "./CompanyOverviewCard";
 import {
   averageScore,
   buildDailyComposite,
@@ -360,13 +361,16 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
   }, [data, ticker]);
 
   // 좌측 기술적 게이지 카드 — V4 totalScore 로 통일 (detail / hover 와 동일 산식).
-  // 기존 RSI+VIX 단순 점수는 detail 페이지 산식과 달라 디스플레이 불일치 발생.
+  // severity 임계도 V4 SIGNAL_SEGMENTS 와 일치:
+  //   score ≥ 65 (Buy / Strong buy)   → INFO    → POSITIVE
+  //   50 ≤ score < 65 (Hold)          → CAUTION → NEUTRAL
+  //   score < 50 (Sell / Strong sell) → WARNING → NEGATIVE
   const technicalGaugeAdjusted = useMemo(() => {
     if (!analysis) return null;
     if (!technicalViz) return analysis.gauges.technical;
     const score = technicalViz.totalScore;
     const severity: "INFO" | "CAUTION" | "WARNING" =
-      score >= 60 ? "INFO" : score >= 30 ? "CAUTION" : "WARNING";
+      score >= 65 ? "INFO" : score >= 50 ? "CAUTION" : "WARNING";
     return {
       ...analysis.gauges.technical,
       score,
@@ -419,6 +423,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
               hcMacro={hcMacro}
               hcCommodity={hcCommodity}
               onNavigateSection={onNavigateSection}
+              onSelectTicker={onSelectTicker}
             />
             <EventsFxRow
               events={analysis.events}
@@ -539,6 +544,7 @@ function GaugeChartRow({
   hcMacro,
   hcCommodity,
   onNavigateSection,
+  onSelectTicker,
 }: {
   ticker: string;
   companyName: string;
@@ -555,6 +561,7 @@ function GaugeChartRow({
   hcMacro: HCMacroData | null;
   hcCommodity: HCCommodityData | null;
   onNavigateSection?: (s: DetailSection) => void;
+  onSelectTicker?: (ticker: string) => void;
 }) {
   const [hovered, setHovered] = useState<GaugeKey | null>(null);
   const enter = (k: GaugeKey) => () => setHovered(k);
@@ -609,6 +616,7 @@ function GaugeChartRow({
         hcFundamental={hcFundamental}
         hcMacro={hcMacro}
         hcCommodity={hcCommodity}
+        onSelectTicker={onSelectTicker}
       />
     </section>
   );
@@ -869,6 +877,7 @@ function ChartPanel({
   hcFundamental,
   hcMacro,
   hcCommodity,
+  onSelectTicker,
 }: {
   hovered: GaugeKey | null;
   ticker: string;
@@ -880,6 +889,7 @@ function ChartPanel({
   hcFundamental: HCFundamentalData | null;
   hcMacro: HCMacroData | null;
   hcCommodity: HCCommodityData | null;
+  onSelectTicker?: (ticker: string) => void;
 }) {
   // 새 hover 카드 시각 (HoverCards.tsx). 4 카드 모두 호버 시 ChartPanel 채움.
   // key prop 으로 호버 전환마다 컴포넌트 재마운트 → 진입 애니메이션 재생.
@@ -913,10 +923,14 @@ function ChartPanel({
   }
   // unused — 기존 panel 들도 컴파일 보존을 위해 참조 유지
   void fundamentalViz; void macroViz; void commodityViz;
-  // 기본 — 회사 요약
+  // 기본 (호버 없음) — 핵심 요약 카드. ticker 기준 sp500.json 조회 + /api/peers.
   return (
     <div style={S.chartPanel}>
-      <CompanySummaryPanel ticker={ticker} companyName={companyName} />
+      <CompanyOverviewCard
+        ticker={ticker}
+        companyName={companyName}
+        onSelectTicker={onSelectTicker}
+      />
     </div>
   );
 }
