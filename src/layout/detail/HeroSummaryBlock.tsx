@@ -4,6 +4,7 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { ExampleBadge } from "../../visualization/ExampleBadge";
+import { responsiveStyles } from "../../shared/responsiveStyle";
 
 export interface HeroSummaryBlockProps {
   /** 좌측 제목 (예: "핵심 요약") */
@@ -46,10 +47,10 @@ export function HeroSummaryBlock({
   );
 }
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   section: {
     display: "grid",
-    gridTemplateColumns: "1fr minmax(280px, 360px)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 20rem), 1fr))",
     gap: 16,
     background: "var(--color-card)",
     border: "1px solid var(--color-border)",
@@ -88,4 +89,4 @@ const S: Record<string, CSSProperties> = {
     fontWeight: 500,
   },
   chipsRow: { display: "flex", gap: 24, flexWrap: "wrap" },
-};
+});

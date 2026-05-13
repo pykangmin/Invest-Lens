@@ -34,6 +34,7 @@ import type {
 import { InfoTooltip } from "../visualization/InfoTooltip";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
+import { responsiveStyles, scaledPx } from "../shared/responsiveStyle";
 
 interface DetailState {
   snapshot: CompanySnapshot;
@@ -313,7 +314,7 @@ function ScoreCircle({ value }: { value: number }) {
   const dashOffset = circ - (pct / 100) * circ;
   return (
     <div style={S.scoreCircleWrap}>
-      <svg width={139} height={139} viewBox="0 0 139 139">
+      <svg width={139} height={139} viewBox="0 0 139 139" style={{ width: scaledPx(139), height: scaledPx(139) }}>
         <circle cx={cx} cy={cy} r={r} stroke="#d9d9d9" strokeWidth={14} fill="none" />
         <circle
           cx={cx}
@@ -1097,7 +1098,7 @@ function SectionBoxFull({
   return (
     <section style={S.sectionBoxFull}>
       <div style={S.sectionBoxFullHeader}>{title}</div>
-      <div style={{ ...S.sectionBoxFullBody, minHeight: height }}>{children}</div>
+      <div style={{ ...S.sectionBoxFullBody, minHeight: scaledPx(height) }}>{children}</div>
     </section>
   );
 }
@@ -1123,11 +1124,11 @@ const TICK_GRAY = "#b8b8b8";
 const SIGNAL_BG = "#f8f8f8";
 const TILE_BG = "#fafbfc";
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   // §1 — 시안은 467fr / 622fr 이지만 신호 등급 bar 가독성을 위해 좌측 2/3 압축, 우측 확대
   row1: {
     display: "grid",
-    gridTemplateColumns: "minmax(360px, 2fr) minmax(520px, 3fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 20rem), 1fr))",
     gap: 16,
   },
   scoreBox: {
@@ -1352,7 +1353,7 @@ const S: Record<string, CSSProperties> = {
 
   contribTileRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(7, 1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 7rem), 1fr))",
     gap: 12,
   },
   contribTile: {
@@ -1434,4 +1435,4 @@ const S: Record<string, CSSProperties> = {
     fontWeight: 600,
     color: MUTED,
   },
-};
+});

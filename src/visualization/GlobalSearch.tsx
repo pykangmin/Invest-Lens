@@ -7,6 +7,7 @@ import {
 } from "react";
 import { searchCompanies } from "../data-loader/investmentData";
 import type { CompanyMaster } from "../types/investment";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 const DEBOUNCE_MS = 220;
 const RESULT_LIMIT = 8;
@@ -178,9 +179,9 @@ export function GlobalSearch({
   );
 }
 
-const S: Record<string, React.CSSProperties> = {
-  heroWrap: { position: "relative", width: "min(560px, 92vw)" },
-  headerWrap: { position: "relative", width: 761, maxWidth: "100%" },
+const S = responsiveStyles({
+  heroWrap: { position: "relative", width: "min(720px, calc(100vw - 64px))" },
+  headerWrap: { position: "relative", width: "min(760px, 58vw)", maxWidth: "100%" },
 
   heroForm: {
     width: "100%",
@@ -288,4 +289,4 @@ const S: Record<string, React.CSSProperties> = {
     fontSize: "var(--font-size-xxs)",
     color: "var(--color-text-muted)",
   },
-};
+});

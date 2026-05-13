@@ -9,6 +9,7 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { GlobalSearch } from "../visualization/GlobalSearch";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 export type DetailSection = "fundamental" | "macro" | "commodity" | "technical";
 
@@ -58,7 +59,7 @@ export function DetailShell({
   return (
     <div style={S.page}>
       {/* 헤더 — 풀폭 */}
-      <header style={S.header}>
+      <header className="il-header" style={S.header}>
         <button style={S.headerLogo} onClick={onBackToHome} aria-label="진입 화면으로">
           <img src="/invest-lens-logo.svg" alt="" style={S.logoMark} aria-hidden />
           <span style={S.logoWord}>Invest Lens</span>
@@ -68,8 +69,8 @@ export function DetailShell({
       </header>
 
       {/* 사이드바 (좌측 viewport 고정) + 메인 영역 (헤더 아래 풀폭, 내부 콘텐츠 1110 centered) */}
-      <div style={S.bodyGrid}>
-        <aside style={S.nav}>
+      <div className="il-detail-body-grid" style={S.bodyGrid}>
+        <aside className="il-detail-nav" style={S.nav}>
           {/* 사이드바 최상단: 〈 이전으로 */}
           <button type="button" style={S.crumbBack} onClick={onBackToOverview}>
             〈 이전으로
@@ -98,7 +99,7 @@ export function DetailShell({
           </div>
         </aside>
 
-        <main style={S.mainArea}>
+        <main className="il-detail-main" style={S.mainArea}>
           <div style={S.contentInner}>
             {/* 메인 콘텐츠 좌상단: GOOGLE > 원자재 영향 */}
             <div style={S.crumbRow}>
@@ -119,17 +120,18 @@ export function DetailShell({
   );
 }
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   page: { minHeight: "100vh", background: "var(--color-bg)" },
   header: {
-    height: 66,
+    height: 64,
     display: "grid",
-    gridTemplateColumns: "1fr auto 1fr",
+    gridTemplateColumns: "auto minmax(0, 1fr) 0",
     alignItems: "center",
+    gap: 16,
     background: "var(--color-header-bg)",
     borderBottom: "1px solid var(--color-border)",
     // 헤더는 main 뷰와 동일한 패딩 (1440 viewport 기준 좌우 100px)
-    padding: "0 100px",
+    padding: "0 var(--chrome-pad-x)",
   },
   headerLogo: {
     display: "flex",
@@ -150,9 +152,9 @@ const S: Record<string, CSSProperties> = {
   // 사이드바는 좌측에 고정 위치로 보이고, 메인 영역은 나머지를 채움
   bodyGrid: {
     display: "grid",
-    gridTemplateColumns: "200px 1fr",
+    gridTemplateColumns: "minmax(min(100%, 11rem), 0.18fr) minmax(0, 1fr)",
     alignItems: "start",
-    minHeight: "calc(100vh - 66px)",
+    minHeight: "calc(100vh - 64px)",
   },
   nav: {
     display: "flex",
@@ -173,11 +175,11 @@ const S: Record<string, CSSProperties> = {
     display: "flex",
     flexDirection: "column",
     minWidth: 0,
-    padding: "16px 24px 64px",
+    padding: "var(--dashboard-pad-y) var(--content-pad-x) var(--dashboard-pad-bottom)",
   },
   contentInner: {
     width: "100%",
-    maxWidth: 1110,
+    maxWidth: "min(var(--canvas-max-detail), 100%)",
     margin: "0 auto",
     display: "flex",
     flexDirection: "column",
@@ -238,4 +240,4 @@ const S: Record<string, CSSProperties> = {
     lineHeight: 1.4,
     fontWeight: 500,
   },
-};
+});

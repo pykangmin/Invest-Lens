@@ -1,3 +1,5 @@
+import { scaledPx } from "../shared/responsiveStyle";
+
 export interface SparklineProps {
   values: Array<number | null>;
   width?: number | "100%";
@@ -34,14 +36,18 @@ export function Sparkline({
   const VB_W = 1000;
   const responsive = width === "100%" || width === undefined;
   const widthAttr = responsive ? "100%" : width;
+  const heightAttr = height;
+  const widthStyle = responsive ? "100%" : scaledPx(width);
+  const heightStyle = scaledPx(height);
 
   if (data.length < 2) {
     return (
       <svg
         width={widthAttr}
-        height={height}
+        height={heightAttr}
         viewBox={`0 0 ${VB_W} ${height}`}
         preserveAspectRatio="none"
+        style={{ width: widthStyle, height: heightStyle }}
         aria-hidden
       >
         <line x1={0} y1={height / 2} x2={VB_W} y2={height / 2} stroke="var(--color-border)" strokeWidth={1} />
@@ -66,9 +72,10 @@ export function Sparkline({
   return (
     <svg
       width={widthAttr}
-      height={height}
+      height={heightAttr}
       viewBox={`0 0 ${VB_W} ${height}`}
       preserveAspectRatio="none"
+      style={{ width: widthStyle, height: heightStyle }}
       aria-hidden
     >
       {fillOpacity > 0 && <path d={areaPath} fill={stroke} opacity={fillOpacity} />}

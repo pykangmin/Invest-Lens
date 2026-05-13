@@ -50,6 +50,7 @@ import { GlobalSearch } from "../visualization/GlobalSearch";
 import { Sparkline } from "../visualization/Sparkline";
 
 import type { DetailSection } from "./DetailShell";
+import { responsiveStyles, scaledPx } from "../shared/responsiveStyle";
 
 export interface StockDashboardProps {
   ticker: string;
@@ -202,7 +203,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
   return (
     <div style={S.page}>
       <Header onBack={onBack} onSelectTicker={onSelectTicker} />
-      <main style={S.canvas}>
+      <main className="il-canvas" style={S.canvas}>
         {error && <div style={S.error}>로드 실패: {error}</div>}
         {!error && (!data || !analysis || !compositeTrio) && (
           <div style={S.loading}>분석 중…</div>
@@ -249,7 +250,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
 
 function Header({ onBack, onSelectTicker }: { onBack: () => void; onSelectTicker: (t: string) => void }) {
   return (
-    <header style={S.header}>
+    <header className="il-header" style={S.header}>
       <button type="button" style={S.headerLogo} onClick={onBack} aria-label="진입 화면으로">
         <img src="/invest-lens-logo.svg" alt="" style={S.logoMark} aria-hidden />
         <span style={S.logoWord}>Invest Lens</span>
@@ -278,7 +279,7 @@ function StockRow({
   const positive = priceMeta?.delta != null ? priceMeta.delta > 0 : null;
   const priceColor = positive === null ? "#7f7f7f" : positive ? "#4c956c" : "#c1121f";
   return (
-    <section style={S.stockRow}>
+    <section className="il-stock-row" style={S.stockRow}>
       <div style={S.stockLeft}>
         <div style={S.stockName}>{name}</div>
         <div style={S.stockPriceLine}>
@@ -297,7 +298,7 @@ function StockRow({
           )}
         </div>
       </div>
-      <div style={S.marketStripe}>
+      <div className="il-market-stripe" style={S.marketStripe}>
         {MARKET_INDEX_SYMBOLS.map((sym, i) => {
           const mi = marketIndices[i];
           const label = MARKET_INDEX_LABELS[sym] ?? mi?.name ?? sym;
@@ -351,8 +352,8 @@ function GaugeChartRow({
   const enter = (k: GaugeKey) => () => setHovered(k);
   const leave = () => setHovered(null);
   return (
-    <section style={S.gaugeChartRow}>
-      <aside style={S.gaugeStack}>
+    <section className="il-gauge-chart-row" style={S.gaugeChartRow}>
+      <aside className="il-gauge-stack" style={S.gaugeStack}>
         <GaugeCard
           title="기업 펀더멘털"
           gauge={fundamental}
@@ -455,6 +456,7 @@ function GaugeCard({
   return (
     <button
       type="button"
+      className="il-gauge-card"
       style={S.gaugeCard}
       onClick={onClick}
       onMouseEnter={onHoverEnter}
@@ -466,7 +468,7 @@ function GaugeCard({
         <span style={S.gaugeTitle}>{title}</span>
         <ChevronRight />
       </div>
-      <div style={S.gaugeBody}>
+      <div className="il-gauge-card-body" style={S.gaugeBody}>
         <div style={S.gaugeLeft}>
           <div style={{ ...S.gaugeLabel, color }}>{gauge.label}</div>
           {mode !== "none" && mode !== "trafficLight" && (
@@ -479,7 +481,7 @@ function GaugeCard({
             </div>
           )}
         </div>
-        <div style={S.gaugeRight}>
+        <div className="il-gauge-visual" style={S.gaugeRight}>
           {mode === "donut" && <Donut score={gauge.score ?? 0} color={color} size={86} />}
           {mode === "regime" && <StackBar value={regimePct ?? null} color={color} />}
           {mode === "halfGauge" && <HalfGauge score={gauge.score} />}
@@ -509,7 +511,12 @@ function HalfGauge({ score }: { score: number | null }) {
   const needleHubR = 4;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width={W} style={{ display: "block" }}>
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      width={W}
+      height={H}
+      style={{ display: "block", width: scaledPx(W), height: scaledPx(H) }}
+    >
       {/* 4 segment 호 */}
       {SIGNAL_SEGMENTS.map((s) => (
         <path
@@ -564,16 +571,26 @@ function StackBar({
   const labelRowH = 20;
   const barRowH = 18;
   return (
-    <div style={{ width, display: "flex", flexDirection: "column", gap: 6, alignItems: "stretch" }}>
+
+    <div
+      style={{
+        width: scaledPx(width),
+        display: "flex",
+        flexDirection: "column",
+        gap: scaledPx(6),
+        alignItems: "stretch",
+      }}
+    >
       {/* 라벨 행 — gaugeLabel 과 동일 라인 박스 */}
-      <div style={{ width: "100%", display: "flex", height: labelRowH, alignItems: "center" }}>
+      <div style={{ width: "100%", display: "flex", height: scaledPx(labelRowH), alignItems: "center" }}>
+
         <div
           style={{
             width: pct == null ? "100%" : `${pct}%`,
             textAlign: pct == null ? "right" : "center",
             whiteSpace: "nowrap",
             overflow: "visible",
-            fontSize: 16,
+            fontSize: scaledPx(16),
             fontWeight: 700,
             color,
             fontVariantNumeric: "tabular-nums",
@@ -583,15 +600,17 @@ function StackBar({
           {pct == null ? "—" : `${Math.round(pct)}%`}
         </div>
       </div>
+
       {/* bar 행 — gaugeScore 와 동일 라인 박스 안에 bar 를 수직 가운데 정렬 */}
-      <div style={{ width: "100%", height: barRowH, display: "flex", alignItems: "center" }}>
+      <div style={{ width: "100%", height: scaledPx(barRowH), display: "flex", alignItems: "center" }}>
         <div
           style={{
             width: "100%",
-            height: 10,
-            borderRadius: 5,
+            height: scaledPx(10),
+            borderRadius: scaledPx(5),
             background: "#ececec",
             overflow: "hidden",
+
           }}
         >
           <div
@@ -599,7 +618,7 @@ function StackBar({
               width: pct == null ? "0%" : `${pct}%`,
               height: "100%",
               background: color,
-              borderRadius: 5,
+              borderRadius: scaledPx(5),
               transition: "width 0.3s ease",
             }}
           />
@@ -654,7 +673,7 @@ function ChartPanel({
   // 펀더멘털 호버: 4축 레이더 + 4 섹션 데이터 패널
   if (hovered === "fundamental" && fundamentalViz) {
     return (
-      <div style={S.chartPanel}>
+      <div className="il-chart-panel" style={S.chartPanel}>
         <FundamentalVizPanel data={fundamentalViz} />
       </div>
     );
@@ -669,7 +688,7 @@ function ChartPanel({
   }
   const meta = hovered ? GAUGE_VIZ_META[hovered] : null;
   return (
-    <div style={S.chartPanel}>
+    <div className="il-chart-panel" style={S.chartPanel}>
       <div style={S.chartFillBody}>
         <span style={S.chartPlaceholderText}>
           {meta?.placeholder ?? "주가 차트 영역 (데이터 매핑 예정)"}
@@ -902,8 +921,13 @@ function ScoreDistDonut({
   const totalMax = sections.reduce((a, b) => a + b.max, 0);
   let cum = 0;
   return (
-    <div style={{ position: "relative", width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ display: "block" }}>
+    <div style={{ position: "relative", width: scaledPx(size), height: scaledPx(size) }}>
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        style={{ display: "block", width: scaledPx(size), height: scaledPx(size) }}
+      >
         <circle cx={cx} cy={cy} r={r} stroke="#ececec" strokeWidth={thickness} fill="none" />
         {sections.map((s) => {
           const ratio = (s.score ?? 0) / totalMax;
@@ -1086,7 +1110,7 @@ function EventsFxRow({
   onOpenAllEvents: () => void;
 }) {
   return (
-    <section style={S.twoCol}>
+    <section className="il-two-col" style={S.twoCol}>
       <Card>
         <CardHeader
           title="주요 이벤트"
@@ -1203,7 +1227,7 @@ function CompositeRow({ items }: { items: TrioItem[] }) {
   // 점수가 null 일 때만 회색 placeholder.
   const BLACK = "#000000";
   return (
-    <section style={S.compositeRow}>
+    <section className="il-composite-row" style={S.compositeRow}>
       {items.map((c, i) => {
         const color = c.score == null ? "#7f7f7f" : BLACK;
         const deltaColor = c.positive === null ? "#7f7f7f" : c.positive ? "#60c846" : "#c1121f";
@@ -1247,7 +1271,7 @@ function Top3Row({
     { title: "어제 점수가 좋았던 주식 TOP 3", tone: "score" as const, bg: "#fffdf9", items: screens.scoreTop, fmt: formatScore },
   ];
   return (
-    <section style={S.top3Row}>
+    <section className="il-top3-row" style={S.top3Row}>
       {cards.map((card, idx) => {
         const numColor =
           card.tone === "up"
@@ -1421,8 +1445,13 @@ function Donut({ score, color, size = 86 }: { score: number; color: string; size
   const circ = 2 * Math.PI * r;
   const dash = (Math.max(0, Math.min(100, score)) / 100) * circ;
   return (
-    <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <div style={{ position: "relative", width: scaledPx(size), height: scaledPx(size), flexShrink: 0 }}>
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        style={{ width: scaledPx(size), height: scaledPx(size) }}
+      >
         <circle cx={cx} cy={cy} r={r} stroke="#ececec" strokeWidth={stroke} fill="none" />
         <circle
           cx={cx}
@@ -1443,7 +1472,7 @@ function Donut({ score, color, size = 86 }: { score: number; color: string; size
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          fontSize: 25,
+          fontSize: scaledPx(25),
           fontWeight: 700,
           color,
           fontFamily: "var(--font-numeric, sans-serif)",
@@ -1571,12 +1600,9 @@ function formatScore(v: number | null): string {
    STYLES
    ═══════════════════════════════════════════════════════════════════ */
 
-const PAGE_W = 1110;          // 시안 콘텐츠 폭 (1275 - 165)
-const SIDE_PAD = 165;         // 시안 좌측 마진
-const GAUGE_W = 281;          // Card/main-analysis 폭
 const GAP = 16;
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   page: {
     minHeight: "100vh",
     background: "#ffffff",
@@ -1586,13 +1612,14 @@ const S: Record<string, CSSProperties> = {
 
   /* ───── §1 헤더 (DetailShell 과 동일 규격) ───── */
   header: {
-    height: 66,
+    height: 64,
     display: "grid",
-    gridTemplateColumns: "1fr auto 1fr",
+    gridTemplateColumns: "auto minmax(0, 1fr) 0",
     alignItems: "center",
+    gap: 16,
     background: "var(--color-header-bg)",
     borderBottom: "1px solid var(--color-border)",
-    padding: "0 100px",
+    padding: "0 var(--chrome-pad-x)",
   },
   headerLogo: {
     display: "flex",
@@ -1615,12 +1642,13 @@ const S: Record<string, CSSProperties> = {
 
   /* ───── 캔버스 / 로딩 ───── */
   canvas: {
-    maxWidth: PAGE_W + SIDE_PAD * 2,
+    width: "100%",
+    maxWidth: "var(--canvas-max)",
     margin: "0 auto",
-    padding: `26px ${SIDE_PAD}px 60px`,
+    padding: "var(--dashboard-pad-y) var(--content-pad-x) var(--dashboard-pad-bottom)",
     display: "flex",
     flexDirection: "column",
-    gap: 22,
+    gap: "var(--dashboard-gap)",
   },
   loading: {
     padding: "60px 20px",
@@ -1646,7 +1674,7 @@ const S: Record<string, CSSProperties> = {
   /* ───── §2 종목 행 ───── */
   stockRow: {
     display: "grid",
-    gridTemplateColumns: "1fr auto",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 26rem), 1fr))",
     alignItems: "flex-end",
     gap: 32,
   },
@@ -1669,15 +1697,17 @@ const S: Record<string, CSSProperties> = {
   stockDelta: { fontWeight: 700, fontSize: 20, marginLeft: 10 },
 
   marketStripe: {
-    display: "flex",
-    flexDirection: "row",
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(7rem, 1fr))",
     gap: 10,
     alignItems: "end",
+    justifyContent: "flex-end",
   },
   marketCell: {
     display: "flex",
     flexDirection: "column",
     alignItems: "flex-end",
+    minWidth: 0,
     gap: 4,
     padding: "10px 14px",
     border: "1px solid #ececec",
@@ -1704,13 +1734,14 @@ const S: Record<string, CSSProperties> = {
   /* ───── §3 게이지 + 차트 ───── */
   gaugeChartRow: {
     display: "grid",
-    gridTemplateColumns: `${GAUGE_W}px 1fr`,
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 22rem), 1fr))",
     gap: GAP,
   },
   gaugeStack: {
     display: "flex",
     flexDirection: "column",
     gap: GAP,
+    minWidth: 0,
   },
   gaugeCard: {
     background: "#ffffff",
@@ -1723,6 +1754,8 @@ const S: Record<string, CSSProperties> = {
     cursor: "pointer",
     textAlign: "left",
     width: "100%",
+    minWidth: 0,
+    overflow: "hidden",
     transition: "border-color 0.18s ease, transform 0.18s ease",
   },
   gaugeHead: {
@@ -1737,12 +1770,14 @@ const S: Record<string, CSSProperties> = {
     alignItems: "stretch",
     gap: 14,
     minHeight: 92,
+    minWidth: 0,
   },
   gaugeRight: {
     display: "flex",
     alignItems: "flex-end",
     justifyContent: "flex-end",
     height: "100%",
+    flexShrink: 0,
   },
   gaugeLeft: {
     display: "flex",
@@ -1803,6 +1838,7 @@ const S: Record<string, CSSProperties> = {
     overflow: "hidden",
     display: "flex",
     flexDirection: "column",
+    minWidth: 0,
   },
   chartFillBody: {
     flex: 1,
@@ -1991,7 +2027,11 @@ const S: Record<string, CSSProperties> = {
   },
 
   /* ───── §4 이벤트 + FX ───── */
-  twoCol: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: GAP },
+  twoCol: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 26rem), 1fr))",
+    gap: GAP,
+  },
   card: {
     background: "#ffffff",
     border: "1px solid #e9e9e9",
@@ -2070,7 +2110,7 @@ const S: Record<string, CSSProperties> = {
   fxList: { listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 0 },
   fxRow: {
     display: "grid",
-    gridTemplateColumns: "140px 1fr 110px",
+    gridTemplateColumns: "minmax(90px, 0.8fr) minmax(80px, 1fr) minmax(70px, auto)",
     gap: 16,
     alignItems: "center",
     padding: "12px 0",
@@ -2087,7 +2127,7 @@ const S: Record<string, CSSProperties> = {
   /* ───── §5 종합 점수 3중 ───── */
   compositeRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 18rem), 1fr))",
     gap: GAP,
   },
   compHead: { fontSize: 15, fontWeight: 600, color: "#003049", marginBottom: 10 },
@@ -2112,7 +2152,11 @@ const S: Record<string, CSSProperties> = {
   },
 
   /* ───── §6 TOP 3 × 4 ───── */
-  top3Row: { display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: GAP },
+  top3Row: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 14rem), 1fr))",
+    gap: GAP,
+  },
   top3Card: {
     border: "1px solid #e9e9e9",
     borderRadius: 10,
@@ -2227,4 +2271,4 @@ const S: Record<string, CSSProperties> = {
     fontWeight: 600,
     color: "#828282",
   },
-};
+});

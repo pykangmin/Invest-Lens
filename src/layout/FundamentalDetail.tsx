@@ -57,6 +57,7 @@ import type {
 import { InfoTooltip } from "../visualization/InfoTooltip";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
+import { responsiveStyles, scaledPx } from "../shared/responsiveStyle";
 
 export interface FundamentalDetailProps {
   ticker: string;
@@ -410,8 +411,7 @@ function HeroCardView({ card }: { card: HeroCard }) {
         >
           <Icon
             icon={card.iconName}
-            width={16}
-            height={16}
+            width={scaledPx(16)} height={scaledPx(16)}
             color={card.iconColor}
           />
         </div>
@@ -444,7 +444,7 @@ function SectionBox({
         <div style={S.sectionBoxTags}>
           {scoreTag && <span style={S.sectionScoreTag}>{scoreTag}</span>}
           {extraTag && (
-            <span style={{ ...S.sectionScoreTag, minWidth: 140 }}>{extraTag}</span>
+            <span style={{ ...S.sectionScoreTag, minWidth: scaledPx(140) }}>{extraTag}</span>
           )}
         </div>
       </div>
@@ -551,7 +551,7 @@ function GroupedBarChart({ bars }: { bars: CashflowChartData["bars"] }) {
   const barW = Math.max(6, (groupW - 12) / 2);
 
   return (
-    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
       {/* Y grid line + tick label (0 제외하고 3개 line) */}
       {yTicks.map((t) => {
         const y = padT + innerH - (t / yMax) * innerH;
@@ -740,7 +740,7 @@ function DualLineChart({ points }: { points: ProfitabilityChartData["points"] })
   const lineColors = { netMargin: "#5b8bd9", roe: "#e5af43" };
 
   return (
-    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
       {/* Y grid line + tick label */}
       {yTicks.map((t) => {
         const y = padT + innerH - (t / yMax) * innerH;
@@ -925,7 +925,7 @@ function GrowthBarChart({ bars }: { bars: GrowthChartData["bars"] }) {
   const barW = Math.max(10, groupW * 0.45);
 
   return (
-    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
       {/* Y grid line */}
       {yTicks.map((t) => {
         const y = yOf(t);
@@ -1293,7 +1293,12 @@ function ScoreDonut({
   let cum = 0;
   return (
     <div style={SD.donutWrap}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+      <svg
+        width={size}
+        height={size}
+        viewBox={`0 0 ${size} ${size}`}
+        style={{ width: scaledPx(size), height: scaledPx(size) }}
+      >
         <circle cx={cx} cy={cy} r={r} stroke="#ececec" strokeWidth={thickness} fill="none" />
         {sections.map((s) => {
           const ratio = (s.score ?? 0) / totalMax;
@@ -1369,7 +1374,7 @@ const MUTED = "#737373";
 const SCORE_TAG_BG = "#f4f9ff";
 const DOWN = "#c1121f";
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   // §1
   row1: {
     background: "var(--color-card)",
@@ -1450,7 +1455,7 @@ const S: Record<string, CSSProperties> = {
   },
   heroCardRow: {
     display: "grid",
-    gridTemplateColumns: "repeat(5, 1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 10rem), 1fr))",
     gap: 12,
     alignItems: "stretch",
   },
@@ -1519,8 +1524,8 @@ const S: Record<string, CSSProperties> = {
   },
 
   // §2 §3 — 3 컬럼 / 2 컬럼 공통 row
-  row2: { display: "flex", gap: 16, alignItems: "stretch" },
-  row3: { display: "flex", gap: 16, alignItems: "stretch" },
+  row2: { display: "flex", gap: 16, alignItems: "stretch", flexWrap: "wrap" },
+  row3: { display: "flex", gap: 16, alignItems: "stretch", flexWrap: "wrap" },
 
   sectionBox: {
     background: "var(--color-card)",
@@ -1622,9 +1627,11 @@ const S: Record<string, CSSProperties> = {
     alignSelf: "center",
   },
 
-};
 
-const CF: Record<string, CSSProperties> = {
+});
+
+
+const CF = responsiveStyles({
   wrap: {
     display: "flex",
     flexDirection: "column",
@@ -1714,13 +1721,13 @@ const CF: Record<string, CSSProperties> = {
     height: 1,
     background: "#ececec",
   },
-};
+});
 
 // §3-A 가치평가 스타일
-const VAL: Record<string, CSSProperties> = {
+const VAL = responsiveStyles({
   wrap: {
     display: "grid",
-    gridTemplateColumns: "1fr 1fr",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 18rem), 1fr))",
     gap: 18,
     flex: 1,
   },
@@ -1804,10 +1811,10 @@ const VAL: Record<string, CSSProperties> = {
     fontWeight: 600,
     color: NAVY,
   },
-};
+});
 
 // §3-B 섹션별 스코어 분포 스타일
-const SD: Record<string, CSSProperties> = {
+const SD = responsiveStyles({
   wrap: {
     display: "grid",
     gridTemplateColumns: "150px 1px 1fr",
@@ -1909,4 +1916,4 @@ const SD: Record<string, CSSProperties> = {
     minWidth: 50,
     textAlign: "right",
   },
-};
+});

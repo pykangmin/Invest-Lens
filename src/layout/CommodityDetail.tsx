@@ -47,6 +47,7 @@ import type { CommoditiesResponse, CompanySnapshot } from "../types/investment";
 import { InfoTooltip } from "../visualization/InfoTooltip";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
+import { responsiveStyles, scaledPx } from "../shared/responsiveStyle";
 
 export interface CommodityDetailProps {
   ticker: string;
@@ -510,11 +511,13 @@ function StatIcon() {
   );
 }
 
+
+
 function MainFourCard({ card }: { card: MainFourSpec }) {
   return (
     <div style={S.mainFourCard}>
       <div style={{ ...S.mainFourIconWrap, background: card.iconBg }} aria-hidden>
-        <Icon icon={card.iconName} width={28} height={28} color={card.color} />
+        <Icon icon={card.iconName} width={scaledPx(28)} height={scaledPx(28)} color={card.color} />
       </div>
       <div style={S.mainFourText}>
         <span style={S.mainFourLabel} title={card.label}>
@@ -594,7 +597,7 @@ function BarChangeChart({ items }: { items: BarChangeItem[] }) {
   const xStep = innerW / items.length;
   const barW = Math.max(14, xStep * 0.55);
   return (
-    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
       {yTicks.map((t) => {
         const y = yOf(t);
         const isZero = t === 0;
@@ -833,7 +836,7 @@ function SectorLineSvg({ chart }: { chart: SectorChart }) {
   const xOf = (i: number) => padL + i * stepX;
   const yOf = (v: number) => padT + innerH - (v / yMax) * innerH;
   return (
-    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
       {/* Y grid + tick label */}
       {yTicks.map((t, i) => {
         const y = yOf(t);
@@ -921,7 +924,7 @@ function NormalizedCycleChart({ series }: { series: NormalizedCycleSeries[] }) {
           </span>
         ))}
       </div>
-      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
         {yTicks.map((t) => {
           const y = yOf(t);
           return (
@@ -1013,7 +1016,7 @@ function WtiNgDualChart({ points }: { points: DualAxisPoint[] }) {
           <span style={{ ...CFM.legendText, color: "#4a7aff" }}>천연가스 ($/MMBtu)</span>
         </span>
       </div>
-      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block" }}>
+      <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
         {wtiTicks.map((t) => {
           const y = yWti(t);
           return (
@@ -1083,7 +1086,7 @@ function IssueCard({ card }: { card: IssueCardSpec }) {
   return (
     <div style={S.issueCard}>
       <div style={{ ...S.issueIcon, background: card.iconBg }} aria-hidden>
-        <Icon icon={card.iconName} width={24} height={24} color={card.tagColor} />
+        <Icon icon={card.iconName} width={scaledPx(24)} height={scaledPx(24)} color={card.tagColor} />
       </div>
       <div style={S.issueText}>
         <div style={S.issueHead}>
@@ -1158,7 +1161,14 @@ function SectionBoxFull({
           {sub && <div style={S.subHeader}>{sub}</div>}
         </div>
       </div>
-      <div style={{ display: "flex", flex: 1, gap: 12, minHeight: height }}>
+      <div
+        style={{
+          display: "flex",
+          flex: 1,
+          gap: scaledPx(12),
+          minHeight: scaledPx(height),
+        }}
+      >
         <div style={{ flex: 1, display: "flex" }}>{children}</div>
         {rightSide}
       </div>
@@ -1180,10 +1190,12 @@ const NAVY = "#003049";
 const MUTED = "#747474";
 const FAINT = "#737171";
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   row1: {
     display: "grid",
+
     gridTemplateColumns: "1fr 1fr",
+
     gap: 16,
     alignItems: "stretch",
   },
@@ -1270,6 +1282,8 @@ const S: Record<string, CSSProperties> = {
     lineHeight: 1,
   },
 
+
+
   mainFourCard: {
     background: "#ffffff",
     border: "1px solid var(--color-border)",
@@ -1314,7 +1328,7 @@ const S: Record<string, CSSProperties> = {
 
   row3: {
     display: "grid",
-    gridTemplateColumns: "571fr 518fr",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 22rem), 1fr))",
     gap: 16,
   },
   row3Left: {
@@ -1337,7 +1351,7 @@ const S: Record<string, CSSProperties> = {
   },
   priceGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 10rem), 1fr))",
     gap: 0,
   },
   priceCard: {
@@ -1475,7 +1489,7 @@ const S: Record<string, CSSProperties> = {
   },
   row6Grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 14rem), 1fr))",
     gap: 12,
   },
   issueCard: {
@@ -1578,10 +1592,10 @@ const S: Record<string, CSSProperties> = {
     color: FAINT,
     fontStyle: "italic",
   },
-};
+});
 
 // 차트 frame 공통 스타일 (legend + svg wrap)
-const CFM: Record<string, CSSProperties> = {
+const CFM = responsiveStyles({
   wrap: {
     display: "flex",
     flexDirection: "column",
@@ -1610,10 +1624,10 @@ const CFM: Record<string, CSSProperties> = {
     fontWeight: 700,
     fontFamily: "var(--font-numeric)",
   },
-};
+});
 
 // §4-A 시장 지표 표 스타일
-const CMT: Record<string, CSSProperties> = {
+const CMT = responsiveStyles({
   wrap: {
     display: "flex",
     flexDirection: "column",
@@ -1646,7 +1660,9 @@ const CMT: Record<string, CSSProperties> = {
     fontFamily: "inherit",
     fontWeight: 600,
   },
-};
+
+});
+
 
 // §5 sector legend 스타일 추가
 S.sectorLegend = {

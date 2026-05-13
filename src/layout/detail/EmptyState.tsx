@@ -2,6 +2,7 @@
 // CommodityDetail에서 inline 으로 분기되던 패턴을 통일.
 
 import type { CSSProperties } from "react";
+import { responsiveStyles } from "../../shared/responsiveStyle";
 
 export type EmptyStateVariant = "loading" | "error" | "noData";
 
@@ -23,7 +24,7 @@ export function EmptyState({ variant, message }: EmptyStateProps) {
   return <div style={cls}>{message ?? fallback}</div>;
 }
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   loading: {
     color: "var(--color-text-muted)",
     padding: 64,
@@ -47,4 +48,4 @@ const S: Record<string, CSSProperties> = {
     padding: 16,
     fontSize: "var(--font-size-sm)",
   },
-};
+});

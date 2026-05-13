@@ -5,6 +5,7 @@
 
 import type { CSSProperties, ReactNode } from "react";
 import { ExampleBadge } from "../../visualization/ExampleBadge";
+import { responsiveStyle, responsiveStyles } from "../../shared/responsiveStyle";
 
 export interface DetailSectionBoxProps {
   title?: ReactNode;
@@ -29,9 +30,10 @@ export function DetailSectionBox({
   style,
   children,
 }: DetailSectionBoxProps) {
-  const cardStyle: CSSProperties = bare
-    ? { display: "flex", flexDirection: "column", gap: 12, minWidth: 0, ...style }
-    : {
+  const cardStyle: CSSProperties = responsiveStyle(
+    bare
+      ? { display: "flex", flexDirection: "column", gap: 12, minWidth: 0, ...style }
+      : {
         background: "var(--color-card)",
         border: "1px solid var(--color-border)",
         borderRadius: "var(--radius-card)",
@@ -41,7 +43,8 @@ export function DetailSectionBox({
         gap: 12,
         minWidth: 0,
         ...style,
-      };
+      },
+  );
   return (
     <section style={cardStyle}>
       {(title || exampleNote || rightSlot) && (
@@ -58,7 +61,7 @@ export function DetailSectionBox({
   );
 }
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   headerRow: {
     display: "flex",
     alignItems: "center",
@@ -75,4 +78,4 @@ const S: Record<string, CSSProperties> = {
     fontWeight: 600,
     color: "var(--color-text)",
   },
-};
+});

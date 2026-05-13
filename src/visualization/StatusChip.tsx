@@ -3,6 +3,7 @@
 // 시장 이슈 카드 (Overweight / Neutral / Underweight) 등.
 
 import type { CSSProperties } from "react";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 export type StatusTone = "positive" | "negative" | "neutral" | "caution";
 
@@ -36,7 +37,7 @@ export function StatusChip({ label, value, tone }: StatusChipProps) {
   );
 }
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   row: {
     display: "flex",
     flexDirection: "column",
@@ -56,4 +57,4 @@ const S: Record<string, CSSProperties> = {
     fontFamily: "var(--font-numeric)",
     lineHeight: 1.2,
   },
-};
+});

@@ -19,6 +19,7 @@ import {
 } from "react";
 import { searchCompanies } from "../data-loader/investmentData";
 import type { CompanyMaster } from "../types/investment";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 const POPULAR_TICKERS = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "TSLA", "META"];
 
@@ -218,7 +219,7 @@ export function Landing({ onSelectTicker }: LandingProps) {
   );
 }
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   page: {
     position: "relative",
     minHeight: "100%",
@@ -386,4 +387,4 @@ const S: Record<string, CSSProperties> = {
     fontWeight: 600,
     transition: "background var(--duration-fast) var(--ease-out)",
   },
-};
+});

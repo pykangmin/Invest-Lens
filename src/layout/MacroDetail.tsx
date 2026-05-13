@@ -47,6 +47,7 @@ import type {
 import { InfoTooltip } from "../visualization/InfoTooltip";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
+import { responsiveStyles, scaledPx } from "../shared/responsiveStyle";
 
 interface DetailState {
   regime: MacroRegimeResponse;
@@ -365,7 +366,7 @@ function SectionBoxFull({
   return (
     <section style={S.sectionBoxFull}>
       <div style={S.sectionBoxFullHeader}>{title}</div>
-      <div style={{ ...S.sectionBoxFullBody, minHeight: height }}>{children}</div>
+      <div style={{ ...S.sectionBoxFullBody, minHeight: scaledPx(height) }}>{children}</div>
     </section>
   );
 }
@@ -472,14 +473,16 @@ function RegimeTrendChart({ points }: { points: RegimeTrendPoint[] }) {
           </span>
         ))}
       </div>
+
       <svg
         width="100%"
         height={H}
         viewBox={`0 0 ${W} ${H}`}
         preserveAspectRatio="xMidYMid meet"
-        style={{ display: "block" }}
+        style={{ display: "block", height: scaledPx(H) }}
         onMouseLeave={() => setHovered(null)}
       >
+
         {yTicks.map((t) => {
           const y = yOf(t);
           return (
@@ -627,14 +630,16 @@ function GirTrendChartFull({ points }: { points: GirTrendPoint[] }) {
           </span>
         ))}
       </div>
+
       <svg
         width="100%"
         height={H}
         viewBox={`0 0 ${W} ${H}`}
         preserveAspectRatio="xMidYMid meet"
-        style={{ display: "block" }}
+        style={{ display: "block", height: scaledPx(H) }}
         onMouseLeave={() => setHovered(null)}
       >
+
         {yTicks.map((t) => {
           const y = yOf(t);
           const isZero = t === 0;
@@ -794,7 +799,7 @@ function TrendSpark({ values, color }: { values: number[]; color: string }) {
     .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
     .join(" ");
   return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block" }}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block", width: scaledPx(W), height: scaledPx(H) }}>
       <path d={d} stroke={color} strokeWidth={1.2} fill="none" />
       {pts.map((p, i) => (
         <circle key={i} cx={p.x} cy={p.y} r={1.4} fill={color} />
@@ -836,7 +841,7 @@ const NAVY = "#003049";
 const MUTED = "#747474";
 const TICK_GRAY = "#b8b8b8";
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   // §1
   row1: {
     background: "var(--color-card)",
@@ -854,7 +859,7 @@ const S: Record<string, CSSProperties> = {
   },
   row1Body: {
     display: "grid",
-    gridTemplateColumns: "minmax(140px, 200px) repeat(3, 1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 12rem), 1fr))",
     gap: 28,
     alignItems: "stretch",
   },
@@ -983,7 +988,7 @@ const S: Record<string, CSSProperties> = {
   },
   regimeGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(4, 1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 12rem), 1fr))",
     gap: 12,
   },
   regimeTitleRow: {
@@ -1081,7 +1086,7 @@ const S: Record<string, CSSProperties> = {
   },
   contribGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(3, 1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 16rem), 1fr))",
     gap: 17,
   },
   contribCard: {
@@ -1197,7 +1202,7 @@ const S: Record<string, CSSProperties> = {
   },
   warningGrid: {
     display: "grid",
-    gridTemplateColumns: "repeat(6, 1fr)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 9rem), 1fr))",
     gap: 14,
   },
   warningCard: {
@@ -1229,10 +1234,10 @@ const S: Record<string, CSSProperties> = {
     color: MUTED,
     lineHeight: 1.45,
   },
-};
+});
 
 // §3·§4 chart frame
-const CFM: Record<string, CSSProperties> = {
+const CFM = responsiveStyles({
   wrap: {
     display: "flex",
     flexDirection: "column",
@@ -1260,10 +1265,10 @@ const CFM: Record<string, CSSProperties> = {
     fontWeight: 700,
     fontFamily: "var(--font-numeric)",
   },
-};
+});
 
 // §5 거시지표 표
-const MIT: Record<string, CSSProperties> = {
+const MIT = responsiveStyles({
   wrap: {
     display: "flex",
     flexDirection: "column",
@@ -1303,4 +1308,4 @@ const MIT: Record<string, CSSProperties> = {
     borderRadius: 4,
     fontFamily: "var(--font-numeric)",
   },
-};
+});

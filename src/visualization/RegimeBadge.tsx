@@ -1,5 +1,6 @@
 import type { Severity } from "../types/scoring";
 import { severityVar } from "./severityColor";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 export interface RegimeBadgeProps {
   // 두 줄 라벨 — `SOFT\nLANDING` 같이.
@@ -27,7 +28,7 @@ export function RegimeBadge({ label, severity }: RegimeBadgeProps) {
   );
 }
 
-const S: Record<string, React.CSSProperties> = {
+const S = responsiveStyles({
   wrap: {
     display: "flex",
     flexDirection: "column",
@@ -42,4 +43,4 @@ const S: Record<string, React.CSSProperties> = {
     letterSpacing: "0.02em",
     lineHeight: 1.05,
   },
-};
+});

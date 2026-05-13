@@ -1,4 +1,5 @@
 import { Sparkline } from "./Sparkline";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 export interface MiniStatProps {
   label: string;
@@ -31,7 +32,7 @@ export function MiniStat({ label, value, delta, sparkline }: MiniStatProps) {
   );
 }
 
-const S: Record<string, React.CSSProperties> = {
+const S = responsiveStyles({
   card: {
     background: "var(--color-card)",
     border: "1px solid var(--color-border)",
@@ -51,4 +52,4 @@ const S: Record<string, React.CSSProperties> = {
     fontVariantNumeric: "tabular-nums",
   },
   spark: { marginTop: 4 },
-};
+});

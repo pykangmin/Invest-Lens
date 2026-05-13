@@ -8,6 +8,7 @@
 // 디자인: 옅은 회색 칩, radius 4, 폰트 10/600, 시안 톤 깨지 않게 작고 약함.
 
 import type { CSSProperties } from "react";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 export type ExampleTone = "example" | "stub";
 
@@ -40,7 +41,7 @@ export function ExampleBadge({
   );
 }
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   base: {
     display: "inline-flex",
     alignItems: "center",
@@ -63,4 +64,4 @@ const S: Record<string, CSSProperties> = {
     background: "var(--color-bg)",
     border: "1px dashed var(--color-border)",
   },
-};
+});

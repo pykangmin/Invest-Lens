@@ -3,6 +3,7 @@
 // 8-card 가격 그리드.
 
 import type { CSSProperties, ReactNode } from "react";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 export type MiniCardTone = "up" | "down" | "neutral";
 
@@ -45,7 +46,7 @@ export function MiniCard({ label, value, unit, delta, icon, tone = "neutral" }: 
   );
 }
 
-const S: Record<string, CSSProperties> = {
+const S = responsiveStyles({
   card: {
     background: "var(--color-card)",
     border: "1px solid var(--color-border)",
@@ -88,4 +89,4 @@ const S: Record<string, CSSProperties> = {
     fontWeight: 600,
     fontVariantNumeric: "tabular-nums",
   },
-};
+});

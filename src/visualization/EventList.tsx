@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import type { AnalysisEvent, Severity } from "../types/scoring";
 import { severityVar } from "./severityColor";
+import { responsiveStyles } from "../shared/responsiveStyle";
 
 export interface EventListProps {
   events: AnalysisEvent[];
@@ -78,7 +79,7 @@ export function EventList({ events, title = "주요 이벤트", maxRows = 5, hea
   );
 }
 
-const S: Record<string, React.CSSProperties> = {
+const S = responsiveStyles({
   card: {
     background: "var(--color-card)",
     border: "1px solid var(--color-border)",
@@ -156,4 +157,4 @@ const S: Record<string, React.CSSProperties> = {
     fontWeight: 600,
     letterSpacing: "0.04em",
   },
-};
+});
