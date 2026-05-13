@@ -8,11 +8,11 @@
 
 | 항목 | 위치 | 비고 |
 |---|---|---|
-| 메인 대시보드 (web) | `https://investlens-dataker.vercel.app/dashboard/<TICKER>` (예정) | Vercel Production 자동 배포 |
-| 진입 화면 | `https://investlens-dataker.vercel.app/` | 종목 검색 → 대시보드 라우팅 |
+| 메인 대시보드 (web) | `https://investlens-dacon.vercel.app/dashboard/<TICKER>` (예정) | Vercel Production 자동 배포 |
+| 진입 화면 | `https://investlens-dacon.vercel.app/` | 종목 검색 → 대시보드 라우팅 |
 | GitHub 저장소 | `<재배치 예정>` | main 브랜치 = production 단일 진실 |
 | Skills.md (8개) | `skills/00-assumptions.md` ~ `skills/21-frontend-aesthetics.md` | 5/7 마감 별도 제출 |
-| Skills 설계 문서 | `AGENTS.md` + `docs/figma/dashboard-slots-v3.md` | 시안 → 슬롯 spec → 코드 흐름 |
+| Skills 설계 문서 | `AGENTS.md` + `docs/figma/dashboard-slots-v4.md` | 시안 → 슬롯 spec → 코드 흐름 |
 | 검증 인프라 | `init.sh`, `verify-structure.sh`, `verify-skills.sh` | 매번 정합성 자동 검증 |
 
 ---
@@ -23,7 +23,7 @@
 |---|---|---|
 | **범용성** | 25 | `skills/01-data-profile.md` 의 4 엔티티 추상화 + `11-ingest.md` 의 확장 규칙. 새 엔티티 추가 시 `01` / `11` 만 갱신하면 12/13 변경 0. asset_class enum 으로 분기 통일 |
 | **Skills.md 설계** | 25 | 8개 파일 구조: 데이터(00~03) / 처리(11~13) / 렌더(21). 한 폴더, 번호 prefix 로 흐름 즉시 인지. dev 파일은 reference만, 도메인 정의 중복 0. `verify-skills.sh` 가 reference 무결성 자동 검증 |
-| **대시보드 자동 생성** | 25 | `docs/figma/dashboard-slots-v3.md` 의 슬롯 spec 이 **Figma REST API 의 노드 트리 직접 추출** (PNG 추측 0). `scripts/figma-fetch.mjs` + `figma-extract-slots.mjs` 가 자동 추출 → 사람 매핑 1회 → 코드 자동 검증. 시안 변경 시 fetch 재실행만으로 갱신 |
+| **대시보드 자동 생성** | 25 | `docs/figma/dashboard-slots-v4.md` 의 슬롯 spec 이 **Figma REST API 의 노드 트리 직접 추출** (PNG 추측 0). `scripts/figma-fetch.mjs` + `figma-extract-slots.mjs` 가 자동 추출 → 사람 매핑 1회 → 코드 자동 검증. 시안 변경 시 fetch 재실행만으로 갱신 |
 | **바이브코딩 활용** | 15 | 규칙 → 분석 → 렌더 파이프라인이 코드에 살아있음:<br>- `skills/02-data-analysis.md` 의 계산식 → `src/analysis/{fundamental,technical,macro,commodityImpact}.ts`<br>- `skills/03-insight.md` severity 등급 → `severity.ts` + `severityColor.ts`<br>- `skills/13-render.md` 슬롯 매핑 → `src/visualization/*` 컴포넌트<br>- `skills/21-frontend-aesthetics.md` 의미 색 5색 → `src/shared/styles.css` CSS 변수 (Figma hex 직접 추출) |
 | **실용성·창의성** | 10 | 매핑 자동화 + agent team 검수 주기적 진행 → 시안 변경에 실시간 대응. DB 의 6 테이블을 4 도메인 게이지로 종합한 시점 trio (오늘/이번 달/올해) — 단일 종목 페이지 안에서 시간 차원 분석 |
 
@@ -38,7 +38,7 @@ docs/figma/figma-tree.json      ←─ 자동 fetch (scripts/figma-fetch.mjs)
   ↓ 슬롯 추출 (scripts/figma-extract-slots.mjs)
 docs/figma/slots.generated.json (45 slots)
   ↓ 사람 매핑 1회
-docs/figma/dashboard-slots-v3.md  ←─ 슬롯 spec 단일 진실 (코드가 이를 ref)
+docs/figma/dashboard-slots-v4.md  ←─ 슬롯 spec 단일 진실 (코드가 이를 ref)
 
 Supabase DB (6 tables, 503 종목)
   ↓ api/_lib/db.ts (pg pool)
@@ -98,7 +98,7 @@ npm run dev              # http://127.0.0.1:5173
 ```
 
 Vercel 자동 배포:
-- `main` push → Production (`https://investlens-dataker.vercel.app`)
+- `main` push → Production (`https://investlens-dacon.vercel.app`)
 - 다른 branch push → Preview URL
 
 ---
@@ -107,10 +107,10 @@ Vercel 자동 배포:
 
 | 환경 | URL |
 |---|---|
-| Production | `https://investlens-dataker.vercel.app` |
-| 진입 화면 | `https://investlens-dataker.vercel.app/` |
-| 예시 종목 (AAPL) | `https://investlens-dataker.vercel.app/dashboard/AAPL` |
-| 예시 종목 (NVDA) | `https://investlens-dataker.vercel.app/dashboard/NVDA` |
+| Production | `https://investlens-dacon.vercel.app` |
+| 진입 화면 | `https://investlens-dacon.vercel.app/` |
+| 예시 종목 (AAPL) | `https://investlens-dacon.vercel.app/dashboard/AAPL` |
+| 예시 종목 (NVDA) | `https://investlens-dacon.vercel.app/dashboard/NVDA` |
 | GitHub 저장소 | `<재배치 후 갱신>` |
 
 ---

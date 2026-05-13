@@ -54,7 +54,7 @@
 
 ### 디자인 시안 추출본
 
-- [`docs/figma/`](docs/figma/) — `images/` 의 PNG 시안에서 읽어낸 슬롯·카피·시각 토큰. `13-render` 의 입력 spec 이 되는 슬롯 정의가 여기에 있음. 시각 속성 결정값은 여전히 `21-frontend-aesthetics` 가 단일 진실의 원천
+- [`docs/figma/`](docs/figma/) — Figma REST API 에서 추출한 시안 노드 트리 (`figma-tree.json`) + 슬롯 정의 (`slots.generated.json`, `dashboard-slots-v4.md`). `13-render` 의 입력 spec 이 되는 슬롯 정의가 여기에 있음. 시각 속성 결정값은 여전히 `21-frontend-aesthetics` 가 단일 진실의 원천
 
 ---
 

@@ -1,5 +1,5 @@
 // CompanyOverviewCard — 개별 주식 화면 핵심 요약.
-// images/개별 주식 화면 핵심 요약.png 시안 구조 + 대시보드 light 톤.
+// Figma 시안 (docs/figma/dashboard-slots-v4.md) 의 핵심 요약 카드 spec + 대시보드 light 톤.
 //
 // 데이터: src/data/sp500.json (정규화는 sp500.ts 의 findSp500Entry).
 // 구현 보류 (데이터 부재 → 표시 생략, 추후 점검) :

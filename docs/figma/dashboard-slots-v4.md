@@ -129,7 +129,7 @@
 | ID | 위치 | 콘텐츠 | 비고 |
 |---|---|---|---|
 | `home.bg.base` | (0,0) 1440×1024 | 솔리드 `#003049` (네이비) | 베이스 레이어 |
-| `home.bg.image` | (0,0) 1440×1024 | `images/진입 화면 배경.png` (3D 캔들차트) **opacity 0.15** | 오버레이 |
+| `home.bg.image` | (0,0) 1440×1024 | `public/landing-bg.png` (3D 캔들차트) **opacity 0.15** | 오버레이 |
 | `home.logo` | (652,186) 137×28 | logo + "Invest Lens" 16px Fugaz One white | logo 컴포넌트 |
 | `home.headline` | (500,228) 440×122 | "투자의 시각, / 데이터로 ___ 하게" 60px Pretendard 600 white | 9 spaces 갭 |
 | `home.headline.transparent` | (729,288) 104×66 | "투명" 60px — **fill opacity:0 + stroke white 1px** | **의도적 ghost text** (워드플레이) |
@@ -144,7 +144,7 @@
 - ✅ 헤드라인 wordplay — 현재는 "투명"이 골드 강조. **수정**: stroke-only ghost text로 변경
 - ✅ 부제 — 사용자 지정 신규 문구로 교체
 - ✅ 인기 검색어 칩 — 4개 → **7개** (AAPL · MSFT · GOOGL · AMZN · NVDA · TSLA · META)
-- ✅ 배경 — `images/진입 화면 배경.png` 를 `#003049` 위에 opacity 0.15 로 오버레이
+- ✅ 배경 — `public/landing-bg.png` 를 `#003049` 위에 opacity 0.15 로 오버레이
 - ✅ go-icon — 현재 디자인 확인 후 spec 일치 검증
 - 그 외 슬롯 위치·텍스트는 거의 일치
 
