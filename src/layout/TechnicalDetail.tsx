@@ -43,6 +43,8 @@ interface DetailState {
   ohlc: StockOhlcResponse | null;
 }
 
+const technicalDetailCache = new Map<string, DetailState>();
+
 export interface TechnicalDetailProps {
   ticker: string;
   onBackToHome: () => void;
@@ -153,13 +155,19 @@ export function TechnicalDetail({
   onNavigateSection,
   onSelectTicker,
 }: TechnicalDetailProps) {
-  const [data, setData] = useState<DetailState | null>(null);
+  const cacheKey = ticker.toUpperCase();
+  const [data, setData] = useState<DetailState | null>(() => technicalDetailCache.get(cacheKey) ?? null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
-    setData(null);
+    const cached = technicalDetailCache.get(cacheKey) ?? null;
+    setData(cached);
     setError(null);
+    if (cached) return () => {
+      alive = false;
+    };
+
     Promise.all([
       loadCompanySnapshot(ticker, 252),
       loadGlobalEnvironment({ symbol: "^VIX", historyLimit: 120 }),
@@ -171,7 +179,9 @@ export function TechnicalDetail({
       }),
     ])
       .then(([snapshot, vix, marketScoreAvg, ohlc]) => {
-        if (alive) setData({ snapshot, vix, marketScoreAvg, ohlc });
+        const next = { snapshot, vix, marketScoreAvg, ohlc };
+        technicalDetailCache.set(cacheKey, next);
+        if (alive) setData(next);
       })
       .catch((e: unknown) => {
         if (alive) setError(e instanceof Error ? e.message : String(e));
@@ -179,7 +189,7 @@ export function TechnicalDetail({
     return () => {
       alive = false;
     };
-  }, [ticker]);
+  }, [cacheKey, ticker]);
 
   const analysis = useMemo<TechnicalAnalysisV4 | null>(() => {
     if (!data) return null;

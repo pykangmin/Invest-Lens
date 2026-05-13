@@ -79,6 +79,11 @@ interface HeroCard {
 }
 
 // 시안 ellipse 36 bg + vector color (각 카드별)
+const fundamentalDataCache = new Map<string, CompanySnapshot>();
+const fundamentalPeersCache = new Map<string, PeersResponse>();
+const fundamentalSectorAvgCache = new Map<string, SectorAvgResponse>();
+let fundamentalCpiCache: GlobalEnvironmentResponse | null = null;
+
 const HERO_ICON_META: Record<
   HeroCard["key"],
   { iconName: string; iconBg: string; iconColor: string }
@@ -171,26 +176,49 @@ export function FundamentalDetail({
   onNavigateSection,
   onSelectTicker,
 }: FundamentalDetailProps) {
-  const [data, setData] = useState<CompanySnapshot | null>(null);
-  const [peers, setPeers] = useState<PeersResponse | null>(null);
-  const [sectorAvg, setSectorAvg] = useState<SectorAvgResponse | null>(null);
-  const [cpi, setCpi] = useState<GlobalEnvironmentResponse | null>(null);
+  const cacheKey = ticker.toUpperCase();
+  const cachedData = fundamentalDataCache.get(cacheKey) ?? null;
+  const cachedSector = cachedData?.company.sector
+    ? fundamentalSectorAvgCache.get(cachedData.company.sector) ?? null
+    : null;
+  const [data, setData] = useState<CompanySnapshot | null>(() => cachedData);
+  const [peers, setPeers] = useState<PeersResponse | null>(() => fundamentalPeersCache.get(cacheKey) ?? null);
+  const [sectorAvg, setSectorAvg] = useState<SectorAvgResponse | null>(() => cachedSector);
+  const [cpi, setCpi] = useState<GlobalEnvironmentResponse | null>(() => fundamentalCpiCache);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
-    setData(null);
-    setPeers(null);
-    setSectorAvg(null);
+    const cached = fundamentalDataCache.get(cacheKey) ?? null;
+    setData(cached);
+    setPeers(fundamentalPeersCache.get(cacheKey) ?? null);
+    setSectorAvg(
+      cached?.company.sector
+        ? fundamentalSectorAvgCache.get(cached.company.sector) ?? null
+        : null,
+    );
     setError(null);
+    if (cached) return () => {
+      alive = false;
+    };
+
     loadCompanySnapshot(ticker, 24)
       .then((s) => {
+        fundamentalDataCache.set(cacheKey, s);
         if (alive) setData(s);
         // company snapshot 의 sector 로 sector 평균 조회
         const sec = s.company.sector;
         if (sec) {
+          const cachedSectorAvg = fundamentalSectorAvgCache.get(sec);
+          if (cachedSectorAvg) {
+            if (alive) setSectorAvg(cachedSectorAvg);
+            return;
+          }
           loadSectorAvg(sec)
-            .then((sa) => { if (alive) setSectorAvg(sa); })
+            .then((sa) => {
+              fundamentalSectorAvgCache.set(sec, sa);
+              if (alive) setSectorAvg(sa);
+            })
             .catch(() => { /* sector-avg 실패 비치명 — peers fallback */ });
         }
       })
@@ -199,6 +227,7 @@ export function FundamentalDetail({
       });
     loadPeers(ticker, 6)
       .then((p) => {
+        fundamentalPeersCache.set(cacheKey, p);
         if (alive) setPeers(p);
       })
       .catch(() => {
@@ -207,13 +236,19 @@ export function FundamentalDetail({
     return () => {
       alive = false;
     };
-  }, [ticker]);
+  }, [cacheKey, ticker]);
 
   // CPI 는 ticker 무관 — 마운트 1회만.
   useEffect(() => {
+    if (fundamentalCpiCache) {
+      setCpi(fundamentalCpiCache);
+      return;
+    }
+
     let alive = true;
     loadGlobalEnvironment({ symbol: "CPIAUCSL", historyLimit: 14 })
       .then((r) => {
+        fundamentalCpiCache = r;
         if (alive) setCpi(r);
       })
       .catch(() => {

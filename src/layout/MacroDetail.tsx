@@ -64,6 +64,8 @@ interface DetailState {
   m2: GlobalEnvironmentResponse;
 }
 
+let macroDetailCache: DetailState | null = null;
+
 export interface MacroDetailProps {
   ticker: string;
   onBackToHome: () => void;
@@ -80,13 +82,17 @@ export function MacroDetail({
   onNavigateSection,
   onSelectTicker,
 }: MacroDetailProps) {
-  const [data, setData] = useState<DetailState | null>(null);
+  const [data, setData] = useState<DetailState | null>(() => macroDetailCache);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
-    setData(null);
+    setData(macroDetailCache);
     setError(null);
+    if (macroDetailCache) return () => {
+      alive = false;
+    };
+
     Promise.all([
       loadMacroRegime(36),
       loadGlobalEnvironment({ symbol: "^VIX", historyLimit: 240 }),
@@ -116,8 +122,7 @@ export function MacroDetail({
           fedfunds,
           m2,
         ]) => {
-          if (alive)
-            setData({
+          const next: DetailState = {
               regime,
               vix,
               dxy,
@@ -130,7 +135,9 @@ export function MacroDetail({
               cpi,
               fedfunds,
               m2,
-            });
+            };
+          macroDetailCache = next;
+          if (alive) setData(next);
         },
       )
       .catch((e: unknown) => {

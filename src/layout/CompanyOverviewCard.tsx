@@ -32,6 +32,8 @@ const C = {
 
 const FONT = "Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
 
+const overviewPeersCache = new Map<string, PeerCompany[]>();
+
 export interface CompanyOverviewCardProps {
   ticker: string;
   companyName?: string;
@@ -69,15 +71,22 @@ function CompanyOverviewContent({
   onSelectTicker?: (ticker: string) => void;
 }) {
   // 동종 업계 — /api/peers (B-2: sub_industry 우선, sector fallback, 자기 제외). 비동기 로드.
-  const [peers, setPeers] = useState<PeerCompany[] | null>(null);
+  const cacheKey = ticker.toUpperCase();
+  const [peers, setPeers] = useState<PeerCompany[] | null>(() => overviewPeersCache.get(cacheKey) ?? null);
   useEffect(() => {
     let alive = true;
-    setPeers(null);
+    const cachedPeers = overviewPeersCache.get(cacheKey) ?? null;
+    setPeers(cachedPeers);
+    if (cachedPeers) return () => { alive = false; };
+
     loadPeers(ticker, 5)
-      .then((r) => { if (alive) setPeers(r.peers); })
+      .then((r) => {
+        overviewPeersCache.set(cacheKey, r.peers);
+        if (alive) setPeers(r.peers);
+      })
       .catch(() => { if (alive) setPeers([]); });
     return () => { alive = false; };
-  }, [ticker]);
+  }, [cacheKey, ticker]);
 
   // 키워드 = 테마 + 시장 지위 모두 합쳐 # 제거. 앞 2개 강조.
   const chipLabels: string[] = [

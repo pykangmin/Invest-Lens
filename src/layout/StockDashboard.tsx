@@ -135,18 +135,27 @@ async function safeLoad<T>(loader: () => Promise<T>): Promise<T | null> {
   }
 }
 
+const dashboardCache = new Map<string, DashState>();
+let macroExtrasCache: MacroExtras | null = null;
+
 /* ═══════════════════════════════════════════════════════════════════
    메인 컴포넌트
    ═══════════════════════════════════════════════════════════════════ */
 
 export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSection }: StockDashboardProps) {
-  const [data, setData] = useState<DashState | null>(null);
-  const [macroExtras, setMacroExtras] = useState<MacroExtras | null>(null);
+  const cacheKey = ticker.toUpperCase();
+  const [data, setData] = useState<DashState | null>(() => dashboardCache.get(cacheKey) ?? null);
+  const [macroExtras, setMacroExtras] = useState<MacroExtras | null>(() => macroExtrasCache);
   const [error, setError] = useState<string | null>(null);
   const [eventsOpen, setEventsOpen] = useState(false);
 
   // Macro 호버의 G/I/R 계산용 추가 env 데이터 — 별도 비동기 로드 (실패 시 GIR 만 placeholder).
   useEffect(() => {
+    if (macroExtrasCache) {
+      setMacroExtras(macroExtrasCache);
+      return;
+    }
+
     let alive = true;
     Promise.all([
       loadGlobalEnvironment({ symbol: "ISM_MAN",  historyLimit: 24 }),
@@ -158,14 +167,16 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
     ])
       .then(([ism, unrate, cpi, fedfunds, dgs2, m2]) => {
         if (!alive) return;
-        setMacroExtras({
+        const next: MacroExtras = {
           ism: ism.history,
           unrate: unrate.history,
           cpi: cpi.history,
           fedfunds: fedfunds.history,
           dgs2: dgs2.history,
           m2: m2.history,
-        });
+        };
+        macroExtrasCache = next;
+        setMacroExtras(next);
       })
       .catch(() => { /* fail silent — GIR 만 placeholder */ });
     return () => { alive = false; };
@@ -173,8 +184,11 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
 
   useEffect(() => {
     let alive = true;
-    setData(null);
+    const cached = dashboardCache.get(cacheKey) ?? null;
+    setData(cached);
     setError(null);
+    if (cached) return () => { alive = false; };
+
     Promise.all([
       loadCompanySnapshot(ticker),
       loadDashboardEnvironment(),
@@ -187,7 +201,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
     ])
       .then(([snapshot, env, sUp, sDown, sVol, sScore, marketIndices, fxRates]) => {
         if (!alive) return;
-        setData({
+        const next: DashState = {
           snapshot,
           env,
           screens: {
@@ -198,7 +212,9 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
           },
           marketIndices,
           fxRates,
-        });
+        };
+        dashboardCache.set(cacheKey, next);
+        setData(next);
       })
       .catch((e: unknown) => {
         if (alive) setError(e instanceof Error ? e.message : String(e));
@@ -206,7 +222,7 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
     return () => {
       alive = false;
     };
-  }, [ticker]);
+  }, [cacheKey, ticker]);
 
   const analysis = useMemo(() => {
     if (!data) return null;

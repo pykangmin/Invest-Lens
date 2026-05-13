@@ -59,6 +59,13 @@ export interface CommodityDetailProps {
 
 // ── 정적 메타 ─────────────────────────────────────────────────
 
+interface CommodityDetailCache {
+  data: CompanySnapshot;
+  commodities: CommoditiesResponse;
+}
+
+const commodityDetailCache = new Map<string, CommodityDetailCache>();
+
 interface StatSpec {
   label: string;
   value: string;
@@ -285,20 +292,29 @@ export function CommodityDetail({
   onNavigateSection,
   onSelectTicker,
 }: CommodityDetailProps) {
-  const [data, setData] = useState<CompanySnapshot | null>(null);
-  const [commodities, setCommodities] = useState<CommoditiesResponse | null>(null);
+  const cacheKey = ticker.toUpperCase();
+  const cached = commodityDetailCache.get(cacheKey) ?? null;
+  const [data, setData] = useState<CompanySnapshot | null>(() => cached?.data ?? null);
+  const [commodities, setCommodities] = useState<CommoditiesResponse | null>(() => cached?.commodities ?? null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let alive = true;
-    setData(null);
+    const cachedState = commodityDetailCache.get(cacheKey) ?? null;
+    setData(cachedState?.data ?? null);
+    setCommodities(cachedState?.commodities ?? null);
     setError(null);
+    if (cachedState) return () => {
+      alive = false;
+    };
+
     Promise.all([
       loadCompanySnapshot(ticker, 24),
       // 자산군 정규화 사이클(2021 Q2 baseline) + WTI vs NG 5년치 시계열 커버용
       loadCommodities(undefined, 1300),
     ])
       .then(([s, c]) => {
+        commodityDetailCache.set(cacheKey, { data: s, commodities: c });
         if (alive) {
           setData(s);
           setCommodities(c);
@@ -310,7 +326,7 @@ export function CommodityDetail({
     return () => {
       alive = false;
     };
-  }, [ticker]);
+  }, [cacheKey, ticker]);
 
   const analysis = useMemo(() => {
     if (!commodities) return null;
