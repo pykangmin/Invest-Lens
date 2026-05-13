@@ -19,12 +19,23 @@ import {
   commodityImpactScore,
   costImpactLabel,
   outlookLabel,
+  scoreDayDelta,
   supplyStabilityLabel,
   verdictFromImpactScore,
 } from "../analysis/commodityNarrative";
 import { buildEvents } from "../analysis/events";
-import { sectionScores, totalFromSections } from "../analysis/fundamentalNarrative";
+import {
+  sectionScores,
+  totalFromSections,
+  verdictFromScore,
+} from "../analysis/fundamentalNarrative";
 import { regimeProbs, type RegimeKey } from "../analysis/macroDetail";
+import {
+  buildGScore,
+  buildIScore,
+  buildRScore,
+  confidenceToPct,
+} from "../analysis/macroNarrative";
 import {
   technicalAnalysisV4,
   type TechnicalAnalysisV4,
@@ -42,6 +53,7 @@ import {
   loadCompanySnapshot,
   loadDashboardEnvironment,
   loadFxRate,
+  loadGlobalEnvironment,
   loadMarketIndex,
   loadScreen,
   type DashboardEnvironment,
@@ -50,11 +62,21 @@ import {
   type ScreenItem,
 } from "../data-loader/investmentData";
 import { findSp500Entry } from "../data/sp500";
-import type { CompanySnapshot } from "../types/investment";
+import type { CompanySnapshot, GlobalEnvironmentPoint } from "../types/investment";
 import type { AnalysisEvent, GaugeScore, Severity } from "../types/scoring";
 import { GlobalSearch } from "../visualization/GlobalSearch";
 import { Sparkline } from "../visualization/Sparkline";
 
+import {
+  CommodityHover,
+  FundamentalHover,
+  MacroHover,
+  TechnicalHover,
+  type HCCommodityData,
+  type HCFundamentalData,
+  type HCMacroData,
+} from "./HoverCards";
+import { CompanyOverviewCard } from "./CompanyOverviewCard";
 import type { DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
 import { responsiveStyles, scaledPx } from "../shared/responsiveStyle";
@@ -77,6 +99,15 @@ interface DashState {
   };
   marketIndices: Array<MarketIndexResponse | null>;
   fxRates: Array<FxRateResponse | null>;
+}
+
+interface MacroExtras {
+  ism: GlobalEnvironmentPoint[];
+  unrate: GlobalEnvironmentPoint[];
+  cpi: GlobalEnvironmentPoint[];
+  fedfunds: GlobalEnvironmentPoint[];
+  dgs2: GlobalEnvironmentPoint[];
+  m2: GlobalEnvironmentPoint[];
 }
 
 const MARKET_INDEX_SYMBOLS = ["^GSPC", "^DJI", "^IXIC", "^RUT"];
@@ -110,8 +141,35 @@ async function safeLoad<T>(loader: () => Promise<T>): Promise<T | null> {
 
 export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSection }: StockDashboardProps) {
   const [data, setData] = useState<DashState | null>(null);
+  const [macroExtras, setMacroExtras] = useState<MacroExtras | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [eventsOpen, setEventsOpen] = useState(false);
+
+  // Macro 호버의 G/I/R 계산용 추가 env 데이터 — 별도 비동기 로드 (실패 시 GIR 만 placeholder).
+  useEffect(() => {
+    let alive = true;
+    Promise.all([
+      loadGlobalEnvironment({ symbol: "ISM_MAN",  historyLimit: 24 }),
+      loadGlobalEnvironment({ symbol: "UNRATE",   historyLimit: 24 }),
+      loadGlobalEnvironment({ symbol: "CPIAUCSL", historyLimit: 36 }),
+      loadGlobalEnvironment({ symbol: "FEDFUNDS", historyLimit: 24 }),
+      loadGlobalEnvironment({ symbol: "DGS2",     historyLimit: 60 }),
+      loadGlobalEnvironment({ symbol: "M2SL",     historyLimit: 36 }),
+    ])
+      .then(([ism, unrate, cpi, fedfunds, dgs2, m2]) => {
+        if (!alive) return;
+        setMacroExtras({
+          ism: ism.history,
+          unrate: unrate.history,
+          cpi: cpi.history,
+          fedfunds: fedfunds.history,
+          dgs2: dgs2.history,
+          m2: m2.history,
+        });
+      })
+      .catch(() => { /* fail silent — GIR 만 placeholder */ });
+    return () => { alive = false; };
+  }, []);
 
   useEffect(() => {
     let alive = true;
@@ -195,7 +253,8 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
     const probs = regimeProbs(latest);
     return {
       probs,
-      confidence: latest.confidence ?? null,
+      // detail 페이지(MacroDetail) 와 동일 산출 — Medium → "70%" 등.
+      confidence: confidenceToPct(latest.confidence ?? null),
     };
   }, [data]);
 
@@ -229,6 +288,114 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
     };
   }, [data]);
 
+  // ── 새 hover 카드용 데이터 (HoverCards.tsx) ──────────────────────────
+  const hcFundamental = useMemo<HCFundamentalData | null>(() => {
+    if (!fundamentalViz) return null;
+    const verdict = verdictFromScore(fundamentalViz.score);
+    return {
+      totalScore: fundamentalViz.score,
+      verdictLabel: verdict.label,
+      verdictColor: verdict.color,
+      sections: fundamentalViz.sections.map((s) => ({
+        key: s.key,
+        label: s.label.split(" ")[0] ?? s.label, // "현금흐름 & 안정성" → "현금흐름"
+        ratio: s.ratio,
+        indicators: s.indicators,
+      })),
+    };
+  }, [fundamentalViz]);
+
+  const hcMacro = useMemo<HCMacroData | null>(() => {
+    if (!macroViz) return null;
+    if (!macroExtras || !data) {
+      return {
+        probs: macroViz.probs,
+        confidence: macroViz.confidence,
+        gScore: null, iScore: null, rScore: null,
+      };
+    }
+    const g = buildGScore(macroExtras.ism, macroExtras.unrate, null);
+    const i = buildIScore(macroExtras.cpi, macroExtras.fedfunds, data.env.treasury10y.history);
+    const r = buildRScore(
+      data.env.highYieldSpread.history,
+      data.env.treasury10y.history,
+      macroExtras.dgs2,
+      macroExtras.m2,
+    );
+    return {
+      probs: macroViz.probs,
+      confidence: macroViz.confidence,
+      gScore: g.total,
+      iScore: i.total,
+      rScore: r.total,
+    };
+  }, [macroViz, macroExtras, data]);
+
+  const hcCommodity = useMemo<HCCommodityData | null>(() => {
+    if (!data) return null;
+    const rows = data.env.commodities.history;
+    if (rows.length === 0) return null;
+    const impact = commodityImpactScore(rows);
+    const verdict = verdictFromImpactScore(impact.score);
+    const cost = costImpactLabel(impact.energyYoy);
+    const supply = supplyStabilityLabel(rows);
+    const outlook = outlookLabel(rows);
+    const dayDelta = scoreDayDelta(rows);
+    const dayDeltaNum = (() => {
+      const m = dayDelta.display.match(/[-+]?\d+/);
+      return m ? parseInt(m[0], 10) : null;
+    })();
+    return {
+      ticker,
+      impactScore: impact.score,
+      verdictLabel: verdict.label,
+      verdictColor: verdict.color,
+      dayDelta: dayDeltaNum,
+      stats: [
+        { label: "비용 영향", value: cost.label, tone: cost.color },
+        { label: "공급 안정성", value: supply.label, tone: supply.color },
+        { label: "향후 전망", value: outlook.label, tone: outlook.color },
+      ],
+      categories: [
+        { key: "energy",   label: "에너지",   yoy: impact.energyYoy ?? 0 },
+        { key: "metal",    label: "산업금속", yoy: impact.metalYoy ?? 0 },
+        { key: "precious", label: "귀금속",   yoy: impact.preciousYoy ?? 0 },
+        { key: "agri",     label: "농산물",   yoy: impact.agriYoy ?? 0 },
+      ],
+    };
+  }, [data, ticker]);
+
+  // 좌측 기술적 게이지 카드 — V4 totalScore 로 통일 (detail / hover 와 동일 산식).
+  // severity 임계도 V4 SIGNAL_SEGMENTS 와 일치:
+  //   score ≥ 65 (Buy / Strong buy)   → INFO    → POSITIVE
+  //   50 ≤ score < 65 (Hold)          → CAUTION → NEUTRAL
+  //   score < 50 (Sell / Strong sell) → WARNING → NEGATIVE
+  const technicalGaugeAdjusted = useMemo(() => {
+    if (!analysis) return null;
+    if (!technicalViz) return analysis.gauges.technical;
+    const score = technicalViz.totalScore;
+    const severity: Severity =
+      score >= 65 ? "INFO" : score >= 50 ? "CAUTION" : "WARNING";
+    return {
+      ...analysis.gauges.technical,
+      score,
+      severity,
+    };
+  }, [analysis, technicalViz]);
+
+  // 4 게이지 카드 label 셋 통일: POSITIVE / NEUTRAL / NEGATIVE.
+  // 산식 (analysis/*.ts) 은 그대로 두고 본 화면 렌더링 단계에서만 severity → label 재매핑.
+  //   INFO    → POSITIVE
+  //   CAUTION → NEUTRAL
+  //   WARNING → NEGATIVE
+  // 데이터 부재 (available=false / score=null) 카드는 기존 라벨 ("DATA") 유지.
+  const unifyGaugeLabel = (g: GaugeScore): GaugeScore => {
+    if (!g.available || g.score == null) return g;
+    const label =
+      g.severity === "INFO" ? "POSITIVE" : g.severity === "WARNING" ? "NEGATIVE" : "NEUTRAL";
+    return { ...g, label };
+  };
+
   return (
     <div style={S.page}>
       <Header onBack={onBack} onSelectTicker={onSelectTicker} />
@@ -248,16 +415,20 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
             <GaugeChartRow
               ticker={ticker}
               companyName={data.snapshot.company.name ?? ticker}
-              fundamental={analysis.gauges.fundamental}
-              macro={analysis.gauges.macro}
-              commodity={analysis.gauges.commodity}
-              technical={analysis.gauges.technical}
+              fundamental={unifyGaugeLabel(analysis.gauges.fundamental)}
+              macro={unifyGaugeLabel(analysis.gauges.macro)}
+              commodity={unifyGaugeLabel(analysis.gauges.commodity)}
+              technical={unifyGaugeLabel(technicalGaugeAdjusted ?? analysis.gauges.technical)}
               macroDominantPct={dominantRegimePct(data.env.macroRegime.latest)}
               fundamentalViz={fundamentalViz}
               macroViz={macroViz}
               commodityViz={commodityViz}
               technicalViz={technicalViz}
+              hcFundamental={hcFundamental}
+              hcMacro={hcMacro}
+              hcCommodity={hcCommodity}
               onNavigateSection={onNavigateSection}
+              onSelectTicker={onSelectTicker}
             />
             <EventsFxRow
               events={analysis.events}
@@ -374,7 +545,11 @@ function GaugeChartRow({
   macroViz,
   commodityViz,
   technicalViz,
+  hcFundamental,
+  hcMacro,
+  hcCommodity,
   onNavigateSection,
+  onSelectTicker,
 }: {
   ticker: string;
   companyName: string;
@@ -387,7 +562,11 @@ function GaugeChartRow({
   macroViz: MacroVizData | null;
   commodityViz: CommodityVizData | null;
   technicalViz: TechnicalAnalysisV4 | null;
+  hcFundamental: HCFundamentalData | null;
+  hcMacro: HCMacroData | null;
+  hcCommodity: HCCommodityData | null;
   onNavigateSection?: (s: DetailSection) => void;
+  onSelectTicker?: (ticker: string) => void;
 }) {
   const [hovered, setHovered] = useState<GaugeKey | null>(null);
   const enter = (k: GaugeKey) => () => setHovered(k);
@@ -439,6 +618,10 @@ function GaugeChartRow({
         macroViz={macroViz}
         commodityViz={commodityViz}
         technicalViz={technicalViz}
+        hcFundamental={hcFundamental}
+        hcMacro={hcMacro}
+        hcCommodity={hcCommodity}
+        onSelectTicker={onSelectTicker}
       />
     </section>
   );
@@ -706,6 +889,10 @@ function ChartPanel({
   macroViz,
   commodityViz,
   technicalViz,
+  hcFundamental,
+  hcMacro,
+  hcCommodity,
+  onSelectTicker,
 }: {
   hovered: GaugeKey | null;
   ticker: string;
@@ -714,39 +901,51 @@ function ChartPanel({
   macroViz: MacroVizData | null;
   commodityViz: CommodityVizData | null;
   technicalViz: TechnicalAnalysisV4 | null;
+  hcFundamental: HCFundamentalData | null;
+  hcMacro: HCMacroData | null;
+  hcCommodity: HCCommodityData | null;
+  onSelectTicker?: (ticker: string) => void;
 }) {
-  if (hovered === "fundamental" && fundamentalViz) {
+  // 새 hover 카드 시각 (HoverCards.tsx). 4 카드 모두 호버 시 ChartPanel 채움.
+  // key prop 으로 호버 전환마다 컴포넌트 재마운트 → 진입 애니메이션 재생.
+  if (hovered === "fundamental" && hcFundamental) {
     return (
-      <div className="il-chart-panel" style={S.chartPanel}>
-        <FundamentalVizPanel data={fundamentalViz} />
+      <div className="il-chart-panel" style={S.chartPanel} key="hover-fundamental">
+        <FundamentalHover data={hcFundamental} />
       </div>
     );
   }
-  if (hovered === "commodity" && commodityViz) {
+  if (hovered === "commodity" && hcCommodity) {
     return (
-      <div style={S.chartPanel}>
-        <CommodityVizPanel data={commodityViz} />
+      <div className="il-chart-panel" style={S.chartPanel} key="hover-commodity">
+        <CommodityHover data={hcCommodity} />
       </div>
     );
   }
-  if (hovered === "macro" && macroViz) {
+  if (hovered === "macro" && hcMacro) {
     return (
-      <div style={S.chartPanel}>
-        <MacroVizPanel data={macroViz} />
+      <div className="il-chart-panel" style={S.chartPanel} key="hover-macro">
+        <MacroHover data={hcMacro} />
       </div>
     );
   }
   if (hovered === "technical" && technicalViz) {
     return (
-      <div style={S.chartPanel}>
-        <TechnicalVizPanel data={technicalViz} />
+      <div className="il-chart-panel" style={S.chartPanel} key="hover-technical">
+        <TechnicalHover data={technicalViz} />
       </div>
     );
   }
-  // 기본 — 회사 요약
+  // unused — 기존 inline panel 들도 컴파일 보존을 위해 참조 유지
+  void fundamentalViz; void macroViz; void commodityViz;
+  // 기본 (호버 없음) — 핵심 요약 카드 (CompanyOverviewCard).
   return (
     <div className="il-chart-panel" style={S.chartPanel}>
-      <CompanySummaryPanel ticker={ticker} companyName={companyName} />
+      <CompanyOverviewCard
+        ticker={ticker}
+        companyName={companyName}
+        onSelectTicker={onSelectTicker}
+      />
     </div>
   );
 }
