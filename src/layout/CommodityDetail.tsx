@@ -91,7 +91,10 @@ interface IssueCardSpec {
   tagLabel: string;
   tagColor: string;
   tagBg: string;
-  body: string;
+  // 정적 콘텐츠
+  summary: string;
+  stocks: Array<{ ticker: string; name: string }>;
+  events: Array<{ date: string; text: string; future?: boolean }>;
 }
 
 // §2 main-four 정적 메타 (라벨/아이콘/배경색) — 값/색만 실데이터로 동적
@@ -116,34 +119,110 @@ const PRICE_CARD_META: Array<{ key: string; symbol: string; label: string; unitO
   { key: "soy", symbol: "ZS=F", label: "대두 (Soybean)" },
 ];
 
-// §6 issue 3 카드 정적 메타 (tag/body 는 동적)
+// §6 issue 4 카드 정적 메타. tag 는 동적(stance), summary/stocks/events 는 정적.
 const ISSUE_META: Array<{
   key: string;
   iconBg: string;
   iconName: string;
   title: string;
   symbols: string[];
+  summary: string;
+  stocks: Array<{ ticker: string; name: string }>;
+  events: Array<{ date: string; text: string; future?: boolean }>;
 }> = [
   {
-    key: "metal",
+    key: "precious",
     iconBg: "#fafadf",
     iconName: "streamline:gold-remix",
-    title: "귀금속 (금·은)",
+    title: "귀금속",
     symbols: ["GC=F", "SI=F"],
+    summary: "안전자산 선호↑, 가격 부담·차익실현 변동성 주의",
+    stocks: [
+      { ticker: "NEM", name: "뉴몬트" },
+      { ticker: "FCX", name: "프리포트-맥모란" },
+      { ticker: "CME", name: "CME 그룹" },
+      { ticker: "STT", name: "스테이트 스트리트" },
+      { ticker: "EL", name: "에스티 로더" },
+    ],
+    events: [
+      { date: "1/21", text: "연준 의장 교체 우려, 금 $5,000/oz 세대적 고점" },
+      { date: "2/27", text: "미 금 ETF 보유 9,880만 oz 연초 최고" },
+      { date: "3/26", text: "고금리 전망, 금·은 단기 저점" },
+      { date: "4/17", text: "호르무즈 재개방, 금 +2.1% / 은 +4%" },
+      { date: "5/11", text: "은 산업수요↑, 하루 +7.2% ($85.99 돌파)" },
+      { date: "5/12", text: "은·백금 차익실현 −5% 급락" },
+    ],
   },
   {
-    key: "cu",
+    key: "energy",
+    iconBg: "#fde5e4",
+    iconName: "game-icons:oil-rig",
+    title: "에너지",
+    symbols: ["CL=F", "NG=F"],
+    summary: "섹터 수익성↑ / 항공·소비재 비용 부담",
+    stocks: [
+      { ticker: "XOM", name: "엑슨모빌" },
+      { ticker: "COP", name: "코노코필립스" },
+      { ticker: "SLB", name: "슐럼버저" },
+      { ticker: "DAL", name: "델타 항공" },
+      { ticker: "CCL", name: "카니발" },
+    ],
+    events: [
+      { date: "1/21", text: "폴라 보텍스, 천연가스 옵션 거래 사상 최고" },
+      { date: "2/28", text: "미·이스라엘 이란 공습, 브렌트 $120/bbl 육박" },
+      { date: "3/2", text: "이란 호르무즈 차단, 공급 −1,010만 bbl/day" },
+      { date: "3/11", text: "IEA 4억 bbl 비축유 방출, $92/bbl 조정" },
+      { date: "4/7", text: "미·이란 휴전 합의, WTI −16% 폭락" },
+      { date: "4/15~17", text: "해협 개방, 유가 안정" },
+      { date: "5/11", text: "트럼프 휴전 거부, WTI $98.07 반등" },
+      { date: "5/12", text: "MSC·Maersk 걸프 운항 중단" },
+    ],
+  },
+  {
+    key: "metals",
     iconBg: "#fdf0d5",
     iconName: "iconoir:spiral",
-    title: "산업금속 & 에너지",
-    symbols: ["HG=F", "LIT", "CL=F", "NG=F"],
+    title: "산업금속",
+    symbols: ["HG=F", "LIT"],
+    summary: "소재 유망 / EV·IT 원가 부담 가중",
+    stocks: [
+      { ticker: "ALB", name: "앨베말" },
+      { ticker: "NUE", name: "뉴코" },
+      { ticker: "F", name: "포드" },
+      { ticker: "ETN", name: "이튼" },
+      { ticker: "TSLA", name: "테슬라" },
+    ],
+    events: [
+      { date: "1/15", text: "핵심 광물 국가안보 자산 행정명령" },
+      { date: "2/28", text: "COMEX 구리 재고 사상 최고" },
+      { date: "3/9", text: "에너지저장 투자↑, 리튬 반등" },
+      { date: "3/13", text: "상하이 구리 재고 정점 후 감소" },
+      { date: "4/7", text: "EnergyX, 텍사스 DLE 리튬 공장 가동" },
+      { date: "5/1", text: "중국 황산 수출 중단, 침출 공법 타격" },
+      { date: "5/11", text: "COMEX 구리 $6.51/lb, Standard Lithium-Trafigura 계약" },
+      { date: "6/9~10", text: "Giga US 2026 리튬 로드맵", future: true },
+    ],
   },
   {
     key: "agri",
     iconBg: "#f5e8ff",
     iconName: "carbon:crop-growth",
-    title: "농산물 (곡물)",
+    title: "농산물",
     symbols: ["ZW=F", "ZS=F", "ZC=F"],
+    summary: "농기계·비료 호재 / 필수소비재 마진 압박",
+    stocks: [
+      { ticker: "DE", name: "디어 앤 컴퍼니" },
+      { ticker: "ADM", name: "아처 대니얼스 미들랜드" },
+      { ticker: "CTVA", name: "코르테바" },
+      { ticker: "CF", name: "CF 인더스트리스" },
+      { ticker: "KHC", name: "크래프트 하인즈" },
+    ],
+    events: [
+      { date: "3/31", text: "USDA, 옥수수↓ / 대두↑ / 소맥 역대 최저" },
+      { date: "5/11", text: "주간 작황, 겨울 소맥 우수등급 4년 최악" },
+      { date: "5/12", text: "WASDE, 소맥 생산 1972년 이후 최저" },
+      { date: "5/14~15", text: "미·중 정상회담, 옥수수·대두 대규모 구매" },
+    ],
   },
 ];
 
@@ -301,7 +380,9 @@ export function CommodityDetail({
         tagLabel: stance.label,
         tagColor: stance.color,
         tagBg: stance.bg,
-        body: "", // MOCK — 비움
+        summary: meta.summary,
+        stocks: meta.stocks,
+        events: meta.events,
       };
     });
 
@@ -370,9 +451,14 @@ export function CommodityDetail({
           <div style={S.row1}>
             <section style={S.summaryBox}>
               <div style={S.boxHeader}>핵심 요약</div>
-              <div style={S.summaryBody}>
-                <span style={{ color: "#9a9a9a", fontStyle: "italic", fontWeight: 500 }}>—</span>
-              </div>
+              <ul style={S.summaryList}>
+                {analysis.issueCards.map((c) => (
+                  <li key={`sum-${c.key}`} style={S.summaryListItem}>
+                    <span style={{ ...S.summaryListLabel, color: c.tagColor }}>{c.title}</span>
+                    <span style={S.summaryListBody}>{c.summary}</span>
+                  </li>
+                ))}
+              </ul>
               <div style={S.statRow}>
                 {analysis.stats.map((s, i) => (
                   <Frag key={s.label}>
@@ -1085,29 +1171,42 @@ function WtiNgDualChart({ points }: { points: DualAxisPoint[] }) {
 function IssueCard({ card }: { card: IssueCardSpec }) {
   return (
     <div style={S.issueCard}>
-      <div style={{ ...S.issueIcon, background: card.iconBg }} aria-hidden>
-        <Icon icon={card.iconName} width={scaledPx(24)} height={scaledPx(24)} color={card.tagColor} />
-      </div>
-      <div style={S.issueText}>
-        <div style={S.issueHead}>
-          <span style={S.issueTitle} title={card.title}>
-            {card.title}
-          </span>
-          <span
-            style={{
-              ...S.issueTag,
-              color: card.tagColor,
-              borderColor: card.tagColor,
-              background: card.tagBg,
-            }}
-          >
-            {card.tagLabel}
-          </span>
+      <div style={S.issueHead}>
+        <div style={{ ...S.issueIcon, background: card.iconBg }} aria-hidden>
+          <Icon icon={card.iconName} width={scaledPx(20)} height={scaledPx(20)} color={card.tagColor} />
         </div>
-        <div style={S.issueBody}>
-          {card.body || <span style={{ color: "#9a9a9a", fontStyle: "italic", fontWeight: 500 }}>—</span>}
-        </div>
+        <span style={S.issueTitle} title={card.title}>{card.title}</span>
+        <span
+          style={{
+            ...S.issueTag,
+            color: card.tagColor,
+            borderColor: card.tagColor,
+            background: card.tagBg,
+          }}
+        >
+          {card.tagLabel}
+        </span>
       </div>
+      <div style={S.issueSummary}>{card.summary}</div>
+      <div style={S.issueStocks}>
+        <span style={S.issueStocksLabel}>관련 주식 :</span>
+        {card.stocks.map((s) => (
+          <span key={s.ticker} style={S.issueStockChip} title={s.name}>
+            {s.ticker}
+          </span>
+        ))}
+      </div>
+      <ul style={S.issueEventList}>
+        {card.events.map((e, i) => (
+          <li key={i} style={S.issueEventRow}>
+            <span style={{ ...S.issueEventDate, ...(e.future ? S.issueEventFuture : null) }}>
+              {e.date}
+              {e.future && <span style={S.issueEventFutureTag}>예정</span>}
+            </span>
+            <span style={S.issueEventText}>{e.text}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -1236,6 +1335,32 @@ const S = responsiveStyles({
     fontWeight: 500,
     color: "#000",
     lineHeight: 1.55,
+  },
+  summaryList: {
+    display: "flex",
+    flexDirection: "column",
+    listStyle: "none",
+    padding: 0,
+    margin: 0,
+    gap: 6,
+  },
+  summaryListItem: {
+    display: "grid",
+    gridTemplateColumns: "60px 1fr",
+    alignItems: "baseline",
+    gap: 10,
+    padding: "2px 0",
+  },
+  summaryListLabel: {
+    fontSize: 13,
+    fontWeight: 700,
+    whiteSpace: "nowrap",
+  },
+  summaryListBody: {
+    fontSize: 12.5,
+    fontWeight: 500,
+    color: "#373737",
+    lineHeight: 1.45,
   },
   statRow: {
     display: "flex",
@@ -1489,46 +1614,42 @@ const S = responsiveStyles({
   },
   row6Grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 14rem), 1fr))",
+    gridTemplateColumns: "1fr 1fr",
     gap: 12,
+    alignItems: "stretch",
   },
   issueCard: {
     background: "#fafbfc",
+    border: "1px solid #ececec",
     borderRadius: 10,
     padding: "14px 18px",
     display: "flex",
-    alignItems: "flex-start",
-    gap: 12,
+    flexDirection: "column",
+    gap: 10,
     minWidth: 0,
   },
   issueIcon: {
-    width: 42,
-    height: 42,
+    width: 32,
+    height: 32,
     borderRadius: "50%",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
   },
-  issueText: {
-    display: "flex",
-    flexDirection: "column",
-    gap: 6,
-    minWidth: 0,
-  },
   issueHead: {
     display: "flex",
     alignItems: "center",
-    gap: 8,
-    justifyContent: "space-between",
+    gap: 10,
   },
   issueTitle: {
-    fontSize: 14,
-    fontWeight: 600,
+    fontSize: 15,
+    fontWeight: 700,
     color: NAVY,
     whiteSpace: "nowrap",
     overflow: "hidden",
     textOverflow: "ellipsis",
+    flex: 1,
   },
   issueTag: {
     fontSize: 10,
@@ -1536,14 +1657,84 @@ const S = responsiveStyles({
     padding: "2px 6px",
     borderRadius: 4,
     border: "1px solid",
-    background: "#ffffff",
     whiteSpace: "nowrap",
+    flexShrink: 0,
   },
-  issueBody: {
+  issueSummary: {
+    fontSize: 13,
+    fontWeight: 600,
+    color: NAVY,
+    lineHeight: 1.45,
+  },
+  issueStocks: {
+    display: "flex",
+    flexWrap: "wrap",
+    alignItems: "center",
+    gap: 4,
+  },
+  issueStocksLabel: {
+    fontSize: 12,
+    fontWeight: 600,
+    color: "#7f7f7f",
+    marginRight: 2,
+  },
+  issueStockChip: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: NAVY,
+    background: "#eef2f7",
+    padding: "2px 7px",
+    borderRadius: 4,
+    fontFamily: "var(--font-numeric)",
+    letterSpacing: "0.02em",
+  },
+  issueEventList: {
+    display: "flex",
+    flexDirection: "column",
+    listStyle: "none",
+    padding: 0,
+    margin: 0,
+    gap: 0,
+    marginTop: 4,
+    borderTop: "1px solid #ececec",
+  },
+  issueEventRow: {
+    display: "grid",
+    gridTemplateColumns: "70px 1fr",
+    alignItems: "baseline",
+    gap: 10,
+    padding: "6px 0",
+    borderBottom: "1px solid #f3f3f3",
+    fontSize: 12,
+  },
+  issueEventDate: {
+    fontSize: 11,
+    fontWeight: 700,
+    color: "#003049",
+    fontFamily: "var(--font-numeric)",
+    whiteSpace: "nowrap",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: 4,
+  },
+  issueEventFuture: {
+    color: "#7f7f7f",
+  },
+  issueEventFutureTag: {
+    fontSize: 9,
+    fontWeight: 700,
+    padding: "1px 4px",
+    borderRadius: 3,
+    background: "#fff8e6",
+    color: "#a37200",
+    border: "1px solid #f0d27b",
+    letterSpacing: "0.04em",
+  },
+  issueEventText: {
     fontSize: 12,
     fontWeight: 500,
-    color: MUTED,
-    lineHeight: 1.5,
+    color: "#373737",
+    lineHeight: 1.45,
   },
 
   sideIndicators: {
