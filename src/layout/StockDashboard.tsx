@@ -13,7 +13,7 @@
 //   6) TOP 3 × 4          — 오른 / 거래된 / 떨어진 / 점수 좋았던
 //   7) 풋터 면책
 
-import { Fragment, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { analyze } from "../analysis";
 import {
   commodityImpactScore,
@@ -35,6 +35,7 @@ import {
   buildIScore,
   buildRScore,
   confidenceToPct,
+  normalizeMarketIndexMomentum,
 } from "../analysis/macroNarrative";
 import {
   technicalAnalysisV4,
@@ -196,7 +197,8 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
       loadScreen("priceDown", 3),
       loadScreen("volume", 3),
       loadScreen("scoreTop", 3),
-      Promise.all(MARKET_INDEX_SYMBOLS.map((s) => safeLoad(() => loadMarketIndex(s)))),
+      // range 3mo — 1mo 는 ~21 거래일밖에 안돼서 G Score 의 60일 모멘텀 계산 불가.
+      Promise.all(MARKET_INDEX_SYMBOLS.map((s) => safeLoad(() => loadMarketIndex(s, "3mo")))),
       Promise.all(FX_PAIRS.map((p) => safeLoad(() => loadFxRate(p)))),
     ])
       .then(([snapshot, env, sUp, sDown, sVol, sScore, marketIndices, fxRates]) => {
@@ -330,7 +332,13 @@ export function StockDashboard({ ticker, onBack, onSelectTicker, onNavigateSecti
         gScore: null, iScore: null, rScore: null,
       };
     }
-    const g = buildGScore(macroExtras.ism, macroExtras.unrate, null);
+    // ^GSPC = MARKET_INDEX_SYMBOLS[0]. history DESC → ASC.
+    const sp500 = data.marketIndices[0];
+    const sp500Closes = sp500
+      ? [...sp500.history].reverse().map((p) => p.close)
+      : [];
+    const marketMom = normalizeMarketIndexMomentum(sp500Closes);
+    const g = buildGScore(macroExtras.ism, macroExtras.unrate, marketMom);
     const i = buildIScore(macroExtras.cpi, macroExtras.fedfunds, data.env.treasury10y.history);
     const r = buildRScore(
       data.env.highYieldSpread.history,
@@ -585,27 +593,48 @@ function GaugeChartRow({
   onSelectTicker?: (ticker: string) => void;
 }) {
   const [hovered, setHovered] = useState<GaugeKey | null>(null);
-  const enter = (k: GaugeKey) => () => setHovered(k);
-  const leave = () => setHovered(null);
+  const hasHover = useHasHover();
+  const sectionRef = useRef<HTMLElement>(null);
+  const activate = (k: GaugeKey) => () => setHovered(k);
+  const deactivate = () => setHovered(null);
+  const goDetail = (s: DetailSection) => () => onNavigateSection?.(s);
+
+  // 모바일 — gauge/chart 외부 탭 시 호버 해제.
+  useEffect(() => {
+    if (hasHover || !hovered) return;
+    const onDocPointerDown = (e: PointerEvent) => {
+      const root = sectionRef.current;
+      if (root && !root.contains(e.target as Node)) {
+        setHovered(null);
+      }
+    };
+    document.addEventListener("pointerdown", onDocPointerDown);
+    return () => document.removeEventListener("pointerdown", onDocPointerDown);
+  }, [hasHover, hovered]);
+
   return (
-    <section className="il-gauge-chart-row" style={S.gaugeChartRow}>
+    <section ref={sectionRef} className="il-gauge-chart-row" style={S.gaugeChartRow}>
       <aside className="il-gauge-stack" style={S.gaugeStack}>
         <GaugeCard
           title="기업 펀더멘털"
           gauge={fundamental}
           mode="donut"
-          onClick={() => onNavigateSection?.("fundamental")}
-          onHoverEnter={enter("fundamental")}
-          onHoverLeave={leave}
+          hasHover={hasHover}
+          isActive={hovered === "fundamental"}
+          onActivate={activate("fundamental")}
+          onDeactivate={deactivate}
+          onNavigateDetail={goDetail("fundamental")}
         />
         <GaugeCard
           title="거시 경제"
           gauge={macro}
           mode="regime"
           regimePct={macroDominantPct}
-          onClick={() => onNavigateSection?.("macro")}
-          onHoverEnter={enter("macro")}
-          onHoverLeave={leave}
+          hasHover={hasHover}
+          isActive={hovered === "macro"}
+          onActivate={activate("macro")}
+          onDeactivate={deactivate}
+          onNavigateDetail={goDetail("macro")}
         />
         <GaugeCard
           title="원자재 영향"
@@ -613,17 +642,21 @@ function GaugeChartRow({
           // 사용자 요청 — 스코어/도넛 대신 카드 내부에 3 행 신호등 미니 그래프 (비용/공급/전망)
           mode="trafficLight"
           commodityMini={commodityViz}
-          onClick={() => onNavigateSection?.("commodity")}
-          onHoverEnter={enter("commodity")}
-          onHoverLeave={leave}
+          hasHover={hasHover}
+          isActive={hovered === "commodity"}
+          onActivate={activate("commodity")}
+          onDeactivate={deactivate}
+          onNavigateDetail={goDetail("commodity")}
         />
         <GaugeCard
           title="기술적 지표"
           gauge={technical}
           mode="halfGauge"
-          onClick={() => onNavigateSection?.("technical")}
-          onHoverEnter={enter("technical")}
-          onHoverLeave={leave}
+          hasHover={hasHover}
+          isActive={hovered === "technical"}
+          onActivate={activate("technical")}
+          onDeactivate={deactivate}
+          onNavigateDetail={goDetail("technical")}
         />
       </aside>
       <ChartPanel
@@ -675,42 +708,101 @@ function arcPath(
   return `M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}`;
 }
 
+// 호버 가능 디바이스(데스크탑) 감지 — (hover: hover) 미디어 쿼리.
+function useHasHover(): boolean {
+  const [hasHover, setHasHover] = useState<boolean>(() =>
+    typeof window !== "undefined"
+      ? window.matchMedia("(hover: hover)").matches
+      : true,
+  );
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia("(hover: hover)");
+    const handler = (e: MediaQueryListEvent) => setHasHover(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return hasHover;
+}
+
 function GaugeCard({
   title,
   gauge,
   mode,
   regimePct,
   commodityMini,
-  onClick,
-  onHoverEnter,
-  onHoverLeave,
+  hasHover,
+  isActive,
+  onActivate,
+  onDeactivate,
+  onNavigateDetail,
 }: {
   title: string;
   gauge: GaugeScore;
   mode: GaugeMode;
   regimePct?: number | null;
   commodityMini?: CommodityVizData | null;
-  onClick?: () => void;
-  onHoverEnter?: () => void;
-  onHoverLeave?: () => void;
+  hasHover: boolean;
+  isActive: boolean;
+  onActivate?: () => void;
+  onDeactivate?: () => void;
+  onNavigateDetail?: () => void;
 }) {
   const color = gaugeColor(gauge);
   const taglineText = (gauge.tagline || gauge.label).replace(/\n/g, " ");
 
+  // 데스크탑: 카드 클릭 = detail / hover 시 activate.
+  // 모바일:   카드 탭 = activate / chevron 탭 = detail.
+  const handleCardClick = () => {
+    if (hasHover) onNavigateDetail?.();
+    else onActivate?.();
+  };
+  const handleChevronClick = (e: React.MouseEvent | React.KeyboardEvent) => {
+    e.stopPropagation();
+    onNavigateDetail?.();
+  };
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleCardClick();
+    }
+  };
+
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
+      aria-pressed={!hasHover && isActive ? true : undefined}
       className="il-gauge-card"
       style={S.gaugeCard}
-      onClick={onClick}
-      onMouseEnter={onHoverEnter}
-      onMouseLeave={onHoverLeave}
-      onFocus={onHoverEnter}
-      onBlur={onHoverLeave}
+      onClick={handleCardClick}
+      onKeyDown={handleKeyDown}
+      onMouseEnter={hasHover ? onActivate : undefined}
+      onMouseLeave={hasHover ? onDeactivate : undefined}
+      onFocus={hasHover ? onActivate : undefined}
+      onBlur={hasHover ? onDeactivate : undefined}
     >
       <div style={S.gaugeHead}>
         <span style={S.gaugeTitle}>{title}</span>
-        <ChevronRight />
+        <button
+          type="button"
+          aria-label={`${title} 자세히 보기`}
+          onClick={handleChevronClick}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") handleChevronClick(e);
+          }}
+          style={{
+            background: "transparent",
+            border: 0,
+            padding: 4,
+            margin: -4,
+            cursor: "pointer",
+            display: "inline-flex",
+            alignItems: "center",
+          }}
+        >
+          <ChevronRight />
+        </button>
       </div>
       <div className="il-gauge-card-body" style={S.gaugeBody}>
         <div style={S.gaugeLeft}>
@@ -732,7 +824,7 @@ function GaugeCard({
           {mode === "trafficLight" && <CommodityMiniTraffic data={commodityMini ?? null} />}
         </div>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -1701,6 +1793,7 @@ function EventsFxRow({
                 ? `${fr.delta >= 0 ? "+" : ""}${fr.delta.toFixed(2)} (${fr.pct >= 0 ? "+" : ""}${fr.pct.toFixed(2)}%)`
                 : "—";
             const sparkValues = (fr?.history ?? []).map((h) => h.close);
+            const sparkDates = (fr?.history ?? []).map((h) => h.date);
             return (
               <li
                 key={pair}
@@ -1715,7 +1808,16 @@ function EventsFxRow({
                 </div>
                 <div style={S.fxSparkCol}>
                   {sparkValues.length > 1 ? (
-                    <Sparkline values={sparkValues} width="100%" height={32} color={deltaColor} strokeWidth={1.6} />
+                    <Sparkline
+                      values={sparkValues}
+                      dates={sparkDates}
+                      width="100%"
+                      height={32}
+                      color={deltaColor}
+                      strokeWidth={1.6}
+                      showHoverValue
+                      formatValue={(v) => v.toLocaleString(undefined, { maximumFractionDigits: 4 })}
+                    />
                   ) : (
                     <span style={S.fxSparkEmpty}>—</span>
                   )}
@@ -1744,6 +1846,7 @@ interface TrioItem {
   deltaText: string;
   positive: boolean | null;
   history: Array<number | null>;
+  historyDates: string[];
 }
 
 function CompositeRow({ items }: { items: TrioItem[] }) {
@@ -1764,7 +1867,16 @@ function CompositeRow({ items }: { items: TrioItem[] }) {
                 {c.score == null ? "—" : c.score.toFixed(1)}
               </div>
               <div style={S.compSpark}>
-                <Sparkline values={c.history} width="100%" height={56} color={color} strokeWidth={2} />
+                <Sparkline
+                  values={c.history}
+                  dates={c.historyDates}
+                  width="100%"
+                  height={56}
+                  color={color}
+                  strokeWidth={2}
+                  showHoverValue
+                  formatValue={(v) => v.toFixed(1)}
+                />
               </div>
             </div>
             <div style={{ ...S.compDelta, color: deltaColor }}>
@@ -2072,6 +2184,7 @@ function buildTrioItems(data: DashState): TrioItem[] {
       deltaText: todayDelta?.text ?? "—",
       positive: todayDelta?.positive ?? null,
       history: toSparkline(todaySeries),
+      historyDates: todaySeries.map((p) => p.date),
     },
     {
       label: "이번 달 종합 점수",
@@ -2080,6 +2193,7 @@ function buildTrioItems(data: DashState): TrioItem[] {
       deltaText: monthDelta?.text ?? "—",
       positive: monthDelta?.positive ?? null,
       history: toSparkline(monthSeries),
+      historyDates: monthSeries.map((p) => p.date),
     },
     {
       label: "올해 종합 점수",
@@ -2088,6 +2202,7 @@ function buildTrioItems(data: DashState): TrioItem[] {
       deltaText: yearDelta?.text ?? "—",
       positive: yearDelta?.positive ?? null,
       history: toSparkline(yearOrFallback),
+      historyDates: yearOrFallback.map((p) => p.date),
     },
   ];
 }

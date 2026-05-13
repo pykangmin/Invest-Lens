@@ -26,6 +26,7 @@ import {
   confidenceToPct,
   girTrendSeries,
   macroIndicatorsTable,
+  normalizeMarketIndexMomentum,
   regimeFromDominant,
   regimeProbCards,
   regimeTrendSeries,
@@ -39,15 +40,19 @@ import {
 import {
   loadGlobalEnvironment,
   loadMacroRegime,
+  loadMarketIndex,
 } from "../data-loader/investmentData";
 import type {
   GlobalEnvironmentResponse,
   MacroRegimeResponse,
 } from "../types/investment";
+import type { MarketIndexResponse } from "../data-loader/investmentData";
 import { InfoTooltip } from "../visualization/InfoTooltip";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
 import { responsiveStyles, scaledPx } from "../shared/responsiveStyle";
+import { TruncatedText } from "../shared/TruncatedText";
+import { ChartCrosshair, ChartPortalTooltip, ChartTooltip, useChartHoverIdx, useChartHoverIdxPortal } from "../visualization/chartHover";
 
 interface DetailState {
   regime: MacroRegimeResponse;
@@ -62,6 +67,7 @@ interface DetailState {
   cpi: GlobalEnvironmentResponse;
   fedfunds: GlobalEnvironmentResponse;
   m2: GlobalEnvironmentResponse;
+  sp500: MarketIndexResponse | null;
 }
 
 let macroDetailCache: DetailState | null = null;
@@ -106,6 +112,8 @@ export function MacroDetail({
       loadGlobalEnvironment({ symbol: "CPIAUCSL", historyLimit: 36 }),
       loadGlobalEnvironment({ symbol: "FEDFUNDS", historyLimit: 24 }),
       loadGlobalEnvironment({ symbol: "M2SL", historyLimit: 36 }),
+      // G Score 의 주식 모멘텀 기여를 위한 S&P 500 일별 close (3개월).
+      loadMarketIndex("^GSPC", "3mo").catch(() => null),
     ])
       .then(
         ([
@@ -121,6 +129,7 @@ export function MacroDetail({
           cpi,
           fedfunds,
           m2,
+          sp500,
         ]) => {
           const next: DetailState = {
               regime,
@@ -135,6 +144,7 @@ export function MacroDetail({
               cpi,
               fedfunds,
               m2,
+              sp500,
             };
           macroDetailCache = next;
           if (alive) setData(next);
@@ -153,7 +163,12 @@ export function MacroDetail({
     const dominant = regimeFromDominant(data.regime.latest?.dominantRegime ?? null);
     const confidencePct = confidenceToPct(data.regime.latest?.confidence ?? null);
     const regimes = regimeProbCards(data.regime.latest);
-    const gScore = buildGScore(data.ismMan.history, data.unrate.history, null);
+    // ^GSPC history 는 DESC (최신 [0]). normalizeMarketIndexMomentum 는 ASC 가정 → reverse.
+    const sp500Closes = data.sp500
+      ? [...data.sp500.history].reverse().map((p) => p.close)
+      : [];
+    const marketMom = normalizeMarketIndexMomentum(sp500Closes);
+    const gScore = buildGScore(data.ismMan.history, data.unrate.history, marketMom);
     const iScore = buildIScore(
       data.cpi.history,
       data.fedfunds.history,
@@ -392,7 +407,7 @@ function ContribCard({ score }: { score: GirScore }) {
   return (
     <div style={S.contribCard}>
       <div style={S.contribCardHeader}>
-        <span style={S.contribCardTitle}>{score.title}</span>
+        <TruncatedText style={S.contribCardTitle}>{score.title}</TruncatedText>
         <div style={S.contribCardTotal}>
           <span style={S.contribTotalLabel}>합계</span>
           <span style={{ ...S.contribTotalValue, color: score.totalColor }}>
@@ -408,7 +423,7 @@ function ContribCard({ score }: { score: GirScore }) {
           const fillColor = isNeg ? "#c1121f" : "#60c846";
           return (
             <div key={r.variable} style={S.contribRow}>
-              <span style={S.contribRowName}>{r.variable}</span>
+              <TruncatedText style={S.contribRowName}>{r.variable}</TruncatedText>
               <div style={S.contribRowBar}>
                 <div style={S.contribRowBarBase} />
                 <div style={S.contribRowCenterMark} />
@@ -472,8 +487,16 @@ function RegimeTrendChart({ points }: { points: RegimeTrendPoint[] }) {
     });
     return segs.join(" ");
   };
+  const { hoverIdx, onPointerMove, onPointerLeave } = useChartHoverIdx(
+    points.length, xOf, W,
+  );
+  const hoveredPoint = hoverIdx !== null ? points[hoverIdx] : null;
   return (
-    <div style={CFM.wrap}>
+    <div
+      style={{ ...CFM.wrap, position: "relative" }}
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
+    >
       <div style={CFM.legendRow}>
         {series.map((s) => (
           <span key={s.key} style={CFM.legendItem}>
@@ -590,7 +613,24 @@ function RegimeTrendChart({ points }: { points: RegimeTrendPoint[] }) {
             </text>
           ) : null,
         )}
+        {hoverIdx !== null && (
+          <ChartCrosshair x={xOf(hoverIdx)} y1={padT} y2={padT + innerH} />
+        )}
       </svg>
+      {hoveredPoint && (
+        <ChartTooltip leftPercent={(xOf(hoverIdx!) / W) * 100} top={-8}>
+          <div style={{ opacity: 0.85, fontWeight: 500, marginBottom: 2 }}>{hoveredPoint.date}</div>
+          {series.map((s) => {
+            const v = hoveredPoint[s.key];
+            return (
+              <div key={s.key}>
+                <span style={{ color: s.color, marginRight: 4 }}>●</span>
+                {s.label} <strong>{v == null ? "—" : `${v.toFixed(1)}%`}</strong>
+              </div>
+            );
+          })}
+        </ChartTooltip>
+      )}
     </div>
   );
 }
@@ -629,8 +669,16 @@ function GirTrendChartFull({ points }: { points: GirTrendPoint[] }) {
     });
     return segs.join(" ");
   };
+  const { hoverIdx, onPointerMove, onPointerLeave } = useChartHoverIdx(
+    points.length, xOf, W,
+  );
+  const hoveredPoint = hoverIdx !== null ? points[hoverIdx] : null;
   return (
-    <div style={CFM.wrap}>
+    <div
+      style={{ ...CFM.wrap, position: "relative" }}
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
+    >
       <div style={CFM.legendRow}>
         {series.map((s) => (
           <span key={s.key} style={CFM.legendItem}>
@@ -747,7 +795,25 @@ function GirTrendChartFull({ points }: { points: GirTrendPoint[] }) {
             </text>
           ) : null,
         )}
+        {hoverIdx !== null && (
+          <ChartCrosshair x={xOf(hoverIdx)} y1={padT} y2={padT + innerH} />
+        )}
       </svg>
+      {hoveredPoint && (
+        <ChartTooltip leftPercent={(xOf(hoverIdx!) / W) * 100} top={-8}>
+          <div style={{ opacity: 0.85, fontWeight: 500, marginBottom: 2 }}>{hoveredPoint.date}</div>
+          {series.map((s) => {
+            const v = hoveredPoint[s.key];
+            const fmt = v == null ? "—" : (v >= 0 ? `+${v.toFixed(2)}` : v.toFixed(2));
+            return (
+              <div key={s.key}>
+                <span style={{ color: s.color, marginRight: 4 }}>●</span>
+                {s.label} <strong>{fmt}</strong>
+              </div>
+            );
+          })}
+        </ChartTooltip>
+      )}
     </div>
   );
 }
@@ -795,11 +861,15 @@ function MacroIndicatorsTable({ rows }: { rows: MacroIndicatorRow[] }) {
 function TrendSpark({ values, color }: { values: number[]; color: string }) {
   const W = 60;
   const H = 20;
+  const stepX = values.length > 1 ? W / (values.length - 1) : 0;
+  const xOf = (i: number) => i * stepX;
+  const { hoverIdx, pointer, onPointerMove, onPointerLeave } = useChartHoverIdxPortal(
+    values.length, xOf, W,
+  );
   if (values.length < 2) return <span style={{ color: "#9a9a9a" }}>—</span>;
   const min = Math.min(...values);
   const max = Math.max(...values);
   const span = max - min || 1;
-  const stepX = W / (values.length - 1);
   const pts = values.map((v, i) => ({
     x: i * stepX,
     y: H - 2 - ((v - min) / span) * (H - 4),
@@ -808,12 +878,26 @@ function TrendSpark({ values, color }: { values: number[]; color: string }) {
     .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
     .join(" ");
   return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{ display: "block", width: scaledPx(W), height: scaledPx(H) }}>
-      <path d={d} stroke={color} strokeWidth={1.2} fill="none" />
-      {pts.map((p, i) => (
-        <circle key={i} cx={p.x} cy={p.y} r={1.4} fill={color} />
-      ))}
-    </svg>
+    <div
+      style={{ position: "relative", display: "inline-block", width: scaledPx(W), height: scaledPx(H) }}
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
+    >
+      <svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display: "block" }}>
+        <path d={d} stroke={color} strokeWidth={1.2} fill="none" />
+        {pts.map((p, i) => (
+          <circle key={i} cx={p.x} cy={p.y} r={1.4} fill={color} />
+        ))}
+        {hoverIdx !== null && (
+          <ChartCrosshair x={xOf(hoverIdx)} y2={H} />
+        )}
+      </svg>
+      {hoverIdx !== null && pointer && (
+        <ChartPortalTooltip clientX={pointer.x} clientY={pointer.topY}>
+          <strong>{values[hoverIdx].toFixed(2)}</strong>
+        </ChartPortalTooltip>
+      )}
+    </div>
   );
 }
 

@@ -143,23 +143,14 @@ export default async function handler(
     }
 
     const [
-      latestFundamentals,
       fundamentalsHistory,
       latestTechnical,
       technicalHistory,
       latestSignalsRow,
     ] = await Promise.all([
-      queryOne<StockFundamentalsRow>(
-        `
-          SELECT *
-          FROM public.stock_fundamentals
-          WHERE ticker = $1
-            AND (per IS NOT NULL OR roe IS NOT NULL OR market_cap IS NOT NULL)
-          ORDER BY date DESC
-          LIMIT 1
-        `,
-        [ticker],
-      ),
+      // latestFundamentals 는 별도 쿼리 폐기 — forward-fill 된 history[0] 사용.
+      // 분기별 sparse row (예: 최신 row 가 roe=null, 직전 row 가 roe=valid) 인 경우
+      // 별도 SQL 의 단발 row 선택은 forward-fill 효과를 못 받아 ROE 등이 누락됨.
       query<StockFundamentalsRow>(
         `
           SELECT *
@@ -224,12 +215,15 @@ export default async function handler(
         }
       : null;
 
+    const filledHistory = interpolateFundamentalsHistory(
+      fundamentalsHistory.map(mapFundamentals),
+    );
+
     const payload: CompanySnapshot = {
       company: mapCompany(company),
-      latestFundamentals: latestFundamentals ? mapFundamentals(latestFundamentals) : null,
-      fundamentalsHistory: interpolateFundamentalsHistory(
-        fundamentalsHistory.map(mapFundamentals),
-      ),
+      // history[0] = 최신, 이미 forward-fill 적용됨 → 분기별 sparse null 보강
+      latestFundamentals: filledHistory.length > 0 ? filledHistory[0] : null,
+      fundamentalsHistory: filledHistory,
       latestTechnical: latestTechnical ? mapTechnical(latestTechnical) : null,
       technicalHistory: technicalHistory.map(mapTechnical),
       latestSignals,

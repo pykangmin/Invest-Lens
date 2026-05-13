@@ -496,6 +496,17 @@ export function technicalAnalysisV4(
     available: vol.score > 0,
   });
 
+  // 옵션 B — 각 metric 의 series 마지막 점을 score 와 동기화.
+  //   detail §1-A 게이지 (Σ score) / §2 추이 마지막 점 (Σ series[last]) / 상승·하락 기여
+  //   (series[last] - series[7일전]) 세 곳이 모두 동일 기준 (오늘 = DB 직값 반영 score) 으로 일관.
+  //   부작용: SuperTrend / MACD signal cross 등 DB 직값이 proxy 와 다를 때 추이 선 마지막에
+  //   점프 발생 — "오늘 새 신호 반영" 의 시각적 표현으로 해석.
+  for (const m of metrics) {
+    if (m.series.length > 0) {
+      m.series[m.series.length - 1] = m.score;
+    }
+  }
+
   const totalScore = Math.round(metrics.reduce((s, m) => s + m.score, 0));
   const signal = totalToSignal(totalScore);
 

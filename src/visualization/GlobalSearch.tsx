@@ -8,6 +8,7 @@ import {
 import { searchCompanies } from "../data-loader/investmentData";
 import type { CompanyMaster } from "../types/investment";
 import { responsiveStyles } from "../shared/responsiveStyle";
+import { TruncatedText } from "../shared/TruncatedText";
 
 const DEBOUNCE_MS = 220;
 const RESULT_LIMIT = 8;
@@ -169,7 +170,7 @@ export function GlobalSearch({
               }}
             >
               <span style={S.tickerCol}>{row.ticker}</span>
-              <span style={S.nameCol}>{row.name}</span>
+              <TruncatedText style={S.nameCol}>{row.name}</TruncatedText>
               {row.sector && <span style={S.sectorCol}>{row.sector}</span>}
             </li>
           ))}

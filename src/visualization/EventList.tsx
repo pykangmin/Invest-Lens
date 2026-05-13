@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import type { AnalysisEvent, Severity } from "../types/scoring";
 import { severityVar } from "./severityColor";
 import { responsiveStyles } from "../shared/responsiveStyle";
+import { TruncatedText } from "../shared/TruncatedText";
 
 export interface EventListProps {
   events: AnalysisEvent[];
@@ -56,7 +57,7 @@ export function EventList({ events, title = "주요 이벤트", maxRows = 5, hea
                 </div>
                 <div style={S.body}>
                   <div style={S.titleRow}>
-                    <span style={S.rowTitle}>{ev.title}</span>
+                    <TruncatedText style={S.rowTitle}>{ev.title}</TruncatedText>
                     <span
                       style={{
                         ...S.tag,

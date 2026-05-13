@@ -58,6 +58,8 @@ import { InfoTooltip } from "../visualization/InfoTooltip";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
 import { responsiveStyles, scaledPx } from "../shared/responsiveStyle";
+import { TruncatedText } from "../shared/TruncatedText";
+import { ChartCrosshair, ChartTooltip, useChartHoverIdx } from "../visualization/chartHover";
 
 export interface FundamentalDetailProps {
   ticker: string;
@@ -145,7 +147,7 @@ function buildHeroCards(
       "roe",
       "ROE",
       f?.roe != null ? fmtPct(f.roe) : "—",
-      peers && peers.length > 0 ? peerRankLabel(ticker, peers, "roe", true) : "—",
+      peers && peers.length > 0 ? peerRankLabel(ticker, peers, "roe", true, f?.roe ?? null) : "—",
     ),
     card(
       "revenue",
@@ -450,11 +452,11 @@ function HeroCardView({ card }: { card: HeroCard }) {
             color={card.iconColor}
           />
         </div>
-        <span style={S.heroCardLabel}>{card.label}</span>
+        <TruncatedText style={S.heroCardLabel}>{card.label}</TruncatedText>
         <InfoTooltip text={TOOLTIP_TEXT[card.key]} mode="card" size={16} />
       </div>
-      <div style={S.heroCardBig}>{card.bigValue}</div>
-      <div style={S.heroCardSub}>{card.sub}</div>
+      <TruncatedText style={S.heroCardBig}>{card.bigValue}</TruncatedText>
+      <TruncatedText style={S.heroCardSub}>{card.sub}</TruncatedText>
     </div>
   );
 }
@@ -584,8 +586,15 @@ function GroupedBarChart({ bars }: { bars: CashflowChartData["bars"] }) {
 
   const groupW = innerW / bars.length;
   const barW = Math.max(6, (groupW - 12) / 2);
+  const xOfBar = (i: number) => padL + i * groupW + groupW / 2;
+
+  const { hoverIdx, onPointerMove, onPointerLeave } = useChartHoverIdx(
+    bars.length, xOfBar, W,
+  );
+  const hovered = hoverIdx !== null ? bars[hoverIdx] : null;
 
   return (
+    <div style={{ position: "relative" }} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}>
     <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
       {/* Y grid line + tick label (0 제외하고 3개 line) */}
       {yTicks.map((t) => {
@@ -680,7 +689,19 @@ function GroupedBarChart({ bars }: { bars: CashflowChartData["bars"] }) {
           </g>
         );
       })}
+      {/* hover crosshair */}
+      {hoverIdx !== null && (
+        <ChartCrosshair x={xOfBar(hoverIdx)} y1={padT} y2={padT + innerH} />
+      )}
     </svg>
+    {hovered && (
+      <ChartTooltip leftPercent={(xOfBar(hoverIdx!) / W) * 100}>
+        <div style={{ opacity: 0.85, fontWeight: 500, marginBottom: 2 }}>{hovered.label}</div>
+        <div>매출 <strong>${hovered.revenue?.toFixed(1) ?? "—"}B</strong></div>
+        <div>FCF <strong>${hovered.fcf?.toFixed(1) ?? "—"}B</strong></div>
+      </ChartTooltip>
+    )}
+    </div>
   );
 }
 
@@ -774,7 +795,13 @@ function DualLineChart({ points }: { points: ProfitabilityChartData["points"] })
 
   const lineColors = { netMargin: "#5b8bd9", roe: "#e5af43" };
 
+  const { hoverIdx, onPointerMove, onPointerLeave } = useChartHoverIdx(
+    points.length, xOf, W,
+  );
+  const hovered = hoverIdx !== null ? points[hoverIdx] : null;
+
   return (
+    <div style={{ position: "relative" }} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}>
     <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
       {/* Y grid line + tick label */}
       {yTicks.map((t) => {
@@ -865,7 +892,19 @@ function DualLineChart({ points }: { points: ProfitabilityChartData["points"] })
           {p.label}
         </text>
       ))}
+      {/* hover crosshair */}
+      {hoverIdx !== null && (
+        <ChartCrosshair x={xOf(hoverIdx)} y1={padT} y2={padT + innerH} />
+      )}
     </svg>
+    {hovered && (
+      <ChartTooltip leftPercent={(xOf(hoverIdx!) / W) * 100}>
+        <div style={{ opacity: 0.85, fontWeight: 500, marginBottom: 2 }}>{hovered.label}</div>
+        <div>Net Margin <strong>{hovered.netMargin?.toFixed(1) ?? "—"}%</strong></div>
+        <div>ROE <strong>{hovered.roe?.toFixed(1) ?? "—"}%</strong></div>
+      </ChartTooltip>
+    )}
+    </div>
   );
 }
 
@@ -910,8 +949,8 @@ function GrowthSection({
           <Fragment key={ind.label}>
             {i > 0 && <div style={CF.indicatorDivider} />}
             <div style={CF.indicatorRow}>
-              <span style={CF.indicatorLabel}>{ind.label}</span>
-              <span style={CF.indicatorValue}>{ind.value}</span>
+              <TruncatedText style={CF.indicatorLabel}>{ind.label}</TruncatedText>
+              <TruncatedText style={CF.indicatorValue}>{ind.value}</TruncatedText>
               <span
                 style={{
                   ...CF.indicatorChip,
@@ -958,8 +997,15 @@ function GrowthBarChart({ bars }: { bars: GrowthChartData["bars"] }) {
 
   const groupW = innerW / bars.length;
   const barW = Math.max(10, groupW * 0.45);
+  const xOfBar = (i: number) => padL + (i + 0.5) * groupW;
+
+  const { hoverIdx, onPointerMove, onPointerLeave } = useChartHoverIdx(
+    bars.length, xOfBar, W,
+  );
+  const hovered = hoverIdx !== null ? bars[hoverIdx] : null;
 
   return (
+    <div style={{ position: "relative" }} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}>
     <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
       {/* Y grid line */}
       {yTicks.map((t) => {
@@ -993,6 +1039,31 @@ function GrowthBarChart({ bars }: { bars: GrowthChartData["bars"] }) {
 
       {/* Y axis 좌측 라인 */}
       <line x1={padL} y1={padT} x2={padL} y2={padT + innerH} stroke="#b8b8b8" strokeWidth={1} />
+
+      {/* 0% baseline — tick 에 0 이 없을 때도 항상 그림 */}
+      {yMin < 0 && yMax > 0 && !yTicks.includes(0) && (
+        <g>
+          <line
+            x1={padL}
+            x2={W - padR}
+            y1={yZero}
+            y2={yZero}
+            stroke="#b8b8b8"
+            strokeWidth={1}
+          />
+          <text
+            x={padL - 6}
+            y={yZero}
+            fontSize={9}
+            fill="#737474"
+            textAnchor="end"
+            dominantBaseline="middle"
+            fontFamily="var(--font-numeric)"
+          >
+            0%
+          </text>
+        </g>
+      )}
 
       {/* Bars (0 baseline 기준 위/아래). null 분기는 dashed 빈 슬롯 + N/A. */}
       {bars.map((b, i) => {
@@ -1058,7 +1129,17 @@ function GrowthBarChart({ bars }: { bars: GrowthChartData["bars"] }) {
           {b.label}
         </text>
       ))}
+      {hoverIdx !== null && (
+        <ChartCrosshair x={xOfBar(hoverIdx)} y1={padT} y2={padT + innerH} />
+      )}
     </svg>
+    {hovered && (
+      <ChartTooltip leftPercent={(xOfBar(hoverIdx!) / W) * 100}>
+        <div style={{ opacity: 0.85, fontWeight: 500, marginBottom: 2 }}>{hovered.label}</div>
+        <div>Revenue Growth YoY <strong>{hovered.revenue != null ? `${hovered.revenue.toFixed(1)}%` : "N/A"}</strong></div>
+      </ChartTooltip>
+    )}
+    </div>
   );
 }
 
@@ -1111,10 +1192,10 @@ function ValuationRow({ ind }: { ind: ValuationIndicator }) {
   return (
     <div style={VAL.row}>
       <div style={VAL.rowHead}>
-        <span style={VAL.rowLabel}>
+        <TruncatedText style={VAL.rowLabel} text={`${ind.letter}. ${ind.label}`}>
           {ind.letter}. {ind.label}
-        </span>
-        <span style={{ ...VAL.rowValue, color: ind.barColor }}>{ind.value}</span>
+        </TruncatedText>
+        <TruncatedText style={{ ...VAL.rowValue, color: ind.barColor }}>{ind.value}</TruncatedText>
         <span
           style={{
             ...CF.indicatorChip,
@@ -1287,7 +1368,7 @@ function ScoreDistributionSection({
                 >
                   <ValuationCategoryIcon kind={s.key} color={color} />
                 </span>
-                <span style={SD.rowLabel}>{s.label}</span>
+                <TruncatedText style={SD.rowLabel}>{s.label}</TruncatedText>
                 <div style={SD.rowBar}>
                   <div style={SD.rowBarBase} />
                   <div
@@ -1504,7 +1585,9 @@ const S = responsiveStyles({
     borderRadius: 10,
     padding: "clamp(0.625rem, 1.1vw, 0.875rem) clamp(0.625rem, 1.25vw, 1rem)",
     justifyContent: "space-between",
-    overflow: "hidden",
+    // overflow: hidden 제거 — 내부 label/bigValue 자체 ellipsis 가 있으므로 안전.
+    // 이전엔 InfoTooltip 팝업이 카드 경계에서 잘렸음.
+    overflow: "visible",
   },
   heroCardHead: {
     display: "flex",

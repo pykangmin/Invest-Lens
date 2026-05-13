@@ -14,7 +14,7 @@
 //   §6 (1538-1734, h=196) — 주요 섹터별 시장 이슈 분석: 3 INSTANCE Card/원자재/주요 이슈 (각 345w)
 //   §7 (1746-2096, h=350) — 2-col: 자산군 정규화 사이클(494w) + 에너지 괴리율(597w) + 우측 사이드 지표
 
-import { Fragment, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { Icon } from "@iconify/react";
 import {
   barChangeData,
@@ -48,6 +48,8 @@ import { InfoTooltip } from "../visualization/InfoTooltip";
 import { DetailShell, type DetailSection } from "./DetailShell";
 import { EmptyState } from "./detail";
 import { responsiveStyles, scaledPx } from "../shared/responsiveStyle";
+import { TruncatedText } from "../shared/TruncatedText";
+import { ChartCrosshair, ChartTooltip, useChartHoverIdx } from "../visualization/chartHover";
 
 export interface CommodityDetailProps {
   ticker: string;
@@ -596,8 +598,8 @@ function StatItem({ stat }: { stat: StatSpec }) {
         <StatIcon />
       </div>
       <div style={S.statText}>
-        <span style={S.statLabel}>{stat.label}</span>
-        <span style={{ ...S.statValue, color: stat.color }}>{stat.value}</span>
+        <TruncatedText style={S.statLabel}>{stat.label}</TruncatedText>
+        <TruncatedText style={{ ...S.statValue, color: stat.color }}>{stat.value}</TruncatedText>
       </div>
     </div>
   );
@@ -622,10 +624,8 @@ function MainFourCard({ card }: { card: MainFourSpec }) {
         <Icon icon={card.iconName} width={scaledPx(28)} height={scaledPx(28)} color={card.color} />
       </div>
       <div style={S.mainFourText}>
-        <span style={S.mainFourLabel} title={card.label}>
-          {card.label}
-        </span>
-        <span style={{ ...S.mainFourValue, color: card.color }}>{card.value}</span>
+        <TruncatedText style={S.mainFourLabel}>{card.label}</TruncatedText>
+        <TruncatedText style={{ ...S.mainFourValue, color: card.color }}>{card.value}</TruncatedText>
       </div>
     </div>
   );
@@ -654,9 +654,7 @@ function PriceCard({ card, idx }: { card: PriceCardSpec; idx: number }) {
       }}
     >
       <div style={S.priceCardHead}>
-        <span style={S.priceCardLabel} title={card.label}>
-          {card.label}
-        </span>
+        <TruncatedText style={S.priceCardLabel}>{card.label}</TruncatedText>
         {tooltipText && <InfoTooltip text={tooltipText} mode="card" size={14} />}
       </div>
       <div style={S.priceCardValue}>
@@ -695,7 +693,10 @@ function BarChangeChart({ items }: { items: BarChangeItem[] }) {
   const xStep = innerW / items.length;
   const barW = Math.max(14, xStep * 0.55);
   return (
-    <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
+    // flex-grow wrapper — 부모 row3Right 박스의 남은 세로 공간을 모두 차지.
+    // SVG 는 viewBox 기반으로 100%×100% 채우며 meet 비율 유지.
+    <div style={{ flex: 1, minHeight: 0, display: "flex" }}>
+    <svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", width: "100%", height: "100%" }}>
       {yTicks.map((t) => {
         const y = yOf(t);
         const isZero = t === 0;
@@ -728,6 +729,7 @@ function BarChangeChart({ items }: { items: BarChangeItem[] }) {
         );
       })}
     </svg>
+    </div>
   );
 }
 
@@ -792,7 +794,9 @@ function VolatilityScatter({ points }: { points: ScatterPoint[] }) {
   const pointOrder = hovered
     ? [...points.filter((p) => p.symbol !== hovered), ...points.filter((p) => p.symbol === hovered)]
     : points;
+  const hoveredPoint = hovered ? points.find((p) => p.symbol === hovered) : null;
   return (
+    <div style={{ position: "relative" }} onMouseLeave={() => setHovered(null)}>
     <svg
       width="100%"
       height="100%"
@@ -883,6 +887,19 @@ function VolatilityScatter({ points }: { points: ScatterPoint[] }) {
         );
       })}
     </svg>
+    {hoveredPoint && (
+      <ChartTooltip
+        leftPercent={(xOf(hoveredPoint.x) / W) * 100}
+        style={{
+          top: `${(yOf(hoveredPoint.y) / H) * 100}%`,
+          transform: "translate(-50%, calc(-100% - 14px))",
+        }}
+      >
+        <div style={{ fontWeight: 700 }}>{hoveredPoint.label}</div>
+        <div>변동성 {hoveredPoint.x.toFixed(1)} · 수익률 {hoveredPoint.y >= 0 ? "+" : ""}{hoveredPoint.y.toFixed(1)}%</div>
+      </ChartTooltip>
+    )}
+    </div>
   );
 }
 
@@ -933,7 +950,12 @@ function SectorLineSvg({ chart }: { chart: SectorChart }) {
   const stepX = chart.points.length > 1 ? innerW / (chart.points.length - 1) : 0;
   const xOf = (i: number) => padL + i * stepX;
   const yOf = (v: number) => padT + innerH - (v / yMax) * innerH;
+  const xOfIdx = useCallback((i: number) => xOf(i), [stepX]);
+  const { hoverIdx, onPointerMove, onPointerLeave } = useChartHoverIdx(chart.points.length, xOfIdx, W);
+  const fmtVal = (v: number) =>
+    v >= 1000 ? Math.round(v).toLocaleString() : v >= 100 ? v.toFixed(0) : v.toFixed(2);
   return (
+    <div style={{ position: "relative" }} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}>
     <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
       {/* Y grid + tick label */}
       {yTicks.map((t, i) => {
@@ -975,7 +997,26 @@ function SectorLineSvg({ chart }: { chart: SectorChart }) {
           </text>
         ) : null,
       )}
+      {hoverIdx !== null && (
+        <ChartCrosshair x={xOf(hoverIdx)} y1={padT} y2={padT + innerH} />
+      )}
     </svg>
+    {hoverIdx !== null && chart.points[hoverIdx] && (
+      <ChartTooltip leftPercent={(xOf(hoverIdx) / W) * 100}>
+        <div style={{ fontWeight: 700 }}>{chart.points[hoverIdx].date}</div>
+        {chart.series.map((s) => {
+          const v = chart.points[hoverIdx].values[s.symbol];
+          if (v == null) return null;
+          return (
+            <div key={s.symbol} style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+              <span style={{ color: s.color }}>{s.label}</span>
+              <span>{fmtVal(v)}</span>
+            </div>
+          );
+        })}
+      </ChartTooltip>
+    )}
+    </div>
   );
 }
 
@@ -1006,6 +1047,8 @@ function NormalizedCycleChart({ series }: { series: NormalizedCycleSeries[] }) {
   const stepX = allDates.length > 1 ? innerW / (allDates.length - 1) : 0;
   const xOf = (i: number) => padL + i * stepX;
   const yOf = (v: number) => padT + innerH - (v / yMax) * innerH;
+  const xOfIdx = useCallback((i: number) => xOf(i), [stepX]);
+  const { hoverIdx, onPointerMove, onPointerLeave } = useChartHoverIdx(allDates.length, xOfIdx, W);
   return (
     <div style={CFM.wrap}>
       {/* 범례 — svg 위 */}
@@ -1022,6 +1065,7 @@ function NormalizedCycleChart({ series }: { series: NormalizedCycleSeries[] }) {
           </span>
         ))}
       </div>
+      <div style={{ position: "relative" }} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}>
       <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
         {yTicks.map((t) => {
           const y = yOf(t);
@@ -1069,7 +1113,26 @@ function NormalizedCycleChart({ series }: { series: NormalizedCycleSeries[] }) {
             </text>
           ) : null,
         )}
+        {hoverIdx !== null && (
+          <ChartCrosshair x={xOf(hoverIdx)} y1={padT} y2={padT + innerH} />
+        )}
       </svg>
+      {hoverIdx !== null && allDates[hoverIdx] && (
+        <ChartTooltip leftPercent={(xOf(hoverIdx) / W) * 100}>
+          <div style={{ fontWeight: 700 }}>{allDates[hoverIdx]}</div>
+          {series.map((s) => {
+            const v = s.points[hoverIdx]?.index;
+            if (v == null) return null;
+            return (
+              <div key={s.symbol} style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+                <span style={{ color: s.color }}>{s.label}</span>
+                <span>{v.toFixed(1)}</span>
+              </div>
+            );
+          })}
+        </ChartTooltip>
+      )}
+      </div>
     </div>
   );
 }
@@ -1101,6 +1164,8 @@ function WtiNgDualChart({ points }: { points: DualAxisPoint[] }) {
   const xOf = (i: number) => padL + i * stepX;
   const yWti = (v: number) => padT + innerH - (v / wtiMax) * innerH;
   const yNg = (v: number) => padT + innerH - (v / ngMax) * innerH;
+  const xOfIdx = useCallback((i: number) => xOf(i), [stepX]);
+  const { hoverIdx, onPointerMove, onPointerLeave } = useChartHoverIdx(points.length, xOfIdx, W);
   return (
     <div style={CFM.wrap}>
       {/* 범례 — svg 위 */}
@@ -1114,6 +1179,7 @@ function WtiNgDualChart({ points }: { points: DualAxisPoint[] }) {
           <span style={{ ...CFM.legendText, color: "#4a7aff" }}>천연가스 ($/MMBtu)</span>
         </span>
       </div>
+      <div style={{ position: "relative" }} onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}>
       <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet" style={{ display: "block", height: scaledPx(H) }}>
         {wtiTicks.map((t) => {
           const y = yWti(t);
@@ -1175,7 +1241,28 @@ function WtiNgDualChart({ points }: { points: DualAxisPoint[] }) {
             </text>
           ) : null,
         )}
+        {hoverIdx !== null && (
+          <ChartCrosshair x={xOf(hoverIdx)} y1={padT} y2={padT + innerH} />
+        )}
       </svg>
+      {hoverIdx !== null && points[hoverIdx] && (
+        <ChartTooltip leftPercent={(xOf(hoverIdx) / W) * 100}>
+          <div style={{ fontWeight: 700 }}>{points[hoverIdx].date}</div>
+          {points[hoverIdx].wti != null && (
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+              <span style={{ color: "#fdb43a" }}>WTI</span>
+              <span>${points[hoverIdx].wti!.toFixed(1)}</span>
+            </div>
+          )}
+          {points[hoverIdx].ng != null && (
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 8 }}>
+              <span style={{ color: "#4a7aff" }}>천연가스</span>
+              <span>${points[hoverIdx].ng!.toFixed(2)}</span>
+            </div>
+          )}
+        </ChartTooltip>
+      )}
+      </div>
     </div>
   );
 }
@@ -1187,7 +1274,7 @@ function IssueCard({ card }: { card: IssueCardSpec }) {
         <div style={{ ...S.issueIcon, background: card.iconBg }} aria-hidden>
           <Icon icon={card.iconName} width={scaledPx(20)} height={scaledPx(20)} color={card.tagColor} />
         </div>
-        <span style={S.issueTitle} title={card.title}>{card.title}</span>
+        <TruncatedText style={S.issueTitle}>{card.title}</TruncatedText>
         <span
           style={{
             ...S.issueTag,
@@ -1241,8 +1328,8 @@ function SideIndicators({
             padding: "clamp(0.5rem, 1vw, 0.75rem) clamp(0.5rem, 1.1vw, 0.875rem)",
           }}
         >
-          <span style={S.sideIndicatorLabel}>{s.label}</span>
-          <span style={S.sideIndicatorValue}>{s.value}</span>
+          <TruncatedText style={S.sideIndicatorLabel}>{s.label}</TruncatedText>
+          <TruncatedText style={S.sideIndicatorValue}>{s.value}</TruncatedText>
         </div>
       ))}
     </div>
@@ -1641,7 +1728,8 @@ const S = responsiveStyles({
   },
   row6Grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    // 2×2 고정.
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
     gap: 12,
     alignItems: "stretch",
   },
